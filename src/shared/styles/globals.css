@@ -148,6 +148,9 @@
 }
 
 @layer base {
+  body.overlay {
+    background: transparent;
+  }
   * {
     @apply border-border outline-ring/50;
   }

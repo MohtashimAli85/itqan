@@ -10,3 +10,4 @@ target
 !.vscode/extensions.json
 .idea
 src-tauri/gen
+.codegraph
