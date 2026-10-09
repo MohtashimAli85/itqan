@@ -13,6 +13,7 @@ export const commands = {
 	setOrbProgress: (progress: number | null) => typedError<null, CommandError>(__TAURI_INVOKE("set_orb_progress", { progress })),
 	showBubble: (text: string, actions: BubbleAction[]) => typedError<number, CommandError>(__TAURI_INVOKE("show_bubble", { text, actions })),
 	resolveBubble: (id: number, actionId: string | null) => typedError<null, CommandError>(__TAURI_INVOKE("resolve_bubble", { id, actionId })),
+	setPanelOpen: (open: boolean) => typedError<null, CommandError>(__TAURI_INVOKE("set_panel_open", { open })),
 	listTasks: (filter: TaskFilter) => typedError<Task[], CommandError>(__TAURI_INVOKE("list_tasks", { filter })),
 	createTask: (input: TaskInput) => typedError<Task, CommandError>(__TAURI_INVOKE("create_task", { input })),
 	updateTask: (id: number, input: TaskInput) => typedError<Task, CommandError>(__TAURI_INVOKE("update_task", { id, input })),
@@ -21,6 +22,7 @@ export const commands = {
 	deleteTask: (id: number) => typedError<null, CommandError>(__TAURI_INVOKE("delete_task", { id })),
 	listCategories: () => typedError<Category[], CommandError>(__TAURI_INVOKE("list_categories")),
 	createCategory: (input: CategoryInput) => typedError<Category, CommandError>(__TAURI_INVOKE("create_category", { input })),
+	quickAddTask: (text: string) => typedError<QuickAddOutcome, CommandError>(__TAURI_INVOKE("quick_add_task", { text })),
 };
 
 /** Events */
@@ -82,6 +84,12 @@ export type OverlaySnapshot = {
 	followMode: FollowMode,
 	bubble: Bubble | null,
 	progress: number | null,
+	panelOpen: boolean,
+};
+
+export type QuickAddOutcome = {
+	task: Task,
+	notice: string | null,
 };
 
 export type Rect = {

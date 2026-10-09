@@ -50,6 +50,7 @@ pub struct OverlaySnapshot {
     pub follow_mode: FollowMode,
     pub bubble: Option<Bubble>,
     pub progress: Option<f32>,
+    pub panel_open: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type, tauri_specta::Event)]
@@ -75,6 +76,10 @@ impl OverlayStore {
 
     pub fn set_follow_mode(&self, mode: FollowMode) -> Result<OverlaySnapshot, AppError> {
         self.update(|snapshot| snapshot.follow_mode = mode)
+    }
+
+    pub fn set_panel_open(&self, open: bool) -> Result<OverlaySnapshot, AppError> {
+        self.update(|snapshot| snapshot.panel_open = open)
     }
 
     pub fn set_progress(&self, progress: Option<f32>) -> Result<OverlaySnapshot, AppError> {

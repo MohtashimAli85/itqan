@@ -27,6 +27,11 @@ pub fn find(connection: &Connection, id: CategoryId) -> Result<Option<Category>,
     Ok(connection.query_row(&sql, [id], from_row).optional()?)
 }
 
+pub fn find_by_name(connection: &Connection, name: &str) -> Result<Option<Category>, AppError> {
+    let sql = format!("SELECT {COLUMNS} FROM categories WHERE lower(name) = lower(?1)");
+    Ok(connection.query_row(&sql, [name], from_row).optional()?)
+}
+
 pub fn exists_by_name(connection: &Connection, name: &str) -> Result<bool, AppError> {
     Ok(connection.query_row(
         "SELECT EXISTS (SELECT 1 FROM categories WHERE lower(name) = lower(?1))",

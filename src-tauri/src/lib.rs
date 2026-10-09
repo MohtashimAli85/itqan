@@ -28,6 +28,7 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::overlay::set_orb_progress,
             commands::overlay::show_bubble,
             commands::overlay::resolve_bubble,
+            commands::overlay::set_panel_open,
             commands::tasks::list_tasks,
             commands::tasks::create_task,
             commands::tasks::update_task,
@@ -36,6 +37,7 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::tasks::delete_task,
             commands::tasks::list_categories,
             commands::tasks::create_category,
+            commands::tasks::quick_add_task,
         ])
         .events(collect_events![
             overlay::OverlayCursor,

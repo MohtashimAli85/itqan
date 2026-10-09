@@ -32,6 +32,10 @@ pub fn list(connection: &Connection) -> Result<Vec<Category>, AppError> {
     repo::list(connection)
 }
 
+pub fn find_by_name(connection: &Connection, name: &str) -> Result<Option<Category>, AppError> {
+    repo::find_by_name(connection, name)
+}
+
 pub fn create(connection: &Connection, input: CategoryInput) -> Result<Category, AppError> {
     let name = input.name.trim().to_owned();
     if name.is_empty() || name.chars().count() > MAX_NAME_LENGTH {

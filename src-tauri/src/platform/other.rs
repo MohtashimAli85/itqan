@@ -10,3 +10,10 @@ pub fn plugin() -> TauriPlugin<Wry> {
 pub fn configure_overlay(_window: &WebviewWindow) -> Result<(), AppError> {
     Ok(())
 }
+
+pub fn focus_overlay(window: &WebviewWindow, focused: bool) -> Result<(), AppError> {
+    if focused {
+        window.set_focus()?;
+    }
+    Ok(())
+}

@@ -40,6 +40,10 @@ pub fn publish(app: &AppHandle, snapshot: OverlaySnapshot) -> Result<(), AppErro
     Ok(())
 }
 
+pub fn set_keyboard_focus(app: &AppHandle, focused: bool) -> Result<(), AppError> {
+    platform::focus_overlay(&overlay_window(app)?, focused)
+}
+
 fn overlay_window(app: &AppHandle) -> Result<WebviewWindow, AppError> {
     app.get_webview_window(OVERLAY_LABEL)
         .ok_or(AppError::WindowMissing(OVERLAY_LABEL))
