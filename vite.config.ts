@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 // @ts-expect-error type error without @types/node package
@@ -15,6 +15,10 @@ export default defineConfig(() => ({
         overlay: new URL("./overlay.html", import.meta.url).pathname,
       },
     },
+  },
+  test: {
+    environment: "jsdom",
+    setupFiles: ["./src/shared/test/setup.ts"],
   },
   resolve: {
     alias: { "@": new URL("./src", import.meta.url).pathname },

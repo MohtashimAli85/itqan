@@ -14,7 +14,8 @@
     "format:check": "prettier --check .",
     "lint:rust": "cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings",
     "format:rust": "cargo fmt --manifest-path src-tauri/Cargo.toml",
-    "format:rust:check": "cargo fmt --manifest-path src-tauri/Cargo.toml --check"
+    "format:rust:check": "cargo fmt --manifest-path src-tauri/Cargo.toml --check",
+    "test": "vitest run"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",
@@ -38,6 +39,9 @@
     "@commitlint/config-conventional": "^21.2.3",
     "@eslint/js": "^10.0.1",
     "@tauri-apps/cli": "^2",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^6.0.2",
@@ -45,12 +49,14 @@
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.13.0",
+    "jsdom": "^30.1.2",
     "lefthook": "^2.2.1",
     "prettier": "^3.9.9",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.71.1",
-    "vite": "^8.0.16"
+    "vite": "^8.0.16",
+    "vitest": "^5.0.3"
   },
   "packageManager": "pnpm@12.9.1",
   "engines": {

@@ -568,7 +568,7 @@ After the app skeleton exists (step 0.5), run `codegraph init -i` so later sessi
 - [x] **0.4 Design system.** Tailwind v4, then shadcn with `pnpm dlx shadcn@latest apply --preset b1FSRLMOG` exactly as given (if the CLI reports an unknown command, stop and ask). Add brand tokens from section 5, bundle the three fonts, light and dark themes, a small token preview page in the main window.
 - [x] **0.5 Window structure.** Separate Vite entries for overlay and main; Tauri window config for both; capabilities with least privilege; tray icon with Quit; single-instance plugin. Then run `codegraph init -i`.
 - [x] **0.6 Rust core skeleton.** Module layout from section 10, error type, tracing, SQLite connection with first migration (settings table), tauri-specta bindings generated, one example command used by the main window through TanStack Query. Record the rusqlite vs sqlx choice.
-- [ ] **0.7 Tests and CI.** Vitest + Testing Library with one example test, `cargo test` example, `.gitlab-ci.yml` running every check.
+- [x] **0.7 Tests and CI.** Vitest + Testing Library with one example test, `cargo test` example, `.gitlab-ci.yml` running every check.
 - [ ] **0.8 Contributor docs and skills.** `CONTRIBUTING.md`, `PRIVACY.md`, MR template, skills shortlist approved and installed.
 
 ### Phase 1 order (after Phase 0)
