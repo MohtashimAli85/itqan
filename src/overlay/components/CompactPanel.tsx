@@ -2,7 +2,14 @@ import { useEffect, useRef } from "react";
 import type { Task } from "@/shared/bindings/bindings";
 import { openTasks, useSetTaskStatus, useTasks } from "@/shared/hooks/useTasks";
 import { greeting, todayTasks } from "@/shared/lib/today";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/shared/components/ui/tabs";
 import { FocusRow } from "./FocusRow";
+import { HealthTab } from "./HealthTab";
 import { QuickAdd } from "./QuickAdd";
 import { TaskRow } from "./TaskRow";
 
@@ -53,41 +60,52 @@ export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
         </p>
       </header>
 
-      <QuickAdd />
+      <Tabs defaultValue="today">
+        <TabsList className="w-full">
+          <TabsTrigger value="today">Today</TabsTrigger>
+          <TabsTrigger value="health">Health</TabsTrigger>
+        </TabsList>
+        <TabsContent value="today" className="flex flex-col gap-3 pt-2">
+          <QuickAdd />
 
-      <FocusRow />
+          <FocusRow />
 
-      {topThree.length > 0 && (
-        <section aria-labelledby="panel-top-three">
-          <h3
-            id="panel-top-three"
-            className="text-caption mb-1 px-2 text-xs font-medium"
-          >
-            Top 3
-          </h3>
-          <ul>
-            {topThree.map((task) => (
-              <TaskRow key={task.id} task={task} onComplete={complete} />
-            ))}
-          </ul>
-        </section>
-      )}
+          {topThree.length > 0 && (
+            <section aria-labelledby="panel-top-three">
+              <h3
+                id="panel-top-three"
+                className="text-caption mb-1 px-2 text-xs font-medium"
+              >
+                Top 3
+              </h3>
+              <ul>
+                {topThree.map((task) => (
+                  <TaskRow key={task.id} task={task} onComplete={complete} />
+                ))}
+              </ul>
+            </section>
+          )}
 
-      {due.length > 0 && (
-        <section aria-labelledby="panel-due">
-          <h3
-            id="panel-due"
-            className="text-caption mb-1 px-2 text-xs font-medium"
-          >
-            Due today
-          </h3>
-          <ul className="max-h-48 overflow-y-auto">
-            {due.map((task) => (
-              <TaskRow key={task.id} task={task} onComplete={complete} />
-            ))}
-          </ul>
-        </section>
-      )}
+          {due.length > 0 && (
+            <section aria-labelledby="panel-due">
+              <h3
+                id="panel-due"
+                className="text-caption mb-1 px-2 text-xs font-medium"
+              >
+                Due today
+              </h3>
+              <ul className="max-h-48 overflow-y-auto">
+                {due.map((task) => (
+                  <TaskRow key={task.id} task={task} onComplete={complete} />
+                ))}
+              </ul>
+            </section>
+          )}
+        </TabsContent>
+        <TabsContent value="health" className="pt-2">
+          <HealthTab />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

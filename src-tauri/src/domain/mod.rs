@@ -2,6 +2,7 @@ pub mod app_info;
 pub mod categories;
 pub mod focus;
 pub mod goals;
+pub mod health;
 pub mod levels;
 pub mod modes;
 pub mod nudges;

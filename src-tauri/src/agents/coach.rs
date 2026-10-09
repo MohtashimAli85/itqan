@@ -3,14 +3,18 @@ use std::sync::Mutex;
 
 use chrono::{DateTime, Duration, Timelike, Utc};
 use tauri::{AppHandle, Manager};
+use tauri_specta::Event;
 
+use super::health as health_agent;
 use super::Suggestion;
+use crate::commands::events::HealthChanged;
 use crate::db::{settings as settings_repo, Database};
+use crate::domain::health::{self, HabitKind};
 use crate::domain::modes::Mode;
 use crate::domain::nudges::{self, NewNudge, NudgeId, Outcome, Priority};
 use crate::domain::{profile, settings};
 use crate::error::AppError;
-use crate::overlay::{self, BubbleOrigin, OverlayStore};
+use crate::overlay::{self, Activity, BubbleOrigin, OverlayStore};
 use crate::scheduler::{modes as mode_engine, ModeStatus};
 use crate::tray;
 
@@ -258,7 +262,17 @@ pub fn resolve(app: &AppHandle, id: NudgeId, action: Option<&str>) -> Result<(),
     match action {
         Some(OPEN_PANEL) => overlay::open_panel(app)?,
         Some(OPEN_MAIN) => tray::show_main_window(app),
-        _ => {}
+        Some(other) => {
+            if let Some(kind) = health_agent::parse_habit_action(other) {
+                app.state::<Database>()
+                    .with(|connection| health::log(connection, kind, now))?;
+                if kind == HabitKind::Stretch {
+                    app.state::<Activity>().reset_streak();
+                }
+                HealthChanged.emit(app)?;
+            }
+        }
+        None => {}
     }
     flush(app, now)
 }

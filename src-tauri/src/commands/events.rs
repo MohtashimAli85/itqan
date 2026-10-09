@@ -3,3 +3,6 @@ use specta::Type;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type, tauri_specta::Event)]
 pub struct TasksChanged;
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type, tauri_specta::Event)]
+pub struct HealthChanged;

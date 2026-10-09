@@ -2,6 +2,7 @@ pub mod categories;
 pub mod enums;
 pub mod focus;
 pub mod goals;
+pub mod health;
 pub mod migrations;
 pub mod nudges;
 pub mod prayer;

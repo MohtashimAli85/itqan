@@ -78,6 +78,14 @@ pub fn unanswered_before(
     Ok(rows.collect::<rusqlite::Result<_>>()?)
 }
 
+pub fn last_fired(connection: &Connection, kind: &str) -> Result<Option<DateTime<Utc>>, AppError> {
+    Ok(connection.query_row(
+        "SELECT max(fired_at) FROM nudges WHERE kind = ?1",
+        [kind],
+        |row| row.get(0),
+    )?)
+}
+
 pub fn recent(connection: &Connection, limit: u32) -> Result<Vec<Nudge>, AppError> {
     let mut statement = connection.prepare(
         "SELECT id, agent, kind, priority, text, style, mode, fired_at, outcome, action, outcome_at

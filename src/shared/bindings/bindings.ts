@@ -57,11 +57,18 @@ export const commands = {
 	getNudgeBudget: () => typedError<number, CommandError>(__TAURI_INVOKE("get_nudge_budget")),
 	setNudgeBudget: (perHour: number) => typedError<number, CommandError>(__TAURI_INVOKE("set_nudge_budget", { perHour })),
 	listRecentNudges: (limit: number) => typedError<Nudge[], CommandError>(__TAURI_INVOKE("list_recent_nudges", { limit })),
+	getHealthOverview: () => typedError<HealthOverview, CommandError>(__TAURI_INVOKE("get_health_overview")),
+	setHealthEnabled: (enabled: boolean) => typedError<null, CommandError>(__TAURI_INVOKE("set_health_enabled", { enabled })),
+	logHabit: (kind: HabitKind) => typedError<null, CommandError>(__TAURI_INVOKE("log_habit", { kind })),
+	setWaterTarget: (target: number) => typedError<null, CommandError>(__TAURI_INVOKE("set_water_target", { target })),
+	addMedicine: (name: string, times: string[]) => typedError<Medicine, CommandError>(__TAURI_INVOKE("add_medicine", { name, times })),
+	deleteMedicine: (id: number) => typedError<null, CommandError>(__TAURI_INVOKE("delete_medicine", { id })),
 };
 
 /** Events */
 export const events = {
 	goalsChanged: makeEvent<GoalsChanged>("goals-changed"),
+	healthChanged: makeEvent<HealthChanged>("health-changed"),
 	modeChanged: makeEvent<ModeChanged>("mode-changed"),
 	overlayChanged: makeEvent<OverlayChanged>("overlay-changed"),
 	overlayCursor: makeEvent<OverlayCursor>("overlay-cursor"),
@@ -146,6 +153,27 @@ export type GoalStatus = "active" | "done" | "archived";
 
 export type GoalsChanged = null;
 
+export type Habit = {
+	id: number,
+	kind: HabitKind,
+	name: string,
+	target: number | null,
+	enabled: boolean,
+};
+
+export type HabitKind = "stretch" | "eyeRest" | "water" | "medicine";
+
+export type HealthChanged = null;
+
+export type HealthOverview = {
+	enabled: boolean,
+	waterToday: number,
+	waterTarget: number,
+	stretchesToday: number,
+	eyeRestsToday: number,
+	medicines: Medicine[],
+};
+
 export type HighLatitudeRule = "middleOfTheNight" | "seventhOfTheNight" | "twilightAngle";
 
 export type LevelProgress = {
@@ -155,6 +183,11 @@ export type LevelProgress = {
 };
 
 export type Madhab = "shafi" | "hanafi";
+
+export type Medicine = {
+	habit: Habit,
+	reminders: Reminder[],
+};
 
 export type Method = "muslimWorldLeague" | "egyptian" | "karachi" | "ummAlQura" | "dubai" | "northAmerica" | "kuwait" | "qatar";
 
