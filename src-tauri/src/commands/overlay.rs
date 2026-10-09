@@ -2,8 +2,10 @@ use tauri::{AppHandle, State};
 
 use crate::error::CommandError;
 use crate::overlay::{
-    self, BubbleAction, FollowMode, HitAreas, OrbState, OverlaySnapshot, OverlayStore, Rect,
+    self, BubbleAction, BubbleOrigin, FollowMode, HitAreas, OrbState, OverlaySnapshot,
+    OverlayStore, Rect,
 };
+use crate::scheduler;
 
 #[tauri::command]
 #[specta::specta]
@@ -58,7 +60,7 @@ pub fn show_bubble(
     text: String,
     actions: Vec<BubbleAction>,
 ) -> Result<u32, CommandError> {
-    let (id, snapshot) = store.show_bubble(text, actions)?;
+    let (id, snapshot) = store.show_bubble(text, actions, None)?;
     overlay::publish(&app, snapshot)?;
     Ok(id)
 }
@@ -71,13 +73,21 @@ pub fn resolve_bubble(
     id: u32,
     action_id: Option<String>,
 ) -> Result<(), CommandError> {
-    if let Some(snapshot) = store.dismiss_bubble(id)? {
-        tracing::debug!(
-            bubble = id,
-            action = action_id.as_deref(),
-            "bubble resolved"
-        );
-        overlay::publish(&app, snapshot)?;
+    let Some((snapshot, origin)) = store.dismiss_bubble(id)? else {
+        return Ok(());
+    };
+    tracing::debug!(
+        bubble = id,
+        action = action_id.as_deref(),
+        "bubble resolved"
+    );
+    let panel_open = snapshot.panel_open;
+    overlay::publish(&app, snapshot)?;
+    if let Some(BubbleOrigin::Reminder { id, .. }) = origin {
+        scheduler::resolve_reminder(&app, id, action_id.as_deref())?;
+    }
+    if !panel_open {
+        overlay::set_keyboard_focus(&app, false)?;
     }
     Ok(())
 }

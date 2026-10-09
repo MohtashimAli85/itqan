@@ -38,6 +38,11 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::tasks::list_categories,
             commands::tasks::create_category,
             commands::tasks::quick_add_task,
+            commands::reminders::create_reminder,
+            commands::reminders::list_task_reminders,
+            commands::reminders::delete_reminder,
+            commands::settings::get_timezone,
+            commands::settings::set_timezone,
         ])
         .events(collect_events![
             overlay::OverlayCursor,
@@ -63,6 +68,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_log::Builder::new().build())
         .plugin(platform::plugin())
+        .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             tray::show_main_window(app);
         }))
@@ -76,6 +82,7 @@ pub fn run() {
             tracing::info!("database ready");
             tray::setup(app)?;
             overlay::setup(app)?;
+            scheduler::start(app.handle());
             Ok(())
         })
         .run(tauri::generate_context!())

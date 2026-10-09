@@ -5,6 +5,7 @@ use crate::error::AppError;
 const MIGRATIONS: &[&str] = &[
     include_str!("../../migrations/0001_settings.sql"),
     include_str!("../../migrations/0002_tasks.sql"),
+    include_str!("../../migrations/0003_reminders.sql"),
 ];
 
 pub fn schema_version(connection: &Connection) -> Result<u32, AppError> {

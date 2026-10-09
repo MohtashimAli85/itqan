@@ -23,6 +23,11 @@ export const commands = {
 	listCategories: () => typedError<Category[], CommandError>(__TAURI_INVOKE("list_categories")),
 	createCategory: (input: CategoryInput) => typedError<Category, CommandError>(__TAURI_INVOKE("create_category", { input })),
 	quickAddTask: (text: string) => typedError<QuickAddOutcome, CommandError>(__TAURI_INVOKE("quick_add_task", { text })),
+	createReminder: (input: ReminderInput) => typedError<Reminder, CommandError>(__TAURI_INVOKE("create_reminder", { input })),
+	listTaskReminders: (taskId: number) => typedError<Reminder[], CommandError>(__TAURI_INVOKE("list_task_reminders", { taskId })),
+	deleteReminder: (id: number) => typedError<null, CommandError>(__TAURI_INVOKE("delete_reminder", { id })),
+	getTimezone: () => typedError<string, CommandError>(__TAURI_INVOKE("get_timezone")),
+	setTimezone: (timezone: string) => typedError<string, CommandError>(__TAURI_INVOKE("set_timezone", { timezone })),
 };
 
 /** Events */
@@ -97,6 +102,27 @@ export type Rect = {
 	y: number | null,
 	width: number | null,
 	height: number | null,
+};
+
+export type Reminder = {
+	id: number,
+	taskId: number | null,
+	title: string,
+	anchorAt: string,
+	nextAt: string | null,
+	rrule: string | null,
+	timezone: string,
+	critical: boolean,
+	snoozedUntil: string | null,
+	lastFiredAt: string | null,
+};
+
+export type ReminderInput = {
+	taskId: number | null,
+	title: string | null,
+	at: string,
+	rrule: string | null,
+	critical: boolean,
 };
 
 export type Task = {

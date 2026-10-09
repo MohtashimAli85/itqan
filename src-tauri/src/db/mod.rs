@@ -1,5 +1,7 @@
 pub mod categories;
 pub mod migrations;
+pub mod reminders;
+pub mod settings;
 pub mod tasks;
 
 use std::path::Path;

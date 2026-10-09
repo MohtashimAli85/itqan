@@ -29,6 +29,11 @@ tauri-specta = { version = "=2.0.0-rc.25", features = ["derive", "typescript"] }
 specta = { version = "=2.0.0-rc.25", features = ["derive", "chrono"] }
 specta-typescript = "0.0.12"
 chrono = { version = "0.4.45", features = ["serde"] }
+rrule = "0.14"
+chrono-tz = "0.10"
+iana-time-zone = "0.1"
+tokio = { version = "1", features = ["time", "sync", "macros"] }
+tauri-plugin-notification = "2"
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration

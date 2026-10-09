@@ -1,13 +1,15 @@
 use chrono::{Local, Utc};
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Manager, State};
 use tauri_specta::Event;
 
 use super::events::TasksChanged;
 use crate::db::Database;
 use crate::domain::categories::{self, Category, CategoryInput};
 use crate::domain::quick_add::{self, QuickAddOutcome};
+use crate::domain::settings;
 use crate::domain::tasks::{self, Task, TaskFilter, TaskId, TaskInput, TaskStatus};
 use crate::error::{AppError, CommandError};
+use crate::scheduler::Scheduler;
 
 fn changed(app: &AppHandle, task: Task) -> Result<Task, CommandError> {
     TasksChanged.emit(app).map_err(AppError::from)?;
@@ -104,7 +106,11 @@ pub fn quick_add_task(
     database: State<Database>,
     text: String,
 ) -> Result<QuickAddOutcome, CommandError> {
-    let outcome = database.with(|connection| quick_add::create(connection, &text, Local::now()))?;
+    let outcome = database.with(|connection| {
+        let timezone = settings::timezone(connection)?;
+        quick_add::create(connection, &text, Local::now(), timezone)
+    })?;
     TasksChanged.emit(&app).map_err(AppError::from)?;
+    app.state::<Scheduler>().wake();
     Ok(outcome)
 }
