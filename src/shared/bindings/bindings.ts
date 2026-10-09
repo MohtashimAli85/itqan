@@ -7,10 +7,17 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 export const commands = {
 	getAppInfo: () => typedError<AppInfo, CommandError>(__TAURI_INVOKE("get_app_info")),
 	setOverlayHitAreas: (rects: Rect[]) => typedError<null, CommandError>(__TAURI_INVOKE("set_overlay_hit_areas", { rects })),
+	getOverlayState: () => typedError<OverlaySnapshot, CommandError>(__TAURI_INVOKE("get_overlay_state")),
+	setOrbState: (state: OrbState) => typedError<null, CommandError>(__TAURI_INVOKE("set_orb_state", { state })),
+	setFollowMode: (mode: FollowMode) => typedError<null, CommandError>(__TAURI_INVOKE("set_follow_mode", { mode })),
+	setOrbProgress: (progress: number | null) => typedError<null, CommandError>(__TAURI_INVOKE("set_orb_progress", { progress })),
+	showBubble: (text: string, actions: BubbleAction[]) => typedError<number, CommandError>(__TAURI_INVOKE("show_bubble", { text, actions })),
+	resolveBubble: (id: number, actionId: string | null) => typedError<null, CommandError>(__TAURI_INVOKE("resolve_bubble", { id, actionId })),
 };
 
 /** Events */
 export const events = {
+	overlayChanged: makeEvent<OverlayChanged>("overlay-changed"),
 	overlayCursor: makeEvent<OverlayCursor>("overlay-cursor"),
 };
 
@@ -18,16 +25,40 @@ export const events = {
 export type AppInfo = {
 	name: string,
 	version: string,
-	schema_version: number,
+	schemaVersion: number,
+};
+
+export type Bubble = {
+	id: number,
+	text: string,
+	actions: BubbleAction[],
+};
+
+export type BubbleAction = {
+	id: string,
+	label: string,
 };
 
 export type CommandError = {
 	message: string,
 };
 
+export type FollowMode = "follow" | "corner" | "hidden";
+
+export type OrbState = "idle" | "happy" | "alert" | "focus" | "resting" | "critical" | "listening" | "evening";
+
+export type OverlayChanged = OverlaySnapshot;
+
 export type OverlayCursor = {
 	x: number,
 	y: number,
+};
+
+export type OverlaySnapshot = {
+	orbState: OrbState,
+	followMode: FollowMode,
+	bubble: Bubble | null,
+	progress: number | null,
 };
 
 export type Rect = {

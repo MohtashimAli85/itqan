@@ -18,6 +18,7 @@ Source of truth: docs/PLAN.md. Read it before starting any task.
 - No comments unless truly needed.
 - TS strict, no any. Tailwind tokens only, no raw hex.
 - Rust: no unwrap outside tests; logic in domain/, commands stay thin.
+- Structs crossing IPC use `#[serde(rename_all = "camelCase")]`.
 - Times in UTC. Keys only in the OS keychain. Never log secrets or captured text.
 - Overlay must be idle when nothing moves.
 - All Day.js imports via src/shared/lib/dayjs.ts.

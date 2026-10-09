@@ -8,7 +8,7 @@ vi.mock("@/shared/bindings/bindings", () => ({
     getAppInfo: () =>
       Promise.resolve({
         status: "ok",
-        data: { name: "Itqan", version: "0.1.0", schema_version: 1 },
+        data: { name: "Itqan", version: "0.1.0", schemaVersion: 1 },
       }),
   },
 }));

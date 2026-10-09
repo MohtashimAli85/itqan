@@ -24,8 +24,17 @@ pub fn run() {
         .commands(collect_commands![
             commands::app_info::get_app_info,
             commands::overlay::set_overlay_hit_areas,
+            commands::overlay::get_overlay_state,
+            commands::overlay::set_orb_state,
+            commands::overlay::set_follow_mode,
+            commands::overlay::set_orb_progress,
+            commands::overlay::show_bubble,
+            commands::overlay::resolve_bubble,
         ])
-        .events(collect_events![overlay::OverlayCursor]);
+        .events(collect_events![
+            overlay::OverlayCursor,
+            overlay::OverlayChanged
+        ]);
 
     #[cfg(debug_assertions)]
     builder

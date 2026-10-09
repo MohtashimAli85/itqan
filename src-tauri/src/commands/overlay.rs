@@ -1,7 +1,9 @@
-use tauri::State;
+use tauri::{AppHandle, State};
 
 use crate::error::CommandError;
-use crate::overlay::{HitAreas, Rect};
+use crate::overlay::{
+    self, BubbleAction, FollowMode, HitAreas, OrbState, OverlaySnapshot, OverlayStore, Rect,
+};
 
 #[tauri::command]
 #[specta::specta]
@@ -10,4 +12,72 @@ pub fn set_overlay_hit_areas(
     rects: Vec<Rect>,
 ) -> Result<(), CommandError> {
     Ok(hit_areas.replace(rects)?)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn get_overlay_state(store: State<OverlayStore>) -> Result<OverlaySnapshot, CommandError> {
+    Ok(store.snapshot()?)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn set_orb_state(
+    app: AppHandle,
+    store: State<OverlayStore>,
+    state: OrbState,
+) -> Result<(), CommandError> {
+    Ok(overlay::publish(&app, store.set_orb_state(state)?)?)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn set_follow_mode(
+    app: AppHandle,
+    store: State<OverlayStore>,
+    mode: FollowMode,
+) -> Result<(), CommandError> {
+    Ok(overlay::publish(&app, store.set_follow_mode(mode)?)?)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn set_orb_progress(
+    app: AppHandle,
+    store: State<OverlayStore>,
+    progress: Option<f32>,
+) -> Result<(), CommandError> {
+    Ok(overlay::publish(&app, store.set_progress(progress)?)?)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn show_bubble(
+    app: AppHandle,
+    store: State<OverlayStore>,
+    text: String,
+    actions: Vec<BubbleAction>,
+) -> Result<u32, CommandError> {
+    let (id, snapshot) = store.show_bubble(text, actions)?;
+    overlay::publish(&app, snapshot)?;
+    Ok(id)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn resolve_bubble(
+    app: AppHandle,
+    store: State<OverlayStore>,
+    id: u32,
+    action_id: Option<String>,
+) -> Result<(), CommandError> {
+    if let Some(snapshot) = store.dismiss_bubble(id)? {
+        tracing::debug!(
+            bubble = id,
+            action = action_id.as_deref(),
+            "bubble resolved"
+        );
+        overlay::publish(&app, snapshot)?;
+    }
+    Ok(())
 }

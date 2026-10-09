@@ -11,6 +11,8 @@ pub enum AppError {
     Tauri(#[from] tauri::Error),
     #[error("state lock poisoned")]
     LockPoisoned,
+    #[error("invalid input: {0}")]
+    InvalidInput(String),
     #[error("window not found: {0}")]
     WindowMissing(&'static str),
     #[cfg_attr(not(target_os = "macos"), allow(dead_code))]
