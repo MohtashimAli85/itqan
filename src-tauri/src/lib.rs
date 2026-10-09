@@ -11,7 +11,7 @@ mod scheduler;
 mod tray;
 
 use tauri::Manager;
-use tauri_specta::{collect_commands, Builder};
+use tauri_specta::{collect_commands, collect_events, Builder};
 
 use crate::db::Database;
 
@@ -20,8 +20,12 @@ const BINDINGS_PATH: &str = "../src/shared/bindings/bindings.ts";
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 #[allow(clippy::expect_used)]
 pub fn run() {
-    let builder =
-        Builder::<tauri::Wry>::new().commands(collect_commands![commands::app_info::get_app_info]);
+    let builder = Builder::<tauri::Wry>::new()
+        .commands(collect_commands![
+            commands::app_info::get_app_info,
+            commands::overlay::set_overlay_hit_areas,
+        ])
+        .events(collect_events![overlay::OverlayCursor]);
 
     #[cfg(debug_assertions)]
     builder
@@ -30,6 +34,7 @@ pub fn run() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_log::Builder::new().build())
+        .plugin(platform::plugin())
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             tray::show_main_window(app);
         }))
@@ -42,6 +47,7 @@ pub fn run() {
             app.manage(database);
             tracing::info!("database ready");
             tray::setup(app)?;
+            overlay::setup(app)?;
             Ok(())
         })
         .run(tauri::generate_context!())

@@ -20,6 +20,8 @@
   --color-personal: var(--personal);
   --color-health: var(--health);
   --color-critical: var(--critical);
+  --color-orb-eye: var(--orb-eye);
+  --color-orb-pupil: var(--orb-pupil);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -102,6 +104,8 @@
   --personal: #0fa97a;
   --health: #e8407a;
   --critical: #e5281e;
+  --orb-eye: #ffffff;
+  --orb-pupil: #101217;
 }
 
 .dark {

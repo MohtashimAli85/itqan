@@ -9,8 +9,13 @@ pub enum AppError {
     Io(#[from] std::io::Error),
     #[error("tauri error: {0}")]
     Tauri(#[from] tauri::Error),
-    #[error("database lock poisoned")]
+    #[error("state lock poisoned")]
     LockPoisoned,
+    #[error("window not found: {0}")]
+    WindowMissing(&'static str),
+    #[cfg_attr(not(target_os = "macos"), allow(dead_code))]
+    #[error("platform error: {0}")]
+    Platform(String),
 }
 
 #[derive(Debug, Serialize, Type)]

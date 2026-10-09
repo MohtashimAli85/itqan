@@ -572,7 +572,7 @@ After the app skeleton exists (step 0.5), run `codegraph init -i` so later sessi
 - [x] **0.8 Contributor docs and skills.** `CONTRIBUTING.md`, `PRIVACY.md`, MR template, skills shortlist approved and installed.
 
 ### Phase 1 order (after Phase 0)
-- [ ] **1.0 Overlay spike (go/no-go).** Transparent click-through overlay, cursor following, hit areas, over full-screen apps, two displays. macOS first, Windows check if cross-platform from day one.
+- [x] **1.0 Overlay spike (go/no-go).** Go on macOS (owner tested follow, click-through and full screen; second display check pending). Transparent click-through overlay, cursor following, hit areas, over full-screen apps, two displays. macOS first, Windows check if cross-platform from day one.
 - [ ] 1.1 Orb character, states and bubbles
 - [ ] 1.2 Tasks data model and Rust commands
 - [ ] 1.3 Compact panel and quick add
