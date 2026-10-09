@@ -6,6 +6,7 @@ use crate::db::migrations;
 use crate::error::AppError;
 
 #[derive(Debug, Serialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub struct AppInfo {
     pub name: String,
     pub version: String,

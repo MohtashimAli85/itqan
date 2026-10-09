@@ -1,0 +1,50 @@
+.orb {
+  --orb-color: var(--orb-idle);
+}
+
+.orb[data-state="focus"] {
+  --orb-color: var(--orb-focus);
+}
+
+.orb[data-state="resting"] {
+  --orb-color: var(--orb-resting);
+}
+
+.orb[data-state="critical"] {
+  --orb-color: var(--orb-critical);
+}
+
+.orb[data-state="evening"] {
+  --orb-color: var(--orb-evening);
+}
+
+.orb-surface {
+  background: radial-gradient(
+    circle at 32% 28%,
+    color-mix(in oklch, var(--orb-color), white 55%) 0%,
+    var(--orb-color) 48%,
+    color-mix(in oklch, var(--orb-color), black 28%) 100%
+  );
+  box-shadow:
+    inset -4px -6px 12px color-mix(in oklch, var(--orb-color), black 30%),
+    0 8px 20px -6px color-mix(in oklch, var(--orb-color), transparent 40%);
+}
+
+.orb-ring {
+  stroke: var(--orb-color);
+}
+
+.orb-anchor .bubble {
+  left: calc(var(--orb-size) + 12px);
+  top: -6px;
+}
+
+.orb-anchor[data-flip-x="true"] .bubble {
+  left: auto;
+  right: calc(var(--orb-size) + 12px);
+}
+
+.orb-anchor[data-flip-y="true"] .bubble {
+  top: auto;
+  bottom: -6px;
+}

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
+import { OrbPreview } from "./components/OrbPreview";
 import { useAppInfo } from "./hooks/useAppInfo";
 
 const swatches = [
@@ -46,9 +47,11 @@ export function App() {
           {appInfo.isPending && "Loading"}
           {appInfo.isError && appInfo.error.message}
           {appInfo.data &&
-            `${appInfo.data.name} v${appInfo.data.version}, schema ${appInfo.data.schema_version}`}
+            `${appInfo.data.name} v${appInfo.data.version}, schema ${appInfo.data.schemaVersion}`}
         </p>
       </section>
+
+      <OrbPreview />
 
       <section aria-labelledby="colours" className="flex flex-col gap-4">
         <h2 id="colours" className="font-heading text-xl font-semibold">
