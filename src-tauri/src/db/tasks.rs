@@ -153,6 +153,19 @@ pub fn count_open_top_three(connection: &Connection) -> Result<u32, AppError> {
     )?)
 }
 
+pub fn count_completed_between(
+    connection: &Connection,
+    from: DateTime<Utc>,
+    to: DateTime<Utc>,
+) -> Result<u32, AppError> {
+    Ok(connection.query_row(
+        "SELECT count(*) FROM tasks
+         WHERE status = 'done' AND completed_at >= ?1 AND completed_at < ?2",
+        params![from, to],
+        |row| row.get(0),
+    )?)
+}
+
 pub fn has_subtasks(connection: &Connection, id: TaskId) -> Result<bool, AppError> {
     Ok(connection.query_row(
         "SELECT EXISTS (SELECT 1 FROM tasks WHERE parent_id = ?1)",

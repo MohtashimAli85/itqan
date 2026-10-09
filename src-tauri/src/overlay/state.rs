@@ -63,12 +63,13 @@ pub enum BubbleOrigin {
     Reminder { id: i32, critical: bool },
     Overtime,
     FocusDone,
+    Nudge { id: i32, critical: bool },
 }
 
 impl BubbleOrigin {
     pub fn is_critical(self) -> bool {
         match self {
-            Self::Reminder { critical, .. } => critical,
+            Self::Reminder { critical, .. } | Self::Nudge { critical, .. } => critical,
             Self::Overtime | Self::FocusDone => false,
         }
     }

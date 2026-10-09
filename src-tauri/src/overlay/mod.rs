@@ -67,6 +67,11 @@ pub fn publish(app: &AppHandle, snapshot: OverlaySnapshot) -> Result<(), AppErro
     Ok(())
 }
 
+pub fn open_panel(app: &AppHandle) -> Result<(), AppError> {
+    publish(app, app.state::<OverlayStore>().set_panel_open(true)?)?;
+    set_keyboard_focus(app, true)
+}
+
 pub fn set_keyboard_focus(app: &AppHandle, focused: bool) -> Result<(), AppError> {
     platform::focus_overlay(&overlay_window(app)?, focused)
 }

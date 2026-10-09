@@ -112,16 +112,20 @@ pub fn mark_fired(
     now: DateTime<Utc>,
 ) -> Result<(), AppError> {
     let snoozed_until = reminder.snoozed_until.filter(|snoozed| *snoozed > now);
-    let next_at = match reminder.next_at {
+    let next_at = advance(reminder, now)?;
+    repo::update_schedule(connection, reminder.id, next_at, snoozed_until, Some(now))
+}
+
+fn advance(reminder: &Reminder, now: DateTime<Utc>) -> Result<Option<DateTime<Utc>>, AppError> {
+    match reminder.next_at {
         Some(next) if next <= now => match &reminder.rrule {
             Some(rule) => {
-                recurrence::next_after(rule, reminder.anchor_at, reminder.timezone(), now)?
+                recurrence::next_after(rule, reminder.anchor_at, reminder.timezone(), now)
             }
-            None => None,
+            None => Ok(None),
         },
-        other => other,
-    };
-    repo::update_schedule(connection, reminder.id, next_at, snoozed_until, Some(now))
+        other => Ok(other),
+    }
 }
 
 pub fn snooze(
@@ -139,6 +143,17 @@ pub fn snooze(
         reminder.last_fired_at,
     )?;
     get(connection, id)
+}
+
+pub fn hold_until(
+    connection: &Connection,
+    id: ReminderId,
+    until: DateTime<Utc>,
+    now: DateTime<Utc>,
+) -> Result<(), AppError> {
+    let reminder = get(connection, id)?;
+    let next_at = advance(&reminder, now)?;
+    repo::update_schedule(connection, id, next_at, Some(until), reminder.last_fired_at)
 }
 
 pub fn delete(connection: &Connection, id: ReminderId) -> Result<(), AppError> {
@@ -237,6 +252,17 @@ mod tests {
 
         let next = get(&connection, reminder.id).unwrap().next_at.unwrap();
         assert_eq!(next, Utc.with_ymd_and_hms(2026, 10, 11, 9, 0, 0).unwrap());
+    }
+
+    #[test]
+    fn holding_a_reminder_moves_it_past_quiet_time() {
+        let connection = test_connection();
+        let reminder = create(&connection, standalone(at(9, 0), None), Tz::UTC, at(8, 0)).unwrap();
+
+        hold_until(&connection, reminder.id, at(9, 25), at(9, 5)).unwrap();
+
+        assert!(due(&connection, at(9, 10)).unwrap().is_empty());
+        assert_eq!(due(&connection, at(9, 25)).unwrap().len(), 1);
     }
 
     #[test]

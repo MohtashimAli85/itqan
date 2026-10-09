@@ -7,6 +7,7 @@ use specta::Type;
 use tauri::{AppHandle, Manager};
 use tauri_specta::Event;
 
+use crate::agents::{self, AppEvent};
 use crate::db::{prayer as prayer_repo, Database};
 use crate::domain::focus::{self, FocusStatus, DEFAULT_MINUTES};
 use crate::domain::modes::{self, Mode};
@@ -67,6 +68,12 @@ fn action(id: &str, label: &str) -> BubbleAction {
     }
 }
 
+pub fn current(app: &AppHandle) -> Result<Option<ModeStatus>, AppError> {
+    let engine = app.state::<ModeEngine>();
+    let state = engine.0.lock().map_err(|_| AppError::LockPoisoned)?;
+    Ok(state.last.clone())
+}
+
 pub fn evaluate(app: &AppHandle) -> Result<(ModeStatus, StdDuration), AppError> {
     let now = Utc::now();
     let database = app.state::<Database>();
@@ -88,6 +95,7 @@ pub fn evaluate(app: &AppHandle) -> Result<(ModeStatus, StdDuration), AppError> 
         database.with(|connection| focus::finish(connection, id, now, true))?;
         focus_status = None;
         celebrate_focus(app)?;
+        agents::publish(app, AppEvent::FocusCompleted)?;
     }
     let scheduled_mode = modes::scheduled_mode(
         &days,
@@ -168,8 +176,14 @@ pub fn evaluate(app: &AppHandle) -> Result<(ModeStatus, StdDuration), AppError> 
         let store = app.state::<OverlayStore>();
         overlay::publish(app, store.set_progress(progress)?)?;
     }
+    let mode_changed = previous.as_ref().map(|status| status.mode) != Some(mode);
+    let from = previous.as_ref().map(|status| status.mode);
     if previous.as_ref() != Some(&status) {
         ModeChanged(status.clone()).emit(app)?;
+    }
+    drop(state);
+    if mode_changed {
+        agents::publish(app, AppEvent::ModeChanged { from, to: mode })?;
     }
     let pause = if status.focus.is_some() {
         FOCUS_TICK

@@ -196,6 +196,14 @@ pub fn set_top_three(
     get(connection, id)
 }
 
+pub fn completed_between(
+    connection: &Connection,
+    from: DateTime<Utc>,
+    to: DateTime<Utc>,
+) -> Result<u32, AppError> {
+    repo::count_completed_between(connection, from, to)
+}
+
 pub fn delete(connection: &Connection, id: TaskId) -> Result<(), AppError> {
     get(connection, id)?;
     repo::delete(connection, id)
@@ -300,6 +308,30 @@ mod tests {
 
         let open = set_status(&connection, task.id, TaskStatus::Open, now()).unwrap();
         assert_eq!(open.completed_at, None);
+    }
+
+    #[test]
+    fn completed_between_counts_tasks_finished_in_the_window() {
+        let connection = test_connection();
+        let first = create(&connection, input("a"), now()).unwrap();
+        let second = create(&connection, input("b"), now()).unwrap();
+        create(&connection, input("c"), now()).unwrap();
+        set_status(&connection, first.id, TaskStatus::Done, now()).unwrap();
+        set_status(
+            &connection,
+            second.id,
+            TaskStatus::Done,
+            now() + chrono::Duration::days(1),
+        )
+        .unwrap();
+
+        let count = completed_between(
+            &connection,
+            now() - chrono::Duration::hours(1),
+            now() + chrono::Duration::hours(1),
+        )
+        .unwrap();
+        assert_eq!(count, 1);
     }
 
     #[test]
