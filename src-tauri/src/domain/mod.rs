@@ -2,6 +2,7 @@ pub mod app_info;
 pub mod categories;
 pub mod focus;
 pub mod modes;
+pub mod profile;
 pub mod quick_add;
 pub mod recurrence;
 pub mod reminders;

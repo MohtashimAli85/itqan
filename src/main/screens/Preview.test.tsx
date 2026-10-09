@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { App } from "./App";
+import { Preview } from "./Preview";
 
 vi.mock("@/shared/bindings/bindings", () => ({
   commands: {
@@ -13,11 +13,11 @@ vi.mock("@/shared/bindings/bindings", () => ({
   },
 }));
 
-describe("App", () => {
+describe("Preview", () => {
   it("shows the app info returned by the Rust core", async () => {
     render(
       <QueryClientProvider client={new QueryClient()}>
-        <App />
+        <Preview />
       </QueryClientProvider>,
     );
 
@@ -29,7 +29,7 @@ describe("App", () => {
   it("has an accessible theme toggle", () => {
     render(
       <QueryClientProvider client={new QueryClient()}>
-        <App />
+        <Preview />
       </QueryClientProvider>,
     );
 

@@ -7,6 +7,7 @@ const MIGRATIONS: &[&str] = &[
     include_str!("../../migrations/0002_tasks.sql"),
     include_str!("../../migrations/0003_reminders.sql"),
     include_str!("../../migrations/0004_modes.sql"),
+    include_str!("../../migrations/0005_profile.sql"),
 ];
 
 pub fn schema_version(connection: &Connection) -> Result<u32, AppError> {

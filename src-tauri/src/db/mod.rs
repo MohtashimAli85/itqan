@@ -2,6 +2,7 @@ pub mod categories;
 pub mod focus;
 pub mod migrations;
 pub mod prayer;
+pub mod profile;
 pub mod reminders;
 pub mod settings;
 pub mod tasks;

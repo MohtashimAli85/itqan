@@ -34,12 +34,8 @@ pub fn set_orb_state(
 
 #[tauri::command]
 #[specta::specta]
-pub fn set_follow_mode(
-    app: AppHandle,
-    store: State<OverlayStore>,
-    mode: FollowMode,
-) -> Result<(), CommandError> {
-    Ok(overlay::publish(&app, store.set_follow_mode(mode)?)?)
+pub fn set_follow_mode(app: AppHandle, mode: FollowMode) -> Result<(), CommandError> {
+    Ok(overlay::save_follow_mode(&app, mode)?)
 }
 
 #[tauri::command]
