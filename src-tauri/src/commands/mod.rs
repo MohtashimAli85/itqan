@@ -2,6 +2,7 @@ pub mod app_info;
 pub mod coach;
 pub mod events;
 pub mod goals;
+pub mod health;
 pub mod modes;
 pub mod overlay;
 pub mod profile;

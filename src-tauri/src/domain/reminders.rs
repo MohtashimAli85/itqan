@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 
 use crate::db::reminders as repo;
+use crate::domain::health::HabitId;
 use crate::domain::recurrence;
 use crate::domain::tasks::TaskId;
 use crate::error::AppError;
@@ -96,6 +97,21 @@ pub fn get(connection: &Connection, id: ReminderId) -> Result<Reminder, AppError
 
 pub fn list_for_task(connection: &Connection, task_id: TaskId) -> Result<Vec<Reminder>, AppError> {
     repo::list_for_task(connection, task_id)
+}
+
+pub fn list_for_habit(
+    connection: &Connection,
+    habit_id: HabitId,
+) -> Result<Vec<Reminder>, AppError> {
+    repo::list_for_habit(connection, habit_id)
+}
+
+pub fn attach_habit(
+    connection: &Connection,
+    id: ReminderId,
+    habit_id: HabitId,
+) -> Result<(), AppError> {
+    repo::set_habit(connection, id, habit_id)
 }
 
 pub fn due(connection: &Connection, now: DateTime<Utc>) -> Result<Vec<Reminder>, AppError> {

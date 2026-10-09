@@ -1,6 +1,7 @@
 use chrono::{DateTime, Utc};
 use rusqlite::{params, Connection, OptionalExtension, Row};
 
+use crate::domain::health::HabitId;
 use crate::domain::reminders::{Reminder, ReminderId};
 use crate::domain::tasks::TaskId;
 use crate::error::AppError;
@@ -68,6 +69,28 @@ pub fn list_for_task(connection: &Connection, task_id: TaskId) -> Result<Vec<Rem
     let mut statement = connection.prepare(&sql)?;
     let rows = statement.query_map([task_id], from_row)?;
     Ok(rows.collect::<rusqlite::Result<_>>()?)
+}
+
+pub fn list_for_habit(
+    connection: &Connection,
+    habit_id: HabitId,
+) -> Result<Vec<Reminder>, AppError> {
+    let sql = format!("{SELECT} WHERE r.habit_id = ?1 ORDER BY r.anchor_at");
+    let mut statement = connection.prepare(&sql)?;
+    let rows = statement.query_map([habit_id], from_row)?;
+    Ok(rows.collect::<rusqlite::Result<_>>()?)
+}
+
+pub fn set_habit(
+    connection: &Connection,
+    id: ReminderId,
+    habit_id: HabitId,
+) -> Result<(), AppError> {
+    connection.execute(
+        "UPDATE reminders SET habit_id = ?2 WHERE id = ?1",
+        params![id, habit_id],
+    )?;
+    Ok(())
 }
 
 pub fn due(connection: &Connection, now: DateTime<Utc>) -> Result<Vec<Reminder>, AppError> {

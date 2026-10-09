@@ -1,4 +1,5 @@
 pub mod coach;
+pub mod health;
 pub mod planner;
 pub mod rhythm;
 
@@ -42,7 +43,10 @@ pub trait Agent: Send + Sync {
 pub struct Agents(Vec<Box<dyn Agent>>);
 
 pub fn setup(app: &App) {
-    app.manage(Agents(vec![Box::new(rhythm::RhythmAgent)]));
+    app.manage(Agents(vec![
+        Box::new(rhythm::RhythmAgent),
+        Box::new(health::HealthAgent),
+    ]));
     app.manage(coach::Coach::default());
 }
 

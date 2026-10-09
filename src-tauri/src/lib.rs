@@ -72,6 +72,12 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::coach::get_nudge_budget,
             commands::coach::set_nudge_budget,
             commands::coach::list_recent_nudges,
+            commands::health::get_health_overview,
+            commands::health::set_health_enabled,
+            commands::health::log_habit,
+            commands::health::set_water_target,
+            commands::health::add_medicine,
+            commands::health::delete_medicine,
         ])
         .events(collect_events![
             overlay::OverlayCursor,
@@ -79,6 +85,7 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::events::TasksChanged,
             scheduler::ModeChanged,
             commands::goals::GoalsChanged,
+            commands::events::HealthChanged,
         ])
 }
 

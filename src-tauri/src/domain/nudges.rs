@@ -90,6 +90,10 @@ pub fn unanswered_before(
     repo::unanswered_before(connection, before)
 }
 
+pub fn last_fired(connection: &Connection, kind: &str) -> Result<Option<DateTime<Utc>>, AppError> {
+    repo::last_fired(connection, kind)
+}
+
 pub fn recent(connection: &Connection, limit: u32) -> Result<Vec<Nudge>, AppError> {
     repo::recent(connection, limit)
 }
