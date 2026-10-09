@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 
 use crate::domain::categories;
+use crate::domain::reminders::{self, ReminderInput};
 use crate::domain::tasks::{self, Task, TaskInput};
 use crate::error::AppError;
 
@@ -18,6 +19,7 @@ pub fn create<Tz: TimeZone>(
     connection: &Connection,
     text: &str,
     now: DateTime<Tz>,
+    timezone: chrono_tz::Tz,
 ) -> Result<QuickAddOutcome, AppError> {
     let parsed = parse(text, now.clone());
     let category_id = match &parsed.category {
@@ -40,6 +42,20 @@ pub fn create<Tz: TimeZone>(
         },
         now,
     )?;
+    if let (true, Some(at)) = (parsed.has_time, task.due_at) {
+        reminders::create(
+            connection,
+            ReminderInput {
+                task_id: Some(task.id),
+                title: None,
+                at,
+                rrule: None,
+                critical: false,
+            },
+            timezone,
+            now,
+        )?;
+    }
     if !parsed.top_three {
         return Ok(QuickAddOutcome { task, notice: None });
     }
@@ -60,6 +76,7 @@ pub struct QuickAdd {
     pub category: Option<String>,
     pub priority: u8,
     pub top_three: bool,
+    pub has_time: bool,
 }
 
 const DEFAULT_TIME: (u32, u32) = (9, 0);
@@ -127,6 +144,7 @@ pub fn parse<Tz: TimeZone>(text: &str, now: DateTime<Tz>) -> QuickAdd {
         kept.pop();
     }
     result.title = kept.join(" ");
+    result.has_time = found.time.is_some() || found.offset.is_some();
     result.due_at = resolve(&now, found);
     result
 }
@@ -315,11 +333,23 @@ mod tests {
     fn create_resolves_known_categories_and_keeps_unknown_tags() {
         let connection = crate::db::test_connection();
 
-        let known = create(&connection, "Review MR #work", now()).unwrap();
+        let known = create(
+            &connection,
+            "Review MR #work",
+            now(),
+            chrono_tz::Tz::Asia__Karachi,
+        )
+        .unwrap();
         assert_eq!(known.task.category_id, Some(1));
         assert_eq!(known.task.title, "Review MR");
 
-        let unknown = create(&connection, "Plan trip #travel", now()).unwrap();
+        let unknown = create(
+            &connection,
+            "Plan trip #travel",
+            now(),
+            chrono_tz::Tz::Asia__Karachi,
+        )
+        .unwrap();
         assert_eq!(unknown.task.category_id, None);
         assert_eq!(unknown.task.title, "Plan trip #travel");
     }
@@ -328,12 +358,40 @@ mod tests {
     fn create_reports_a_full_top_three_without_failing() {
         let connection = crate::db::test_connection();
         for index in 0..3 {
-            create(&connection, &format!("task {index} *"), now()).unwrap();
+            create(
+                &connection,
+                &format!("task {index} *"),
+                now(),
+                chrono_tz::Tz::Asia__Karachi,
+            )
+            .unwrap();
         }
 
-        let fourth = create(&connection, "one more *", now()).unwrap();
+        let fourth = create(
+            &connection,
+            "one more *",
+            now(),
+            chrono_tz::Tz::Asia__Karachi,
+        )
+        .unwrap();
         assert!(!fourth.task.is_top_three);
         assert!(fourth.notice.is_some());
+    }
+
+    #[test]
+    fn create_adds_a_reminder_only_for_explicit_times() {
+        let connection = crate::db::test_connection();
+        let zone = chrono_tz::Tz::Asia__Karachi;
+
+        let timed = create(&connection, "buy dahi at 7pm", now(), zone).unwrap();
+        let reminders = reminders::list_for_task(&connection, timed.task.id).unwrap();
+        assert_eq!(reminders.len(), 1);
+        assert_eq!(reminders[0].next_at, Some(local(10, 19, 0)));
+
+        let dated = create(&connection, "submit invoice tomorrow", now(), zone).unwrap();
+        assert!(reminders::list_for_task(&connection, dated.task.id)
+            .unwrap()
+            .is_empty());
     }
 
     #[test]

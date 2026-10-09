@@ -576,7 +576,7 @@ After the app skeleton exists (step 0.5), run `codegraph init -i` so later sessi
 - [x] 1.1 Orb character, states and bubbles (docking while typing and hiding during screen share or full-screen video moved to 1.13)
 - [x] 1.2 Tasks data model and Rust commands
 - [x] 1.3 Compact panel and quick add (level, XP and streak row arrive with 1.10, Health tab with 1.9, focus row with 1.5, mic button with voice)
-- [ ] 1.4 Scheduler, reminders, notification fallback
+- [x] 1.4 Scheduler, reminders, notification fallback
 - [ ] 1.5 Modes, work hours, prayer times
 - [ ] 1.6 Motivation profile and onboarding
 - [ ] 1.7 Goals, skills and the Planner

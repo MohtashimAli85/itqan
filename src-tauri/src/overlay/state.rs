@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use std::sync::Mutex;
 
 use serde::{Deserialize, Serialize};
@@ -56,10 +57,36 @@ pub struct OverlaySnapshot {
 #[derive(Debug, Clone, Serialize, Deserialize, Type, tauri_specta::Event)]
 pub struct OverlayChanged(pub OverlaySnapshot);
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BubbleOrigin {
+    Reminder { id: i32, critical: bool },
+}
+
+impl BubbleOrigin {
+    pub fn is_critical(self) -> bool {
+        match self {
+            Self::Reminder { critical, .. } => critical,
+        }
+    }
+}
+
+#[derive(Debug)]
+struct Queued {
+    bubble: Bubble,
+    origin: Option<BubbleOrigin>,
+}
+
 #[derive(Debug, Default)]
 struct Inner {
     snapshot: OverlaySnapshot,
     next_bubble_id: u32,
+    queue: VecDeque<Queued>,
+}
+
+impl Inner {
+    fn sync_bubble(&mut self) {
+        self.snapshot.bubble = self.queue.front().map(|queued| queued.bubble.clone());
+    }
 }
 
 #[derive(Debug, Default)]
@@ -91,6 +118,7 @@ impl OverlayStore {
         &self,
         text: String,
         actions: Vec<BubbleAction>,
+        origin: Option<BubbleOrigin>,
     ) -> Result<(u32, OverlaySnapshot), AppError> {
         if actions.len() > MAX_BUBBLE_ACTIONS {
             return Err(AppError::InvalidInput(format!(
@@ -100,17 +128,45 @@ impl OverlayStore {
         let mut inner = self.lock()?;
         inner.next_bubble_id = inner.next_bubble_id.wrapping_add(1);
         let id = inner.next_bubble_id;
-        inner.snapshot.bubble = Some(Bubble { id, text, actions });
+        inner.queue.push_back(Queued {
+            bubble: Bubble { id, text, actions },
+            origin,
+        });
+        inner.sync_bubble();
         Ok((id, inner.snapshot.clone()))
     }
 
-    pub fn dismiss_bubble(&self, id: u32) -> Result<Option<OverlaySnapshot>, AppError> {
+    pub fn dismiss_bubble(
+        &self,
+        id: u32,
+    ) -> Result<Option<(OverlaySnapshot, Option<BubbleOrigin>)>, AppError> {
         let mut inner = self.lock()?;
-        if inner.snapshot.bubble.as_ref().map(|bubble| bubble.id) != Some(id) {
+        let Some(position) = inner.queue.iter().position(|queued| queued.bubble.id == id) else {
             return Ok(None);
-        }
-        inner.snapshot.bubble = None;
-        Ok(Some(inner.snapshot.clone()))
+        };
+        let origin = inner
+            .queue
+            .remove(position)
+            .and_then(|queued| queued.origin);
+        inner.sync_bubble();
+        Ok(Some((inner.snapshot.clone(), origin)))
+    }
+
+    pub fn has_origin(&self, origin: BubbleOrigin) -> Result<bool, AppError> {
+        Ok(self
+            .lock()?
+            .queue
+            .iter()
+            .any(|queued| queued.origin == Some(origin)))
+    }
+
+    pub fn has_critical(&self) -> Result<bool, AppError> {
+        Ok(self
+            .lock()?
+            .queue
+            .iter()
+            .filter_map(|queued| queued.origin)
+            .any(BubbleOrigin::is_critical))
     }
 
     fn update(
@@ -143,18 +199,46 @@ mod tests {
         let store = OverlayStore::default();
         let actions = vec![action("a"), action("b"), action("c"), action("d")];
 
-        assert!(store.show_bubble("hi".into(), actions).is_err());
+        assert!(store.show_bubble("hi".into(), actions, None).is_err());
     }
 
     #[test]
-    fn dismiss_only_clears_the_current_bubble() {
+    fn bubbles_queue_and_show_one_at_a_time() {
         let store = OverlayStore::default();
-        let (first, _) = store.show_bubble("first".into(), vec![]).unwrap();
-        let (second, _) = store.show_bubble("second".into(), vec![]).unwrap();
+        let (first, _) = store.show_bubble("first".into(), vec![], None).unwrap();
+        let (second, snapshot) = store
+            .show_bubble(
+                "second".into(),
+                vec![],
+                Some(BubbleOrigin::Reminder {
+                    id: 7,
+                    critical: true,
+                }),
+            )
+            .unwrap();
+        assert_eq!(snapshot.bubble.map(|bubble| bubble.id), Some(first));
 
-        assert!(store.dismiss_bubble(first).unwrap().is_none());
-        assert!(store.dismiss_bubble(second).unwrap().is_some());
-        assert!(store.snapshot().unwrap().bubble.is_none());
+        let (snapshot, origin) = store.dismiss_bubble(first).unwrap().unwrap();
+        assert_eq!(origin, None);
+        assert_eq!(snapshot.bubble.map(|bubble| bubble.id), Some(second));
+        assert!(store
+            .has_origin(BubbleOrigin::Reminder {
+                id: 7,
+                critical: true
+            })
+            .unwrap());
+        assert!(store.has_critical().unwrap());
+
+        let (snapshot, origin) = store.dismiss_bubble(second).unwrap().unwrap();
+        assert_eq!(
+            origin,
+            Some(BubbleOrigin::Reminder {
+                id: 7,
+                critical: true
+            })
+        );
+        assert!(snapshot.bubble.is_none());
+        assert!(store.dismiss_bubble(second).unwrap().is_none());
     }
 
     #[test]

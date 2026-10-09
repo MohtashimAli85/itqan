@@ -10,7 +10,7 @@ use crate::platform;
 
 pub use hit_areas::{HitAreas, Rect};
 pub use state::{
-    BubbleAction, FollowMode, OrbState, OverlayChanged, OverlaySnapshot, OverlayStore,
+    BubbleAction, BubbleOrigin, FollowMode, OrbState, OverlayChanged, OverlaySnapshot, OverlayStore,
 };
 pub use tracker::OverlayCursor;
 
