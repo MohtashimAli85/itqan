@@ -31,3 +31,7 @@ lto = true
 opt-level = 3
 panic = "abort"
 strip = true
+
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"

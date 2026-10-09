@@ -1,0 +1,17 @@
+commit-msg:
+  commands:
+    commitlint:
+      run: pnpm exec commitlint --edit {1}
+
+pre-commit:
+  parallel: true
+  commands:
+    lint:
+      glob: "*.{ts,tsx,js}"
+      run: pnpm exec eslint {staged_files}
+    format:
+      glob: "*.{ts,tsx,js,json,css,md,html}"
+      run: pnpm exec prettier --check {staged_files}
+    rustfmt:
+      glob: "*.rs"
+      run: cargo fmt --manifest-path src-tauri/Cargo.toml --check
