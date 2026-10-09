@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { OrbPreview } from "./components/OrbPreview";
-import { useAppInfo } from "./hooks/useAppInfo";
+import { OrbPreview } from "../components/OrbPreview";
+import { useAppInfo } from "../hooks/useAppInfo";
 
 const swatches = [
   { name: "ink", className: "bg-ink" },
@@ -16,7 +16,7 @@ const swatches = [
   { name: "critical", className: "bg-critical" },
 ];
 
-export function App() {
+export function Preview() {
   const [dark, setDark] = useState(false);
   const appInfo = useAppInfo();
 

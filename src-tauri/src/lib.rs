@@ -52,6 +52,10 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::modes::get_prayer_settings,
             commands::modes::set_prayer_settings,
             commands::modes::get_prayer_day,
+            commands::profile::get_profile,
+            commands::profile::save_profile,
+            commands::profile::is_onboarded,
+            commands::profile::complete_onboarding,
         ])
         .events(collect_events![
             overlay::OverlayCursor,
@@ -92,6 +96,7 @@ pub fn run() {
             tracing::info!("database ready");
             tray::setup(app)?;
             overlay::setup(app)?;
+            overlay::restore_follow_mode(app.handle())?;
             scheduler::start(app.handle());
             Ok(())
         })

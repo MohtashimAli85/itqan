@@ -6,6 +6,7 @@ mod tracker;
 use tauri::{App, AppHandle, Manager, WebviewWindow};
 use tauri_specta::Event;
 
+use crate::db::{settings as settings_repo, Database};
 use crate::error::AppError;
 use crate::platform;
 
@@ -17,6 +18,7 @@ pub use state::{
 pub use tracker::OverlayCursor;
 
 pub const OVERLAY_LABEL: &str = "overlay";
+const FOLLOW_MODE: &str = "follow_mode";
 
 pub fn setup(app: &App) -> Result<(), AppError> {
     let window = overlay_window(app.handle())?;
@@ -27,6 +29,28 @@ pub fn setup(app: &App) -> Result<(), AppError> {
     app.manage(Activity::default());
     tracker::spawn(app.handle().clone(), window)?;
     Ok(())
+}
+
+pub fn restore_follow_mode(app: &AppHandle) -> Result<(), AppError> {
+    let stored = app
+        .state::<Database>()
+        .with(|connection| settings_repo::get(connection, FOLLOW_MODE))?;
+    let Some(mode) =
+        stored.and_then(|value| serde_json::from_value(serde_json::Value::String(value)).ok())
+    else {
+        return Ok(());
+    };
+    publish(app, app.state::<OverlayStore>().set_follow_mode(mode)?)
+}
+
+pub fn save_follow_mode(app: &AppHandle, mode: FollowMode) -> Result<(), AppError> {
+    let value = serde_json::to_value(mode)?
+        .as_str()
+        .map(str::to_owned)
+        .unwrap_or_default();
+    app.state::<Database>()
+        .with(|connection| settings_repo::set(connection, FOLLOW_MODE, &value))?;
+    publish(app, app.state::<OverlayStore>().set_follow_mode(mode)?)
 }
 
 pub fn publish(app: &AppHandle, snapshot: OverlaySnapshot) -> Result<(), AppError> {

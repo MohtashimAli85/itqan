@@ -37,6 +37,10 @@ export const commands = {
 	getPrayerSettings: () => typedError<PrayerSettings, CommandError>(__TAURI_INVOKE("get_prayer_settings")),
 	setPrayerSettings: (settings: PrayerSettings) => typedError<PrayerSettings, CommandError>(__TAURI_INVOKE("set_prayer_settings", { settings })),
 	getPrayerDay: () => typedError<PrayerWindow[], CommandError>(__TAURI_INVOKE("get_prayer_day")),
+	getProfile: () => typedError<Profile, CommandError>(__TAURI_INVOKE("get_profile")),
+	saveProfile: (profile: Profile) => typedError<Profile, CommandError>(__TAURI_INVOKE("save_profile", { profile })),
+	isOnboarded: () => typedError<boolean, CommandError>(__TAURI_INVOKE("is_onboarded")),
+	completeOnboarding: () => typedError<null, CommandError>(__TAURI_INVOKE("complete_onboarding")),
 };
 
 /** Events */
@@ -79,6 +83,8 @@ export type CategoryInput = {
 	icon: string,
 };
 
+export type CoachStyle = "mentor" | "manager" | "trainer";
+
 export type CommandError = {
 	message: string,
 };
@@ -120,6 +126,13 @@ export type ModeStatus = {
 	activePrayer: PrayerWindow | null,
 };
 
+export type Motivator = "learning" | "building" | "health" | "money" | "recognition" | "family" | "freedom" | "status";
+
+export type MotivatorWeight = {
+	motivator: Motivator,
+	weight: number,
+};
+
 export type OrbState = "idle" | "happy" | "alert" | "focus" | "resting" | "critical" | "listening" | "evening";
 
 export type OverlayChanged = OverlaySnapshot;
@@ -158,6 +171,18 @@ export type PrayerWindow = {
 	at: string,
 	pauseFrom: string,
 	pauseUntil: string,
+};
+
+export type Profile = {
+	name: string | null,
+	motivators: MotivatorWeight[],
+	situation: string | null,
+	freeHoursPerWeek: number | null,
+	age: number | null,
+	coachStyle: CoachStyle,
+	familyStartMinute: number | null,
+	familyEndMinute: number | null,
+	updatedAt: string | null,
 };
 
 export type QuickAddOutcome = {
