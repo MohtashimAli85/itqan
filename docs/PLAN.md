@@ -583,7 +583,7 @@ After the app skeleton exists (step 0.5), run `codegraph init -i` so later sessi
 - [x] 1.8 Coach, nudge budget, outcome logging, standup and check-in
 - [x] 1.9 Health agent (rules)
 - [x] 1.10 Rewards: XP, levels, streaks, sound, confetti
-- [ ] 1.11 AI provider settings, keychain, routing
+- [x] 1.11 AI provider settings, keychain, routing
 - [ ] 1.12 Tray, main window screens, settings, autostart, hotkey
 - [ ] 1.13 Performance and polish
 

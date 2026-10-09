@@ -1,11 +1,18 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Plus } from "lucide-react";
 import { Input } from "@/shared/components/ui/input";
+import { useMutation } from "@tanstack/react-query";
+import { commands } from "@/shared/bindings/bindings";
 import { useQuickAdd } from "@/shared/hooks/useTasks";
+import { unwrap } from "@/shared/lib/result";
 
 export function QuickAdd() {
   const [text, setText] = useState("");
   const quickAdd = useQuickAdd();
+  const ask = useMutation({
+    mutationFn: async (question: string) =>
+      unwrap(await commands.askItqan(question)),
+  });
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -19,10 +26,20 @@ export function QuickAdd() {
     event.preventDefault();
     const value = text.trim();
     if (!value) return;
+    if (value.endsWith("?")) {
+      ask.mutate(value, { onSuccess: () => setText("") });
+      return;
+    }
     quickAdd.mutate(value, { onSuccess: () => setText("") });
   }
 
-  const notice = quickAdd.error?.message ?? quickAdd.data?.notice ?? null;
+  const notice = ask.isPending
+    ? "Thinking"
+    : (ask.error?.message ??
+      ask.data ??
+      quickAdd.error?.message ??
+      quickAdd.data?.notice ??
+      null);
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-1.5">
@@ -33,8 +50,8 @@ export function QuickAdd() {
         />
         <Input
           ref={input}
-          aria-label="Add a task"
-          placeholder="Add a task, like buy dahi at 7pm"
+          aria-label="Add a task or ask a question"
+          placeholder="Add a task or ask anything"
           value={text}
           onChange={(event) => setText(event.target.value)}
           className="pl-8"

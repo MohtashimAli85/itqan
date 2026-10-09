@@ -34,6 +34,9 @@ chrono-tz = "0.10"
 iana-time-zone = "0.1"
 tokio = { version = "1", features = ["time", "sync", "macros"] }
 tauri-plugin-notification = "2"
+keyring = "4"
+reqwest = { version = "0.13", features = ["json", "stream"] }
+regex = "1"
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration

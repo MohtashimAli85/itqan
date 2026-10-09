@@ -12,6 +12,7 @@ import {
   onboardingSchema,
   type OnboardingValues,
 } from "./schema";
+import { AiStep } from "./steps/AiStep";
 import { MotivationStep } from "./steps/MotivationStep";
 import { NotificationsStep } from "./steps/NotificationsStep";
 import { OrbStep } from "./steps/OrbStep";
@@ -37,6 +38,7 @@ const steps = [
     ],
   },
   { Component: OrbStep, fields: ["followMode"] },
+  { Component: AiStep, fields: [] },
   { Component: NotificationsStep, fields: [] },
 ] as const satisfies {
   Component: () => React.ReactNode;

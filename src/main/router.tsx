@@ -10,6 +10,7 @@ import { Onboarding } from "./onboarding/Onboarding";
 import { ensureOnboarded } from "./onboardingStatus";
 import { Goals } from "./screens/Goals";
 import { Preview } from "./screens/Preview";
+import { Settings } from "./screens/Settings";
 
 type RouterContext = { queryClient: QueryClient };
 
@@ -40,6 +41,12 @@ const goalsRoute = createRoute({
   component: Goals,
 });
 
+const settingsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/settings",
+  component: Settings,
+});
+
 const onboardingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/onboarding",
@@ -47,7 +54,7 @@ const onboardingRoute = createRoute({
 });
 
 const routeTree = rootRoute.addChildren([
-  appRoute.addChildren([homeRoute, goalsRoute]),
+  appRoute.addChildren([homeRoute, goalsRoute, settingsRoute]),
   onboardingRoute,
 ]);
 

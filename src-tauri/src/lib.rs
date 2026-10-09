@@ -81,6 +81,13 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::rewards::get_progress,
             commands::rewards::get_reward_sound,
             commands::rewards::set_reward_sound,
+            commands::ai::get_ai_status,
+            commands::ai::get_ai_preset_defaults,
+            commands::ai::save_ai_settings,
+            commands::ai::set_ai_key,
+            commands::ai::delete_ai_key,
+            commands::ai::test_ai_connection,
+            commands::ai::ask_itqan,
         ])
         .events(collect_events![
             overlay::OverlayCursor,

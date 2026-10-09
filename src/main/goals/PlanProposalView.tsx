@@ -44,7 +44,14 @@ export function PlanProposalView({
 
   return (
     <div className="bg-muted flex flex-col gap-3 rounded-xl p-4">
-      <p className="text-sm font-medium">Suggested plan</p>
+      <p className="text-sm font-medium">
+        {proposal.source === "ai" ? "Suggested plan (AI)" : "Suggested plan"}
+      </p>
+      {proposal.notice && (
+        <p role="status" className="text-caption text-xs">
+          {proposal.notice}
+        </p>
+      )}
       <ol className="flex flex-col gap-1.5">
         {proposal.milestones.map((milestone) => (
           <li

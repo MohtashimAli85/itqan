@@ -66,6 +66,13 @@ export const commands = {
 	getProgress: () => typedError<ProgressSummary, CommandError>(__TAURI_INVOKE("get_progress")),
 	getRewardSound: () => typedError<boolean, CommandError>(__TAURI_INVOKE("get_reward_sound")),
 	setRewardSound: (enabled: boolean) => typedError<null, CommandError>(__TAURI_INVOKE("set_reward_sound", { enabled })),
+	getAiStatus: () => typedError<AiStatus, CommandError>(__TAURI_INVOKE("get_ai_status")),
+	getAiPresetDefaults: (preset: Preset) => __TAURI_INVOKE<AiSettings>("get_ai_preset_defaults", { preset }),
+	saveAiSettings: (settings: AiSettings) => typedError<AiStatus, CommandError>(__TAURI_INVOKE("save_ai_settings", { settings })),
+	setAiKey: (key: string) => typedError<AiStatus, CommandError>(__TAURI_INVOKE("set_ai_key", { key })),
+	deleteAiKey: () => typedError<AiStatus, CommandError>(__TAURI_INVOKE("delete_ai_key")),
+	testAiConnection: () => typedError<null, CommandError>(__TAURI_INVOKE("test_ai_connection")),
+	askItqan: (question: string) => typedError<string, CommandError>(__TAURI_INVOKE("ask_itqan", { question })),
 };
 
 /** Events */
@@ -81,6 +88,21 @@ export const events = {
 
 /* Types */
 export type AgentKind = "coach" | "planner" | "health" | "focusGuardian" | "learning" | "reviewer" | "memory";
+
+export type AiSettings = {
+	enabled: boolean,
+	preset: Preset,
+	baseUrl: string,
+	fastModel: string,
+	smartModel: string,
+	localFallback: boolean,
+};
+
+export type AiStatus = {
+	settings: AiSettings,
+	hasKey: boolean,
+	needsKey: boolean,
+};
 
 export type AppInfo = {
 	name: string,
@@ -289,6 +311,7 @@ export type PlanProposal = {
 	sessionMinutes: number,
 	firstTask: string,
 	source: PlanSource,
+	notice: string | null,
 };
 
 export type PlanSource = "rules" | "ai";
@@ -314,6 +337,8 @@ export type PrayerWindow = {
 	pauseFrom: string,
 	pauseUntil: string,
 };
+
+export type Preset = "groq" | "ollama" | "llamaCpp" | "openAi" | "openRouter" | "custom";
 
 export type Priority = "learningTip" | "rhythm" | "health" | "drift" | "critical";
 
