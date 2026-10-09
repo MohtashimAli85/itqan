@@ -74,6 +74,7 @@ cargo-test:
   stage: rust
   script:
     - cargo test --manifest-path src-tauri/Cargo.toml
+    - git diff --exit-code src/shared/bindings
 
 cargo-build:
   extends: .rust

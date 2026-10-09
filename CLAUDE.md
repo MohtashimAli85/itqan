@@ -13,6 +13,7 @@ Source of truth: docs/PLAN.md. Read it before starting any task.
 - pnpm dev / pnpm build
 - pnpm lint / pnpm typecheck / pnpm test
 - cargo fmt --check / cargo clippy -- -D warnings / cargo test (in src-tauri)
+- cargo test also regenerates src/shared/bindings/bindings.ts; commit it with Rust command changes
 
 ## Rules
 - No comments unless truly needed.

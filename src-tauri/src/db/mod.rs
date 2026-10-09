@@ -1,4 +1,6 @@
+pub mod categories;
 pub mod migrations;
+pub mod tasks;
 
 use std::path::Path;
 use std::sync::Mutex;
@@ -25,4 +27,14 @@ impl Database {
         let connection = self.0.lock().map_err(|_| AppError::LockPoisoned)?;
         f(&connection)
     }
+}
+
+#[cfg(test)]
+pub fn test_connection() -> Connection {
+    let mut connection = Connection::open_in_memory().unwrap();
+    connection
+        .pragma_update(None, "foreign_keys", "ON")
+        .unwrap();
+    migrations::run(&mut connection).unwrap();
+    connection
 }

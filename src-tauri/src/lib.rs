@@ -17,10 +17,8 @@ use crate::db::Database;
 
 const BINDINGS_PATH: &str = "../src/shared/bindings/bindings.ts";
 
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
-#[allow(clippy::expect_used)]
-pub fn run() {
-    let builder = Builder::<tauri::Wry>::new()
+fn specta_builder() -> Builder<tauri::Wry> {
+    Builder::<tauri::Wry>::new()
         .commands(collect_commands![
             commands::app_info::get_app_info,
             commands::overlay::set_overlay_hit_areas,
@@ -30,16 +28,35 @@ pub fn run() {
             commands::overlay::set_orb_progress,
             commands::overlay::show_bubble,
             commands::overlay::resolve_bubble,
+            commands::tasks::list_tasks,
+            commands::tasks::create_task,
+            commands::tasks::update_task,
+            commands::tasks::set_task_status,
+            commands::tasks::set_task_top_three,
+            commands::tasks::delete_task,
+            commands::tasks::list_categories,
+            commands::tasks::create_category,
         ])
         .events(collect_events![
             overlay::OverlayCursor,
-            overlay::OverlayChanged
-        ]);
+            overlay::OverlayChanged,
+            commands::events::TasksChanged,
+        ])
+}
 
-    #[cfg(debug_assertions)]
+fn export_bindings(builder: &Builder<tauri::Wry>) -> Result<(), String> {
     builder
         .export(specta_typescript::Typescript::default(), BINDINGS_PATH)
-        .expect("failed to export typescript bindings");
+        .map_err(|error| error.to_string())
+}
+
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
+#[allow(clippy::expect_used)]
+pub fn run() {
+    let builder = specta_builder();
+
+    #[cfg(debug_assertions)]
+    export_bindings(&builder).expect("failed to export typescript bindings");
 
     tauri::Builder::default()
         .plugin(tauri_plugin_log::Builder::new().build())
@@ -61,4 +78,12 @@ pub fn run() {
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn typescript_bindings_export() {
+        super::export_bindings(&super::specta_builder()).unwrap();
+    }
 }

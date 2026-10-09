@@ -11,6 +11,8 @@ pub enum AppError {
     Tauri(#[from] tauri::Error),
     #[error("state lock poisoned")]
     LockPoisoned,
+    #[error("{0} not found")]
+    NotFound(String),
     #[error("invalid input: {0}")]
     InvalidInput(String),
     #[error("window not found: {0}")]

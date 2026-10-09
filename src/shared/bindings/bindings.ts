@@ -13,12 +13,21 @@ export const commands = {
 	setOrbProgress: (progress: number | null) => typedError<null, CommandError>(__TAURI_INVOKE("set_orb_progress", { progress })),
 	showBubble: (text: string, actions: BubbleAction[]) => typedError<number, CommandError>(__TAURI_INVOKE("show_bubble", { text, actions })),
 	resolveBubble: (id: number, actionId: string | null) => typedError<null, CommandError>(__TAURI_INVOKE("resolve_bubble", { id, actionId })),
+	listTasks: (filter: TaskFilter) => typedError<Task[], CommandError>(__TAURI_INVOKE("list_tasks", { filter })),
+	createTask: (input: TaskInput) => typedError<Task, CommandError>(__TAURI_INVOKE("create_task", { input })),
+	updateTask: (id: number, input: TaskInput) => typedError<Task, CommandError>(__TAURI_INVOKE("update_task", { id, input })),
+	setTaskStatus: (id: number, status: TaskStatus) => typedError<Task, CommandError>(__TAURI_INVOKE("set_task_status", { id, status })),
+	setTaskTopThree: (id: number, on: boolean) => typedError<Task, CommandError>(__TAURI_INVOKE("set_task_top_three", { id, on })),
+	deleteTask: (id: number) => typedError<null, CommandError>(__TAURI_INVOKE("delete_task", { id })),
+	listCategories: () => typedError<Category[], CommandError>(__TAURI_INVOKE("list_categories")),
+	createCategory: (input: CategoryInput) => typedError<Category, CommandError>(__TAURI_INVOKE("create_category", { input })),
 };
 
 /** Events */
 export const events = {
 	overlayChanged: makeEvent<OverlayChanged>("overlay-changed"),
 	overlayCursor: makeEvent<OverlayCursor>("overlay-cursor"),
+	tasksChanged: makeEvent<TasksChanged>("tasks-changed"),
 };
 
 /* Types */
@@ -37,6 +46,20 @@ export type Bubble = {
 export type BubbleAction = {
 	id: string,
 	label: string,
+};
+
+export type Category = {
+	id: number,
+	name: string,
+	colour: string,
+	icon: string,
+	builtin: boolean,
+};
+
+export type CategoryInput = {
+	name: string,
+	colour: string,
+	icon: string,
 };
 
 export type CommandError = {
@@ -67,6 +90,44 @@ export type Rect = {
 	width: number | null,
 	height: number | null,
 };
+
+export type Task = {
+	id: number,
+	title: string,
+	notes: string | null,
+	categoryId: number | null,
+	kind: TaskKind,
+	priority: number,
+	dueAt: string | null,
+	isTopThree: boolean,
+	status: TaskStatus,
+	completedAt: string | null,
+	parentId: number | null,
+	createdAt: string,
+	updatedAt: string,
+};
+
+export type TaskFilter = {
+	status: TaskStatus | null,
+	categoryId: number | null,
+	dueBefore: string | null,
+};
+
+export type TaskInput = {
+	title: string,
+	notes: string | null,
+	categoryId: number | null,
+	kind: TaskKind,
+	priority: number,
+	dueAt: string | null,
+	parentId: number | null,
+};
+
+export type TaskKind = "output" | "learning" | "deepWork" | "habit";
+
+export type TaskStatus = "open" | "done";
+
+export type TasksChanged = null;
 
 /* Tauri Specta runtime */
 async function typedError<T, E>(result: Promise<T>): Promise<{ status: "ok"; data: T } | { status: "error"; error: E }> {

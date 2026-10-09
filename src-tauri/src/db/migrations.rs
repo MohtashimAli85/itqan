@@ -2,7 +2,10 @@ use rusqlite::Connection;
 
 use crate::error::AppError;
 
-const MIGRATIONS: &[&str] = &[include_str!("../../migrations/0001_settings.sql")];
+const MIGRATIONS: &[&str] = &[
+    include_str!("../../migrations/0001_settings.sql"),
+    include_str!("../../migrations/0002_tasks.sql"),
+];
 
 pub fn schema_version(connection: &Connection) -> Result<u32, AppError> {
     Ok(connection.query_row("PRAGMA user_version", [], |row| row.get(0))?)
