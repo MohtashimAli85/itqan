@@ -1,0 +1,12 @@
+node_modules
+dist
+target
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+.vscode/*
+!.vscode/extensions.json
+.idea
+src-tauri/gen
