@@ -19,7 +19,8 @@ pub enum AppError {
     InvalidInput(String),
     #[error("window not found: {0}")]
     WindowMissing(&'static str),
-    #[cfg_attr(not(target_os = "macos"), allow(dead_code))]
+    #[error(transparent)]
+    Ai(#[from] crate::ai::client::AiError),
     #[error("platform error: {0}")]
     Platform(String),
 }

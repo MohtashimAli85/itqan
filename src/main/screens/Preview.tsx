@@ -33,6 +33,9 @@ export function Preview() {
         <Link to="/goals" className="text-text-secondary text-sm underline">
           Goals
         </Link>
+        <Link to="/settings" className="text-text-secondary text-sm underline">
+          Settings
+        </Link>
         <Button
           variant="outline"
           size="icon"

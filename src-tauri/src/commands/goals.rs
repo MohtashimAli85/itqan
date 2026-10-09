@@ -1,11 +1,12 @@
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use specta::Type;
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Manager, State};
 use tauri_specta::Event;
 
 use crate::agents::planner::{self, PlanProposal, PlanRequest};
 use crate::agents::{self, AppEvent};
+use crate::ai;
 use crate::db::Database;
 use crate::domain::goals::{
     self, Goal, GoalId, GoalInput, GoalStatus, Milestone, MilestoneId, MilestoneInput,
@@ -129,20 +130,28 @@ pub fn delete_milestone(
 
 #[tauri::command]
 #[specta::specta]
-pub fn propose_plan(
-    database: State<Database>,
-    goal_id: GoalId,
-) -> Result<PlanProposal, CommandError> {
-    Ok(database.with(|connection| {
+pub async fn propose_plan(app: AppHandle, goal_id: GoalId) -> Result<PlanProposal, CommandError> {
+    let request = app.state::<Database>().with(|connection| {
         let goal = goals::get(connection, goal_id)?;
         let timezone = settings::timezone(connection)?;
-        Ok(planner::rule_plan(&PlanRequest {
+        Ok(PlanRequest {
             goal_title: goal.title,
             target_date: goal.target_date,
             today: Utc::now().with_timezone(&timezone).date_naive(),
             free_hours_per_week: profile::get(connection)?.free_hours_per_week,
-        }))
-    })?)
+        })
+    })?;
+    let rules = planner::rule_plan(&request);
+    if !ai::settings(&app)?.enabled {
+        return Ok(rules);
+    }
+    Ok(match planner::ai_plan(&app, &request, &rules).await {
+        Ok(plan) => plan,
+        Err(error) => PlanProposal {
+            notice: Some(format!("{error}. Here is a simple plan instead.")),
+            ..rules
+        },
+    })
 }
 
 #[tauri::command]
