@@ -34,17 +34,17 @@
   stroke: var(--orb-color);
 }
 
-.orb-anchor .bubble {
+.orb-anchor .orb-popover {
   left: calc(var(--orb-size) + 12px);
   top: -6px;
 }
 
-.orb-anchor[data-flip-x="true"] .bubble {
+.orb-anchor[data-flip-x="true"] .orb-popover {
   left: auto;
   right: calc(var(--orb-size) + 12px);
 }
 
-.orb-anchor[data-flip-y="true"] .bubble {
+.orb-anchor[data-flip-y="true"] .orb-popover {
   top: auto;
   bottom: -6px;
 }

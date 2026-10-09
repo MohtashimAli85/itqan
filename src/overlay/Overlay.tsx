@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -6,7 +7,9 @@ import {
   type CSSProperties,
 } from "react";
 import { commands, events } from "@/shared/bindings/bindings";
+import { useTasksSync } from "@/shared/hooks/useTasks";
 import { Bubble } from "./components/Bubble";
+import { CompactPanel } from "./components/CompactPanel";
 import { Orb } from "./components/Orb";
 import {
   createFollower,
@@ -18,11 +21,13 @@ import { reportHitAreas } from "./hitAreas";
 import { useOverlaySnapshot } from "./hooks/useOverlaySnapshot";
 import "./overlay.css";
 
-const BUBBLE_SPACE = 300;
+const POPOVER_WIDTH = 340;
+const POPOVER_HEIGHT = 440;
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 export function Overlay() {
   const { data: snapshot } = useOverlaySnapshot();
+  useTasksSync();
   const anchor = useRef<HTMLDivElement>(null);
   const body = useRef<HTMLDivElement>(null);
   const pupils = useRef<(HTMLSpanElement | null)[]>([]);
@@ -34,10 +39,10 @@ export function Overlay() {
       if (element) {
         element.style.transform = `translate3d(${position.x}px, ${position.y}px, 0)`;
         element.dataset.flipX = String(
-          position.x > window.innerWidth - BUBBLE_SPACE,
+          position.x > window.innerWidth - POPOVER_WIDTH,
         );
         element.dataset.flipY = String(
-          position.y > window.innerHeight - BUBBLE_SPACE / 2,
+          position.y > window.innerHeight - POPOVER_HEIGHT,
         );
       }
       if (body.current) body.current.style.rotate = `${tilt}deg`;
@@ -71,16 +76,29 @@ export function Overlay() {
   }, []);
 
   const mode = snapshot?.followMode ?? "follow";
-  const bubble = snapshot?.bubble ?? null;
+  const panelOpen = snapshot?.panelOpen ?? false;
+  const bubble = panelOpen ? null : (snapshot?.bubble ?? null);
+
+  const reportSettled = useCallback(() => {
+    if (follower && !follower.isMoving()) reportHitAreas(anchor.current);
+  }, [follower]);
+
+  const closePanel = useCallback(() => void commands.setPanelOpen(false), []);
+
+  useEffect(() => {
+    if (!panelOpen) return;
+    window.addEventListener("blur", closePanel);
+    return () => window.removeEventListener("blur", closePanel);
+  }, [panelOpen, closePanel]);
 
   useEffect(() => {
     follower?.setMode(mode);
   }, [follower, mode]);
 
   useLayoutEffect(() => {
-    follower?.setPinned(bubble !== null);
-    if (follower && !follower.isMoving()) reportHitAreas(anchor.current);
-  }, [follower, bubble]);
+    follower?.setPinned(bubble !== null || panelOpen);
+    reportSettled();
+  }, [follower, bubble, panelOpen, reportSettled]);
 
   if (!snapshot || mode === "hidden") return null;
 
@@ -99,8 +117,11 @@ export function Overlay() {
         progress={snapshot.progress}
         bodyRef={body}
         pupilRef={pupilRef}
-        onClick={() => void commands.setOrbState("happy")}
+        onClick={() => void commands.setPanelOpen(!panelOpen)}
       />
+      {panelOpen && (
+        <CompactPanel onClose={closePanel} onResize={reportSettled} />
+      )}
       {bubble && (
         <Bubble
           bubble={bubble}

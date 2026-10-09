@@ -81,3 +81,19 @@ pub fn resolve_bubble(
     }
     Ok(())
 }
+
+#[tauri::command]
+#[specta::specta]
+pub fn set_panel_open(
+    app: AppHandle,
+    store: State<OverlayStore>,
+    open: bool,
+) -> Result<(), CommandError> {
+    let snapshot = store.set_panel_open(open)?;
+    let has_bubble = snapshot.bubble.is_some();
+    overlay::publish(&app, snapshot)?;
+    if open || !has_bubble {
+        overlay::set_keyboard_focus(&app, open)?;
+    }
+    Ok(())
+}
