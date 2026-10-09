@@ -24,8 +24,6 @@
         "label": "overlay",
         "title": "Itqan Overlay",
         "url": "overlay.html",
-        "width": 320,
-        "height": 320,
         "transparent": true,
         "decorations": false,
         "alwaysOnTop": true,
@@ -34,7 +32,8 @@
         "resizable": false,
         "shadow": false,
         "focus": false,
-        "visible": false
+        "visible": false,
+        "acceptFirstMouse": true
       }
     ],
     "security": {
