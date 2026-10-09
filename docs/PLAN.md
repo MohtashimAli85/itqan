@@ -579,7 +579,7 @@ After the app skeleton exists (step 0.5), run `codegraph init -i` so later sessi
 - [x] 1.4 Scheduler, reminders, notification fallback
 - [x] 1.5 Modes, work hours, prayer times (includes focus sessions; prayer times ported from adhan, see docs/decisions/0002-prayer-times.md)
 - [x] 1.6 Motivation profile and onboarding (AI key step joins in 1.11)
-- [ ] 1.7 Goals, skills and the Planner
+- [x] 1.7 Goals, skills and the Planner (rule-based planner; AI planning plugs in with 1.11)
 - [ ] 1.8 Coach, nudge budget, outcome logging, standup and check-in
 - [ ] 1.9 Health agent (rules)
 - [ ] 1.10 Rewards: XP, levels, streaks, sound, confetti

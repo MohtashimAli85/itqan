@@ -1,6 +1,6 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { renderWithProviders } from "@/shared/test/render";
 import { Preview } from "./Preview";
 
 vi.mock("@/shared/bindings/bindings", () => ({
@@ -15,26 +15,18 @@ vi.mock("@/shared/bindings/bindings", () => ({
 
 describe("Preview", () => {
   it("shows the app info returned by the Rust core", async () => {
-    render(
-      <QueryClientProvider client={new QueryClient()}>
-        <Preview />
-      </QueryClientProvider>,
-    );
+    renderWithProviders(<Preview />);
 
     expect(
       await screen.findByText("Itqan v0.1.0, schema 1"),
     ).toBeInTheDocument();
   });
 
-  it("has an accessible theme toggle", () => {
-    render(
-      <QueryClientProvider client={new QueryClient()}>
-        <Preview />
-      </QueryClientProvider>,
-    );
+  it("has an accessible theme toggle", async () => {
+    renderWithProviders(<Preview />);
 
     expect(
-      screen.getByRole("button", { name: "Toggle theme" }),
+      await screen.findByRole("button", { name: "Toggle theme" }),
     ).toBeInTheDocument();
   });
 });

@@ -6,7 +6,7 @@ use crate::domain::tasks::{Task, TaskFilter, TaskId, TaskInput, TaskKind, TaskSt
 use crate::error::AppError;
 
 const COLUMNS: &str = "id, title, notes, category_id, kind, priority, due_at, is_top_three, \
-                       status, completed_at, parent_id, created_at, updated_at";
+                       status, completed_at, parent_id, created_at, updated_at, goal_id, skill_id";
 
 fn invalid(column: usize, value: &str) -> rusqlite::Error {
     rusqlite::Error::FromSqlConversionFailure(
@@ -33,6 +33,8 @@ fn from_row(row: &Row) -> rusqlite::Result<Task> {
         parent_id: row.get(10)?,
         created_at: row.get(11)?,
         updated_at: row.get(12)?,
+        goal_id: row.get(13)?,
+        skill_id: row.get(14)?,
     })
 }
 
@@ -69,8 +71,8 @@ pub fn insert(
 ) -> Result<TaskId, AppError> {
     connection.execute(
         "INSERT INTO tasks (title, notes, category_id, kind, priority, due_at, parent_id,
-                            created_at, updated_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?8)",
+                            goal_id, skill_id, created_at, updated_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?10)",
         params![
             input.title,
             input.notes,
@@ -79,6 +81,8 @@ pub fn insert(
             input.priority,
             input.due_at,
             input.parent_id,
+            input.goal_id,
+            input.skill_id,
             now,
         ],
     )?;
@@ -94,7 +98,8 @@ pub fn update(
 ) -> Result<(), AppError> {
     connection.execute(
         "UPDATE tasks SET title = ?2, notes = ?3, category_id = ?4, kind = ?5, priority = ?6,
-                          due_at = ?7, parent_id = ?8, updated_at = ?9
+                          due_at = ?7, parent_id = ?8, goal_id = ?9, skill_id = ?10,
+                          updated_at = ?11
          WHERE id = ?1",
         params![
             id,
@@ -105,6 +110,8 @@ pub fn update(
             input.priority,
             input.due_at,
             input.parent_id,
+            input.goal_id,
+            input.skill_id,
             now,
         ],
     )?;

@@ -5,6 +5,8 @@ use specta::Type;
 
 use crate::db::tasks as repo;
 use crate::domain::categories::CategoryId;
+use crate::domain::goals::GoalId;
+use crate::domain::skills::SkillId;
 use crate::error::AppError;
 
 pub type TaskId = i32;
@@ -82,6 +84,8 @@ pub struct Task {
     pub status: TaskStatus,
     pub completed_at: Option<DateTime<Utc>>,
     pub parent_id: Option<TaskId>,
+    pub goal_id: Option<GoalId>,
+    pub skill_id: Option<SkillId>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -96,6 +100,8 @@ pub struct TaskInput {
     pub priority: u8,
     pub due_at: Option<DateTime<Utc>>,
     pub parent_id: Option<TaskId>,
+    pub goal_id: Option<GoalId>,
+    pub skill_id: Option<SkillId>,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, Type)]
@@ -255,6 +261,8 @@ mod tests {
                 priority: 2,
                 due_at: Some(due),
                 parent_id: None,
+                goal_id: None,
+                skill_id: None,
             },
             now(),
         )

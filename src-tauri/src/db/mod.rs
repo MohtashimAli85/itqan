@@ -1,10 +1,13 @@
 pub mod categories;
+pub mod enums;
 pub mod focus;
+pub mod goals;
 pub mod migrations;
 pub mod prayer;
 pub mod profile;
 pub mod reminders;
 pub mod settings;
+pub mod skills;
 pub mod tasks;
 pub mod work_hours;
 

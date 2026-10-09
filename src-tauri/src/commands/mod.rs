@@ -1,5 +1,6 @@
 pub mod app_info;
 pub mod events;
+pub mod goals;
 pub mod modes;
 pub mod overlay;
 pub mod profile;

@@ -1,22 +1,10 @@
-use rusqlite::{params, Connection, Row};
+use rusqlite::{params, Connection};
+
+use super::enums::{column, to_text};
 
 use crate::error::AppError;
 use crate::prayer::method::{HighLatitudeRule, Madhab, Method};
 use crate::prayer::settings::PrayerSettings;
-
-fn text<T: serde::Serialize>(value: &T) -> Result<String, AppError> {
-    serde_json::to_value(value)?
-        .as_str()
-        .map(str::to_owned)
-        .ok_or_else(|| AppError::InvalidInput("expected a text value".into()))
-}
-
-fn parse<T: serde::de::DeserializeOwned>(row: &Row, index: usize) -> rusqlite::Result<T> {
-    let value: String = row.get(index)?;
-    serde_json::from_value(serde_json::Value::String(value)).map_err(|error| {
-        rusqlite::Error::FromSqlConversionFailure(index, rusqlite::types::Type::Text, error.into())
-    })
-}
 
 pub fn get(connection: &Connection) -> Result<PrayerSettings, AppError> {
     Ok(connection.query_row(
@@ -30,9 +18,9 @@ pub fn get(connection: &Connection) -> Result<PrayerSettings, AppError> {
                 city: row.get(1)?,
                 latitude: row.get(2)?,
                 longitude: row.get(3)?,
-                method: parse::<Method>(row, 4)?,
-                madhab: parse::<Madhab>(row, 5)?,
-                high_latitude_rule: parse::<HighLatitudeRule>(row, 6)?,
+                method: column::<Method>(row, 4)?,
+                madhab: column::<Madhab>(row, 5)?,
+                high_latitude_rule: column::<HighLatitudeRule>(row, 6)?,
                 pause_before_minutes: row.get(7)?,
                 pause_after_minutes: row.get(8)?,
                 jumuah_break: row.get(9)?,
@@ -52,9 +40,9 @@ pub fn save(connection: &Connection, settings: &PrayerSettings) -> Result<(), Ap
             settings.city,
             settings.latitude,
             settings.longitude,
-            text(&settings.method)?,
-            text(&settings.madhab)?,
-            text(&settings.high_latitude_rule)?,
+            to_text(&settings.method)?,
+            to_text(&settings.madhab)?,
+            to_text(&settings.high_latitude_rule)?,
             settings.pause_before_minutes,
             settings.pause_after_minutes,
             settings.jumuah_break,
