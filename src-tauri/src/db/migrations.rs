@@ -18,3 +18,39 @@ pub fn run(connection: &mut Connection) -> Result<(), AppError> {
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn run_applies_every_migration() {
+        let mut connection = Connection::open_in_memory().unwrap();
+
+        run(&mut connection).unwrap();
+
+        assert_eq!(
+            schema_version(&connection).unwrap() as usize,
+            MIGRATIONS.len()
+        );
+        connection
+            .execute(
+                "INSERT INTO settings (key, value) VALUES ('theme', 'dark')",
+                [],
+            )
+            .unwrap();
+    }
+
+    #[test]
+    fn run_is_idempotent() {
+        let mut connection = Connection::open_in_memory().unwrap();
+
+        run(&mut connection).unwrap();
+        run(&mut connection).unwrap();
+
+        assert_eq!(
+            schema_version(&connection).unwrap() as usize,
+            MIGRATIONS.len()
+        );
+    }
+}
