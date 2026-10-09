@@ -3,3 +3,5 @@ src-tauri
 pnpm-lock.yaml
 src/shared/bindings
 *.md
+.claude
+skills-lock.json
