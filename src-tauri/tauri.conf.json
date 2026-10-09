@@ -12,14 +12,35 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "Itqan",
-        "width": 800,
-        "height": 600
+        "url": "index.html",
+        "width": 900,
+        "height": 640,
+        "minWidth": 640,
+        "minHeight": 480
+      },
+      {
+        "label": "overlay",
+        "title": "Itqan Overlay",
+        "url": "overlay.html",
+        "width": 320,
+        "height": 320,
+        "transparent": true,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "visibleOnAllWorkspaces": true,
+        "resizable": false,
+        "shadow": false,
+        "focus": false,
+        "visible": false
       }
     ],
     "security": {
       "csp": null
-    }
+    },
+    "macOSPrivateApi": true
   },
   "bundle": {
     "active": true,
