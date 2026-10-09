@@ -11,6 +11,7 @@ const MIGRATIONS: &[&str] = &[
     include_str!("../../migrations/0006_goals.sql"),
     include_str!("../../migrations/0007_nudges.sql"),
     include_str!("../../migrations/0008_health.sql"),
+    include_str!("../../migrations/0009_rewards.sql"),
 ];
 
 pub fn schema_version(connection: &Connection) -> Result<u32, AppError> {

@@ -7,11 +7,12 @@ use specta::Type;
 use tauri::{AppHandle, Manager};
 use tauri_specta::Event;
 
+use crate::agents::rewards as rewards_agent;
 use crate::agents::{self, AppEvent};
 use crate::db::{prayer as prayer_repo, Database};
 use crate::domain::focus::{self, FocusStatus, DEFAULT_MINUTES};
 use crate::domain::modes::{self, Mode};
-use crate::domain::settings;
+use crate::domain::{settings, tasks};
 use crate::error::AppError;
 use crate::overlay::{self, Activity, BubbleAction, BubbleOrigin, OrbState, OverlayStore};
 use crate::prayer::schedule::{self, PrayerWindow};
@@ -47,6 +48,7 @@ struct EngineState {
     last: Option<ModeStatus>,
     extended_until: Option<DateTime<Utc>>,
     overtime_asked_at: Option<DateTime<Utc>>,
+    last_progress: Option<Option<f32>>,
 }
 
 #[derive(Debug, Default)]
@@ -77,25 +79,38 @@ pub fn current(app: &AppHandle) -> Result<Option<ModeStatus>, AppError> {
 pub fn evaluate(app: &AppHandle) -> Result<(ModeStatus, StdDuration), AppError> {
     let now = Utc::now();
     let database = app.state::<Database>();
-    let (days, evening_end, rest_until, prayer, timezone, active_focus) =
-        database.with(|connection| {
+    let (days, evening_end, rest_until, prayer, timezone, active_focus, today_progress) = database
+        .with(|connection| {
+            let timezone = settings::timezone(connection)?;
+            let today = now.with_timezone(&timezone).date_naive();
+            let (start, end) = rewards_agent::day_bounds(timezone, today);
+            let (done, open) = tasks::today_counts(connection, start, end)?;
+            let today_progress = (done + open > 0).then(|| done as f32 / (done + open) as f32);
             Ok((
                 modes::work_hours(connection)?,
                 modes::evening_end_minute(connection)?,
                 modes::rest_until(connection)?.filter(|until| *until > now),
                 prayer_repo::get(connection)?,
-                settings::timezone(connection)?,
+                timezone,
                 focus::active(connection)?,
+                today_progress,
             ))
         })?;
     let windows = schedule::windows_around(&prayer, now, timezone);
     let mut focus_status = active_focus.map(|session| focus::status(session, now, &windows));
     if let Some(status) = focus_status.as_ref().filter(|status| status.is_finished()) {
         let id = status.session.id;
+        let minutes = status.session.planned_minutes;
         database.with(|connection| focus::finish(connection, id, now, true))?;
         focus_status = None;
         celebrate_focus(app)?;
-        agents::publish(app, AppEvent::FocusCompleted)?;
+        agents::publish(
+            app,
+            AppEvent::FocusCompleted {
+                session_id: id,
+                minutes,
+            },
+        )?;
     }
     let scheduled_mode = modes::scheduled_mode(
         &days,
@@ -165,14 +180,11 @@ pub fn evaluate(app: &AppHandle) -> Result<(ModeStatus, StdDuration), AppError> 
     let progress = status
         .focus
         .as_ref()
-        .map(|focus| (focus.progress * 100.0).round() / 100.0);
-    if previous.as_ref().map(|status| {
-        status
-            .focus
-            .as_ref()
-            .map(|focus| (focus.progress * 100.0).round() / 100.0)
-    }) != Some(progress)
-    {
+        .map(|focus| focus.progress)
+        .or(today_progress)
+        .map(|value| (value * 100.0).round() / 100.0);
+    if state.last_progress != Some(progress) {
+        state.last_progress = Some(progress);
         let store = app.state::<OverlayStore>();
         overlay::publish(app, store.set_progress(progress)?)?;
     }

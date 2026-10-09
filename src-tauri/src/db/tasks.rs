@@ -166,6 +166,16 @@ pub fn count_completed_between(
     )?)
 }
 
+pub fn count_open_for_today(connection: &Connection, end: DateTime<Utc>) -> Result<u32, AppError> {
+    Ok(connection.query_row(
+        "SELECT count(*) FROM tasks
+         WHERE status = 'open' AND parent_id IS NULL
+           AND (is_top_three = 1 OR (due_at IS NOT NULL AND due_at < ?1))",
+        [end],
+        |row| row.get(0),
+    )?)
+}
+
 pub fn has_subtasks(connection: &Connection, id: TaskId) -> Result<bool, AppError> {
     Ok(connection.query_row(
         "SELECT EXISTS (SELECT 1 FROM tasks WHERE parent_id = ?1)",

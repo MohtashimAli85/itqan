@@ -7,6 +7,7 @@ import {
   type CSSProperties,
 } from "react";
 import { commands, events } from "@/shared/bindings/bindings";
+import { useRewardSync } from "@/shared/hooks/useProgress";
 import { useTasksSync } from "@/shared/hooks/useTasks";
 import { Bubble } from "./components/Bubble";
 import { CompactPanel } from "./components/CompactPanel";
@@ -18,6 +19,7 @@ import {
   type Frame,
 } from "./follower";
 import { reportHitAreas } from "./hitAreas";
+import { celebrateReward } from "./rewardEffects";
 import { useOverlaySnapshot } from "./hooks/useOverlaySnapshot";
 import "./overlay.css";
 
@@ -28,6 +30,7 @@ const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 export function Overlay() {
   const { data: snapshot } = useOverlaySnapshot();
   useTasksSync();
+  useRewardSync(celebrateReward);
   const anchor = useRef<HTMLDivElement>(null);
   const body = useRef<HTMLDivElement>(null);
   const pupils = useRef<(HTMLSpanElement | null)[]>([]);

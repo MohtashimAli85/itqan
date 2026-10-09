@@ -78,6 +78,9 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::health::set_water_target,
             commands::health::add_medicine,
             commands::health::delete_medicine,
+            commands::rewards::get_progress,
+            commands::rewards::get_reward_sound,
+            commands::rewards::set_reward_sound,
         ])
         .events(collect_events![
             overlay::OverlayCursor,
@@ -86,6 +89,7 @@ fn specta_builder() -> Builder<tauri::Wry> {
             scheduler::ModeChanged,
             commands::goals::GoalsChanged,
             commands::events::HealthChanged,
+            agents::rewards::RewardEarned,
         ])
 }
 
