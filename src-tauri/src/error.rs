@@ -7,6 +7,8 @@ pub enum AppError {
     Database(#[from] rusqlite::Error),
     #[error("io error: {0}")]
     Io(#[from] std::io::Error),
+    #[error("serialization error: {0}")]
+    Json(#[from] serde_json::Error),
     #[error("tauri error: {0}")]
     Tauri(#[from] tauri::Error),
     #[error("state lock poisoned")]

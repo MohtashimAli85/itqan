@@ -1,3 +1,4 @@
+mod activity;
 mod hit_areas;
 mod state;
 mod tracker;
@@ -8,6 +9,7 @@ use tauri_specta::Event;
 use crate::error::AppError;
 use crate::platform;
 
+pub use activity::Activity;
 pub use hit_areas::{HitAreas, Rect};
 pub use state::{
     BubbleAction, BubbleOrigin, FollowMode, OrbState, OverlayChanged, OverlaySnapshot, OverlayStore,
@@ -22,6 +24,7 @@ pub fn setup(app: &App) -> Result<(), AppError> {
     window.set_ignore_cursor_events(true)?;
     app.manage(HitAreas::default());
     app.manage(OverlayStore::default());
+    app.manage(Activity::default());
     tracker::spawn(app.handle().clone(), window)?;
     Ok(())
 }

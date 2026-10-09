@@ -75,7 +75,9 @@ export function Overlay() {
     };
   }, []);
 
-  const mode = snapshot?.followMode ?? "follow";
+  const followMode = snapshot?.followMode ?? "follow";
+  const mode =
+    snapshot?.docked && followMode === "follow" ? "corner" : followMode;
   const panelOpen = snapshot?.panelOpen ?? false;
   const bubble = panelOpen ? null : (snapshot?.bubble ?? null);
 

@@ -28,10 +28,20 @@ export const commands = {
 	deleteReminder: (id: number) => typedError<null, CommandError>(__TAURI_INVOKE("delete_reminder", { id })),
 	getTimezone: () => typedError<string, CommandError>(__TAURI_INVOKE("get_timezone")),
 	setTimezone: (timezone: string) => typedError<string, CommandError>(__TAURI_INVOKE("set_timezone", { timezone })),
+	getModeStatus: () => typedError<ModeStatus, CommandError>(__TAURI_INVOKE("get_mode_status")),
+	setRest: (minutes: number | null) => typedError<ModeStatus, CommandError>(__TAURI_INVOKE("set_rest", { minutes })),
+	startFocus: (minutes: number, taskId: number | null) => typedError<ModeStatus, CommandError>(__TAURI_INVOKE("start_focus", { minutes, taskId })),
+	stopFocus: () => typedError<ModeStatus, CommandError>(__TAURI_INVOKE("stop_focus")),
+	getWorkHours: () => typedError<WorkDay[], CommandError>(__TAURI_INVOKE("get_work_hours")),
+	setWorkHours: (days: WorkDay[]) => typedError<WorkDay[], CommandError>(__TAURI_INVOKE("set_work_hours", { days })),
+	getPrayerSettings: () => typedError<PrayerSettings, CommandError>(__TAURI_INVOKE("get_prayer_settings")),
+	setPrayerSettings: (settings: PrayerSettings) => typedError<PrayerSettings, CommandError>(__TAURI_INVOKE("set_prayer_settings", { settings })),
+	getPrayerDay: () => typedError<PrayerWindow[], CommandError>(__TAURI_INVOKE("get_prayer_day")),
 };
 
 /** Events */
 export const events = {
+	modeChanged: makeEvent<ModeChanged>("mode-changed"),
 	overlayChanged: makeEvent<OverlayChanged>("overlay-changed"),
 	overlayCursor: makeEvent<OverlayCursor>("overlay-cursor"),
 	tasksChanged: makeEvent<TasksChanged>("tasks-changed"),
@@ -73,7 +83,42 @@ export type CommandError = {
 	message: string,
 };
 
+export type FocusSession = {
+	id: number,
+	taskId: number | null,
+	startedAt: string,
+	plannedMinutes: number,
+	endedAt: string | null,
+	completed: boolean,
+};
+
+export type FocusStatus = {
+	session: FocusSession,
+	progress: number | null,
+	endsAt: string,
+	pausedForPrayer: boolean,
+};
+
 export type FollowMode = "follow" | "corner" | "hidden";
+
+export type HighLatitudeRule = "middleOfTheNight" | "seventhOfTheNight" | "twilightAngle";
+
+export type Madhab = "shafi" | "hanafi";
+
+export type Method = "muslimWorldLeague" | "egyptian" | "karachi" | "ummAlQura" | "dubai" | "northAmerica" | "kuwait" | "qatar";
+
+export type Mode = "work" | "evening" | "rest" | "focus";
+
+export type ModeChanged = ModeStatus;
+
+export type ModeStatus = {
+	mode: Mode,
+	scheduledMode: Mode,
+	restUntil: string | null,
+	focus: FocusStatus | null,
+	nextPrayer: PrayerWindow | null,
+	activePrayer: PrayerWindow | null,
+};
 
 export type OrbState = "idle" | "happy" | "alert" | "focus" | "resting" | "critical" | "listening" | "evening";
 
@@ -90,6 +135,29 @@ export type OverlaySnapshot = {
 	bubble: Bubble | null,
 	progress: number | null,
 	panelOpen: boolean,
+	docked: boolean,
+};
+
+export type Prayer = "fajr" | "dhuhr" | "jumuah" | "asr" | "maghrib" | "isha";
+
+export type PrayerSettings = {
+	enabled: boolean,
+	city: string | null,
+	latitude: number | null,
+	longitude: number | null,
+	method: Method,
+	madhab: Madhab,
+	highLatitudeRule: HighLatitudeRule,
+	pauseBeforeMinutes: number,
+	pauseAfterMinutes: number,
+	jumuahBreak: boolean,
+};
+
+export type PrayerWindow = {
+	prayer: Prayer,
+	at: string,
+	pauseFrom: string,
+	pauseUntil: string,
 };
 
 export type QuickAddOutcome = {
@@ -162,6 +230,13 @@ export type TaskKind = "output" | "learning" | "deepWork" | "habit";
 export type TaskStatus = "open" | "done";
 
 export type TasksChanged = null;
+
+export type WorkDay = {
+	weekday: number,
+	enabled: boolean,
+	startMinute: number,
+	endMinute: number,
+};
 
 /* Tauri Specta runtime */
 async function typedError<T, E>(result: Promise<T>): Promise<{ status: "ok"; data: T } | { status: "error"; error: E }> {

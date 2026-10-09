@@ -88,7 +88,7 @@ pub fn resolve_reminder(
     }
     let store = app.state::<OverlayStore>();
     if store.snapshot()?.orb_state == OrbState::Critical && !store.has_critical()? {
-        overlay::publish(app, store.set_orb_state(OrbState::Idle)?)?;
+        overlay::publish(app, store.restore_base()?)?;
     }
     Ok(())
 }

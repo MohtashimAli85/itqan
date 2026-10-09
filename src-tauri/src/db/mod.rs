@@ -1,8 +1,11 @@
 pub mod categories;
+pub mod focus;
 pub mod migrations;
+pub mod prayer;
 pub mod reminders;
 pub mod settings;
 pub mod tasks;
+pub mod work_hours;
 
 use std::path::Path;
 use std::sync::Mutex;

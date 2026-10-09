@@ -6,7 +6,7 @@ use specta::Type;
 use tauri::{AppHandle, Manager, Monitor, PhysicalPosition, WebviewWindow};
 use tauri_specta::Event;
 
-use super::{HitAreas, OVERLAY_LABEL};
+use super::{Activity, HitAreas, OVERLAY_LABEL};
 use crate::error::AppError;
 
 const TICK: Duration = Duration::from_millis(16);
@@ -66,6 +66,7 @@ impl Tracker {
 
         if self.last_cursor != Some(cursor) {
             self.last_cursor = Some(cursor);
+            app.state::<Activity>().touch();
             OverlayCursor {
                 x: x.round() as i32,
                 y: y.round() as i32,

@@ -83,8 +83,18 @@ pub fn resolve_bubble(
     );
     let panel_open = snapshot.panel_open;
     overlay::publish(&app, snapshot)?;
-    if let Some(BubbleOrigin::Reminder { id, .. }) = origin {
-        scheduler::resolve_reminder(&app, id, action_id.as_deref())?;
+    let action = action_id.as_deref();
+    match origin {
+        Some(BubbleOrigin::Reminder { id, .. }) => scheduler::resolve_reminder(&app, id, action)?,
+        Some(BubbleOrigin::Overtime) => scheduler::modes::resolve_overtime(&app, action)?,
+        Some(BubbleOrigin::FocusDone) => {
+            scheduler::modes::resolve_focus_done(&app, action)?;
+            overlay::publish(&app, store.restore_base()?)?;
+        }
+        None => {}
+    }
+    if origin.is_some() {
+        scheduler::refresh(&app)?;
     }
     if !panel_open {
         overlay::set_keyboard_focus(&app, false)?;

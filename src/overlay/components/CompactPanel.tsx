@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import type { Task } from "@/shared/bindings/bindings";
 import { openTasks, useSetTaskStatus, useTasks } from "@/shared/hooks/useTasks";
 import { greeting, todayTasks } from "@/shared/lib/today";
+import { FocusRow } from "./FocusRow";
 import { QuickAdd } from "./QuickAdd";
 import { TaskRow } from "./TaskRow";
 
@@ -53,6 +54,8 @@ export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
       </header>
 
       <QuickAdd />
+
+      <FocusRow />
 
       {topThree.length > 0 && (
         <section aria-labelledby="panel-top-three">

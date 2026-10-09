@@ -52,6 +52,7 @@ pub struct OverlaySnapshot {
     pub bubble: Option<Bubble>,
     pub progress: Option<f32>,
     pub panel_open: bool,
+    pub docked: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type, tauri_specta::Event)]
@@ -60,12 +61,15 @@ pub struct OverlayChanged(pub OverlaySnapshot);
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BubbleOrigin {
     Reminder { id: i32, critical: bool },
+    Overtime,
+    FocusDone,
 }
 
 impl BubbleOrigin {
     pub fn is_critical(self) -> bool {
         match self {
             Self::Reminder { critical, .. } => critical,
+            Self::Overtime | Self::FocusDone => false,
         }
     }
 }
@@ -81,6 +85,7 @@ struct Inner {
     snapshot: OverlaySnapshot,
     next_bubble_id: u32,
     queue: VecDeque<Queued>,
+    base: OrbState,
 }
 
 impl Inner {
@@ -103,6 +108,43 @@ impl OverlayStore {
 
     pub fn set_follow_mode(&self, mode: FollowMode) -> Result<OverlaySnapshot, AppError> {
         self.update(|snapshot| snapshot.follow_mode = mode)
+    }
+
+    pub fn set_appearance(
+        &self,
+        base: OrbState,
+        docked: bool,
+    ) -> Result<OverlaySnapshot, AppError> {
+        let mut inner = self.lock()?;
+        inner.base = base;
+        inner.snapshot.docked = docked;
+        if !matches!(
+            inner.snapshot.orb_state,
+            OrbState::Critical | OrbState::Happy
+        ) {
+            inner.snapshot.orb_state = base;
+        }
+        Ok(inner.snapshot.clone())
+    }
+
+    pub fn restore_base(&self) -> Result<OverlaySnapshot, AppError> {
+        let mut inner = self.lock()?;
+        inner.snapshot.orb_state = inner.base;
+        Ok(inner.snapshot.clone())
+    }
+
+    pub fn dismiss_origin(
+        &self,
+        origin: BubbleOrigin,
+    ) -> Result<Option<OverlaySnapshot>, AppError> {
+        let mut inner = self.lock()?;
+        let before = inner.queue.len();
+        inner.queue.retain(|queued| queued.origin != Some(origin));
+        if inner.queue.len() == before {
+            return Ok(None);
+        }
+        inner.sync_bubble();
+        Ok(Some(inner.snapshot.clone()))
     }
 
     pub fn set_panel_open(&self, open: bool) -> Result<OverlaySnapshot, AppError> {
@@ -239,6 +281,18 @@ mod tests {
         );
         assert!(snapshot.bubble.is_none());
         assert!(store.dismiss_bubble(second).unwrap().is_none());
+    }
+
+    #[test]
+    fn appearance_keeps_critical_until_restored() {
+        let store = OverlayStore::default();
+        store.set_orb_state(OrbState::Critical).unwrap();
+
+        let snapshot = store.set_appearance(OrbState::Focus, true).unwrap();
+        assert_eq!(snapshot.orb_state, OrbState::Critical);
+        assert!(snapshot.docked);
+
+        assert_eq!(store.restore_base().unwrap().orb_state, OrbState::Focus);
     }
 
     #[test]

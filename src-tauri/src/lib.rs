@@ -43,11 +43,21 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::reminders::delete_reminder,
             commands::settings::get_timezone,
             commands::settings::set_timezone,
+            commands::modes::get_mode_status,
+            commands::modes::set_rest,
+            commands::modes::start_focus,
+            commands::modes::stop_focus,
+            commands::modes::get_work_hours,
+            commands::modes::set_work_hours,
+            commands::modes::get_prayer_settings,
+            commands::modes::set_prayer_settings,
+            commands::modes::get_prayer_day,
         ])
         .events(collect_events![
             overlay::OverlayCursor,
             overlay::OverlayChanged,
             commands::events::TasksChanged,
+            scheduler::ModeChanged,
         ])
 }
 

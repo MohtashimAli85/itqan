@@ -240,7 +240,7 @@ Short, specific, warm. Every nudge names the real next step. Uses "MashaAllah" f
 
 ### Prayer times
 - Calculated locally from city coordinates, calculation method and Asr school (default for the owner: Karachi, University of Islamic Sciences Karachi, Hanafi).
-- Evaluate a maintained Rust crate for this (for example `salah`) against the `adhan` reference implementation before choosing. Ask before adding.
+- Evaluated `salah` against `adhan`: it panics on real Karachi dates, so the algorithm is ported in-house and tested against adhan-js output (ADR 0002).
 
 ### Agents
 - **Coach:** the only agent that speaks. Decides what, when and how.
@@ -577,7 +577,7 @@ After the app skeleton exists (step 0.5), run `codegraph init -i` so later sessi
 - [x] 1.2 Tasks data model and Rust commands
 - [x] 1.3 Compact panel and quick add (level, XP and streak row arrive with 1.10, Health tab with 1.9, focus row with 1.5, mic button with voice)
 - [x] 1.4 Scheduler, reminders, notification fallback
-- [ ] 1.5 Modes, work hours, prayer times
+- [x] 1.5 Modes, work hours, prayer times (includes focus sessions; prayer times ported from adhan, see docs/decisions/0002-prayer-times.md)
 - [ ] 1.6 Motivation profile and onboarding
 - [ ] 1.7 Goals, skills and the Planner
 - [ ] 1.8 Coach, nudge budget, outcome logging, standup and check-in
