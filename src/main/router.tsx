@@ -6,11 +6,15 @@ import {
   Outlet,
   redirect,
 } from "@tanstack/react-router";
+import { AppShell } from "./layout/AppShell";
 import { Onboarding } from "./onboarding/Onboarding";
 import { ensureOnboarded } from "./onboardingStatus";
+import { CategoryView } from "./screens/CategoryView";
 import { Goals } from "./screens/Goals";
-import { Preview } from "./screens/Preview";
+import { Progress } from "./screens/Progress";
 import { Settings } from "./screens/Settings";
+import { Today } from "./screens/Today";
+import { Upcoming } from "./screens/Upcoming";
 
 type RouterContext = { queryClient: QueryClient };
 
@@ -26,36 +30,28 @@ const appRoute = createRoute({
       throw redirect({ to: "/onboarding" });
     }
   },
-  component: Outlet,
+  component: AppShell,
 });
 
-const homeRoute = createRoute({
-  getParentRoute: () => appRoute,
-  path: "/",
-  component: Preview,
-});
-
-const goalsRoute = createRoute({
-  getParentRoute: () => appRoute,
-  path: "/goals",
-  component: Goals,
-});
-
-const settingsRoute = createRoute({
-  getParentRoute: () => appRoute,
-  path: "/settings",
-  component: Settings,
-});
-
-const onboardingRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/onboarding",
-  component: Onboarding,
-});
+const page = <Path extends string>(
+  path: Path,
+  component: () => React.ReactNode,
+) => createRoute({ getParentRoute: () => appRoute, path, component });
 
 const routeTree = rootRoute.addChildren([
-  appRoute.addChildren([homeRoute, goalsRoute, settingsRoute]),
-  onboardingRoute,
+  appRoute.addChildren([
+    page("/", Today),
+    page("/upcoming", Upcoming),
+    page("/category/$categoryId", CategoryView),
+    page("/goals", Goals),
+    page("/progress", Progress),
+    page("/settings", Settings),
+  ]),
+  createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/onboarding",
+    component: Onboarding,
+  }),
 ]);
 
 export function createAppRouter(queryClient: QueryClient) {

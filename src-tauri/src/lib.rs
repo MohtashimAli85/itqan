@@ -8,6 +8,7 @@ mod overlay;
 mod platform;
 mod prayer;
 mod scheduler;
+mod shortcuts;
 mod tray;
 
 use tauri::Manager;
@@ -88,6 +89,10 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::ai::delete_ai_key,
             commands::ai::test_ai_connection,
             commands::ai::ask_itqan,
+            commands::system::get_autostart,
+            commands::system::set_autostart,
+            commands::system::get_coach_settings,
+            commands::system::set_nudges_paused,
         ])
         .events(collect_events![
             overlay::OverlayCursor,
@@ -97,6 +102,7 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::goals::GoalsChanged,
             commands::events::HealthChanged,
             agents::rewards::RewardEarned,
+            commands::events::Navigate,
         ])
 }
 
@@ -118,9 +124,22 @@ pub fn run() {
         .plugin(tauri_plugin_log::Builder::new().build())
         .plugin(platform::plugin())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            None,
+        ))
+        .plugin(shortcuts::plugin())
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             tray::show_main_window(app);
         }))
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                if window.label() == "main" {
+                    api.prevent_close();
+                    let _ = window.hide();
+                }
+            }
+        })
         .invoke_handler(builder.invoke_handler())
         .setup(move |app| {
             builder.mount_events(app);
@@ -134,6 +153,7 @@ pub fn run() {
             overlay::restore_follow_mode(app.handle())?;
             agents::setup(app);
             scheduler::start(app.handle());
+            shortcuts::register(app);
             Ok(())
         })
         .run(tauri::generate_context!())

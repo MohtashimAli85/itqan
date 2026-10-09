@@ -15,10 +15,10 @@
         "label": "main",
         "title": "Itqan",
         "url": "index.html",
-        "width": 900,
-        "height": 640,
-        "minWidth": 640,
-        "minHeight": 480
+        "width": 1120,
+        "height": 760,
+        "minWidth": 880,
+        "minHeight": 580
       },
       {
         "label": "overlay",

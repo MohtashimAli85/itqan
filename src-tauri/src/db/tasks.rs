@@ -166,6 +166,20 @@ pub fn count_completed_between(
     )?)
 }
 
+pub fn next_for_today(
+    connection: &Connection,
+    end: DateTime<Utc>,
+) -> Result<Option<Task>, AppError> {
+    let sql = format!(
+        "SELECT {COLUMNS} FROM tasks
+         WHERE status = 'open' AND parent_id IS NULL
+           AND (is_top_three = 1 OR (due_at IS NOT NULL AND due_at < ?1))
+         ORDER BY is_top_three DESC, due_at IS NULL, due_at, priority DESC, id
+         LIMIT 1"
+    );
+    Ok(connection.query_row(&sql, [end], from_row).optional()?)
+}
+
 pub fn count_open_for_today(connection: &Connection, end: DateTime<Utc>) -> Result<u32, AppError> {
     Ok(connection.query_row(
         "SELECT count(*) FROM tasks

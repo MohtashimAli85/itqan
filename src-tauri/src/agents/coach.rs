@@ -27,6 +27,7 @@ const LATER_MINUTES: i64 = 30;
 const DEFAULT_BUDGET: u32 = 3;
 const MAX_BUDGET: u32 = 12;
 const BUDGET: &str = "nudge_budget_per_hour";
+const PAUSED_UNTIL: &str = "nudges_paused_until";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Gate {
@@ -41,6 +42,7 @@ pub enum QuietReason {
     Focus,
     Rest,
     Family,
+    Paused,
 }
 
 pub struct GateInput {
@@ -86,6 +88,20 @@ pub fn quiet_reason(
         Some((start, end)) if (start..end).contains(&local_minute) => Some(QuietReason::Family),
         _ => None,
     }
+}
+
+pub fn paused_until(connection: &rusqlite::Connection) -> Result<Option<DateTime<Utc>>, AppError> {
+    Ok(settings_repo::get(connection, PAUSED_UNTIL)?
+        .and_then(|value| DateTime::parse_from_rfc3339(&value).ok())
+        .map(|value| value.with_timezone(&Utc)))
+}
+
+pub fn set_paused_until(
+    connection: &rusqlite::Connection,
+    until: Option<DateTime<Utc>>,
+) -> Result<(), AppError> {
+    let value = until.map(|until| until.to_rfc3339()).unwrap_or_default();
+    settings_repo::set(connection, PAUSED_UNTIL, &value)
 }
 
 pub fn budget(connection: &rusqlite::Connection) -> Result<u32, AppError> {
@@ -166,7 +182,7 @@ pub fn tick(app: &AppHandle, now: DateTime<Utc>) -> Result<(), AppError> {
 fn flush(app: &AppHandle, now: DateTime<Utc>) -> Result<(), AppError> {
     let database = app.state::<Database>();
     let status = mode_engine::current(app)?;
-    let (budget, used, profile, local_minute) = database.with(|connection| {
+    let (budget, used, profile, local_minute, paused) = database.with(|connection| {
         let timezone = settings::timezone(connection)?;
         let local = now.with_timezone(&timezone);
         Ok((
@@ -174,10 +190,15 @@ fn flush(app: &AppHandle, now: DateTime<Utc>) -> Result<(), AppError> {
             nudges::budgeted_since(connection, nudges::last_hour(now))?,
             profile::get(connection)?,
             u16::try_from(local.hour() * 60 + local.minute()).unwrap_or(0),
+            paused_until(connection)?.is_some_and(|until| until > now),
         ))
     })?;
     let family = profile.family_start_minute.zip(profile.family_end_minute);
-    let quiet = quiet_reason(status.as_ref(), family, local_minute);
+    let quiet = if paused {
+        Some(QuietReason::Paused)
+    } else {
+        quiet_reason(status.as_ref(), family, local_minute)
+    };
     let style = serde_json::to_value(profile.coach_style)?
         .as_str()
         .map(str::to_owned);

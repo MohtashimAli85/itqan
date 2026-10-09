@@ -50,7 +50,8 @@ pub fn save_follow_mode(app: &AppHandle, mode: FollowMode) -> Result<(), AppErro
         .unwrap_or_default();
     app.state::<Database>()
         .with(|connection| settings_repo::set(connection, FOLLOW_MODE, &value))?;
-    publish(app, app.state::<OverlayStore>().set_follow_mode(mode)?)
+    publish(app, app.state::<OverlayStore>().set_follow_mode(mode)?)?;
+    crate::tray::refresh(app)
 }
 
 pub fn publish(app: &AppHandle, snapshot: OverlaySnapshot) -> Result<(), AppError> {

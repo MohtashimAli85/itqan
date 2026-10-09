@@ -73,6 +73,10 @@ export const commands = {
 	deleteAiKey: () => typedError<AiStatus, CommandError>(__TAURI_INVOKE("delete_ai_key")),
 	testAiConnection: () => typedError<null, CommandError>(__TAURI_INVOKE("test_ai_connection")),
 	askItqan: (question: string) => typedError<string, CommandError>(__TAURI_INVOKE("ask_itqan", { question })),
+	getAutostart: () => typedError<boolean, CommandError>(__TAURI_INVOKE("get_autostart")),
+	setAutostart: (enabled: boolean) => typedError<boolean, CommandError>(__TAURI_INVOKE("set_autostart", { enabled })),
+	getCoachSettings: () => typedError<CoachSettings, CommandError>(__TAURI_INVOKE("get_coach_settings")),
+	setNudgesPaused: (minutes: number | null) => typedError<CoachSettings, CommandError>(__TAURI_INVOKE("set_nudges_paused", { minutes })),
 };
 
 /** Events */
@@ -80,6 +84,7 @@ export const events = {
 	goalsChanged: makeEvent<GoalsChanged>("goals-changed"),
 	healthChanged: makeEvent<HealthChanged>("health-changed"),
 	modeChanged: makeEvent<ModeChanged>("mode-changed"),
+	navigate: makeEvent<Navigate>("navigate"),
 	overlayChanged: makeEvent<OverlayChanged>("overlay-changed"),
 	overlayCursor: makeEvent<OverlayCursor>("overlay-cursor"),
 	rewardEarned: makeEvent<RewardEarned>("reward-earned"),
@@ -145,6 +150,11 @@ export type CategoryInput = {
 };
 
 export type Celebration = "levelUp" | "allDone";
+
+export type CoachSettings = {
+	budgetPerHour: number,
+	pausedUntil: string | null,
+};
 
 export type CoachStyle = "mentor" | "manager" | "trainer";
 
@@ -269,6 +279,10 @@ export type Motivator = "learning" | "building" | "health" | "money" | "recognit
 export type MotivatorWeight = {
 	motivator: Motivator,
 	weight: number,
+};
+
+export type Navigate = {
+	to: string,
 };
 
 export type Nudge = {
