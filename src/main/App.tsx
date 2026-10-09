@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
+import { useAppInfo } from "./hooks/useAppInfo";
 
 const swatches = [
   { name: "ink", className: "bg-ink" },
@@ -16,6 +17,7 @@ const swatches = [
 
 export function App() {
   const [dark, setDark] = useState(false);
+  const appInfo = useAppInfo();
 
   function toggleTheme() {
     document.documentElement.classList.toggle("dark", !dark);
@@ -35,6 +37,18 @@ export function App() {
           {dark ? <Sun /> : <Moon />}
         </Button>
       </header>
+
+      <section aria-labelledby="core" className="flex flex-col gap-2">
+        <h2 id="core" className="font-heading text-xl font-semibold">
+          Core
+        </h2>
+        <p className="text-text-secondary font-mono text-sm">
+          {appInfo.isPending && "Loading"}
+          {appInfo.isError && appInfo.error.message}
+          {appInfo.data &&
+            `${appInfo.data.name} v${appInfo.data.version}, schema ${appInfo.data.schema_version}`}
+        </p>
+      </section>
 
       <section aria-labelledby="colours" className="flex flex-col gap-4">
         <h2 id="colours" className="font-heading text-xl font-semibold">
