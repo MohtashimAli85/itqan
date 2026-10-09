@@ -56,12 +56,26 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::profile::save_profile,
             commands::profile::is_onboarded,
             commands::profile::complete_onboarding,
+            commands::goals::list_goals,
+            commands::goals::create_goal,
+            commands::goals::update_goal,
+            commands::goals::set_goal_status,
+            commands::goals::delete_goal,
+            commands::goals::list_milestones,
+            commands::goals::add_milestones,
+            commands::goals::set_milestone_status,
+            commands::goals::delete_milestone,
+            commands::goals::propose_plan,
+            commands::goals::list_skills,
+            commands::goals::create_skill,
+            commands::goals::delete_skill,
         ])
         .events(collect_events![
             overlay::OverlayCursor,
             overlay::OverlayChanged,
             commands::events::TasksChanged,
             scheduler::ModeChanged,
+            commands::goals::GoalsChanged,
         ])
 }
 

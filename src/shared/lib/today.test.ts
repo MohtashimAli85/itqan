@@ -18,6 +18,8 @@ function task(overrides: Partial<Task>): Task {
     status: "open",
     completedAt: null,
     parentId: null,
+    goalId: null,
+    skillId: null,
     createdAt: now.toISOString(),
     updatedAt: now.toISOString(),
     ...overrides,

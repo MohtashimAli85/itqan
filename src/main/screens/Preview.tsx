@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { OrbPreview } from "../components/OrbPreview";
@@ -29,6 +30,9 @@ export function Preview() {
     <main className="mx-auto flex max-w-3xl flex-col gap-10 p-10">
       <header className="flex items-center justify-between">
         <h1 className="font-heading text-4xl font-bold">Itqan tokens</h1>
+        <Link to="/goals" className="text-text-secondary text-sm underline">
+          Goals
+        </Link>
         <Button
           variant="outline"
           size="icon"

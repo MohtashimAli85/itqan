@@ -41,10 +41,24 @@ export const commands = {
 	saveProfile: (profile: Profile) => typedError<Profile, CommandError>(__TAURI_INVOKE("save_profile", { profile })),
 	isOnboarded: () => typedError<boolean, CommandError>(__TAURI_INVOKE("is_onboarded")),
 	completeOnboarding: () => typedError<null, CommandError>(__TAURI_INVOKE("complete_onboarding")),
+	listGoals: () => typedError<Goal[], CommandError>(__TAURI_INVOKE("list_goals")),
+	createGoal: (input: GoalInput) => typedError<Goal, CommandError>(__TAURI_INVOKE("create_goal", { input })),
+	updateGoal: (id: number, input: GoalInput) => typedError<Goal, CommandError>(__TAURI_INVOKE("update_goal", { id, input })),
+	setGoalStatus: (id: number, status: GoalStatus) => typedError<Goal, CommandError>(__TAURI_INVOKE("set_goal_status", { id, status })),
+	deleteGoal: (id: number) => typedError<null, CommandError>(__TAURI_INVOKE("delete_goal", { id })),
+	listMilestones: (goalId: number) => typedError<Milestone[], CommandError>(__TAURI_INVOKE("list_milestones", { goalId })),
+	addMilestones: (goalId: number, milestones: MilestoneInput[]) => typedError<Milestone[], CommandError>(__TAURI_INVOKE("add_milestones", { goalId, milestones })),
+	setMilestoneStatus: (id: number, status: MilestoneStatus) => typedError<Milestone, CommandError>(__TAURI_INVOKE("set_milestone_status", { id, status })),
+	deleteMilestone: (id: number) => typedError<null, CommandError>(__TAURI_INVOKE("delete_milestone", { id })),
+	proposePlan: (goalId: number) => typedError<PlanProposal, CommandError>(__TAURI_INVOKE("propose_plan", { goalId })),
+	listSkills: () => typedError<Skill[], CommandError>(__TAURI_INVOKE("list_skills")),
+	createSkill: (name: string) => typedError<Skill, CommandError>(__TAURI_INVOKE("create_skill", { name })),
+	deleteSkill: (id: number) => typedError<null, CommandError>(__TAURI_INVOKE("delete_skill", { id })),
 };
 
 /** Events */
 export const events = {
+	goalsChanged: makeEvent<GoalsChanged>("goals-changed"),
 	modeChanged: makeEvent<ModeChanged>("mode-changed"),
 	overlayChanged: makeEvent<OverlayChanged>("overlay-changed"),
 	overlayCursor: makeEvent<OverlayCursor>("overlay-cursor"),
@@ -107,11 +121,53 @@ export type FocusStatus = {
 
 export type FollowMode = "follow" | "corner" | "hidden";
 
+export type Goal = {
+	id: number,
+	title: string,
+	motivator: Motivator | null,
+	targetDate: string | null,
+	status: GoalStatus,
+	createdAt: string,
+	completedAt: string | null,
+};
+
+export type GoalInput = {
+	title: string,
+	motivator: Motivator | null,
+	targetDate: string | null,
+};
+
+export type GoalStatus = "active" | "done" | "archived";
+
+export type GoalsChanged = null;
+
 export type HighLatitudeRule = "middleOfTheNight" | "seventhOfTheNight" | "twilightAngle";
+
+export type LevelProgress = {
+	level: number,
+	xpIntoLevel: number,
+	xpForNext: number,
+};
 
 export type Madhab = "shafi" | "hanafi";
 
 export type Method = "muslimWorldLeague" | "egyptian" | "karachi" | "ummAlQura" | "dubai" | "northAmerica" | "kuwait" | "qatar";
+
+export type Milestone = {
+	id: number,
+	goalId: number,
+	title: string,
+	weekStart: string,
+	status: MilestoneStatus,
+	completedAt: string | null,
+};
+
+export type MilestoneInput = {
+	title: string,
+	weekStart: string,
+};
+
+export type MilestoneStatus = "open" | "done";
 
 export type Mode = "work" | "evening" | "rest" | "focus";
 
@@ -150,6 +206,16 @@ export type OverlaySnapshot = {
 	panelOpen: boolean,
 	docked: boolean,
 };
+
+export type PlanProposal = {
+	milestones: MilestoneInput[],
+	sessionsPerWeek: number,
+	sessionMinutes: number,
+	firstTask: string,
+	source: PlanSource,
+};
+
+export type PlanSource = "rules" | "ai";
 
 export type Prayer = "fajr" | "dhuhr" | "jumuah" | "asr" | "maghrib" | "isha";
 
@@ -218,6 +284,13 @@ export type ReminderInput = {
 	critical: boolean,
 };
 
+export type Skill = {
+	id: number,
+	name: string,
+	xp: number,
+	level: LevelProgress,
+};
+
 export type Task = {
 	id: number,
 	title: string,
@@ -230,6 +303,8 @@ export type Task = {
 	status: TaskStatus,
 	completedAt: string | null,
 	parentId: number | null,
+	goalId: number | null,
+	skillId: number | null,
 	createdAt: string,
 	updatedAt: string,
 };
@@ -248,6 +323,8 @@ export type TaskInput = {
 	priority: number,
 	dueAt: string | null,
 	parentId: number | null,
+	goalId: number | null,
+	skillId: number | null,
 };
 
 export type TaskKind = "output" | "learning" | "deepWork" | "habit";
