@@ -490,8 +490,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1aa79e62e7697b8e29b513a68abacf485adcd1fe8284a4316c5ae868e6633327"
 dependencies = [
  "iana-time-zone",
+ "js-sys",
  "num-traits",
  "serde",
+ "wasm-bindgen",
  "windows-link",
 ]
 
@@ -1824,6 +1826,7 @@ checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
 name = "itqan"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "rusqlite",
  "serde",
  "serde_json",
@@ -2959,6 +2962,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "23f2a97da3e3873c73cb2a2e71b35c40ff95e0b1eefa8d72d8499a6928c3b5b3"
 dependencies = [
  "bitflags 2.13.2",
+ "chrono",
  "fallible-iterator",
  "fallible-streaming-iterator",
  "hashlink",
@@ -3370,6 +3374,7 @@ version = "2.0.0-rc.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "38f9a30cbcbb7011f1da7d73483983bf838af123883e45f2b36ed76328df9c50"
 dependencies = [
+ "chrono",
  "paste",
  "rustc_version",
  "specta-macros",

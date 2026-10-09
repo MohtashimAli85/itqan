@@ -8,7 +8,7 @@ pre-commit:
   commands:
     lint:
       glob: "*.{ts,tsx,js}"
-      run: pnpm exec eslint {staged_files}
+      run: pnpm exec eslint --no-warn-ignored {staged_files}
     format:
       glob: "*.{ts,tsx,js,json,css,md,html}"
       run: pnpm exec prettier --check {staged_files}
