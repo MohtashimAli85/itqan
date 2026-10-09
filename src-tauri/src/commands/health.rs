@@ -3,6 +3,7 @@ use tauri::{AppHandle, State};
 use tauri_specta::Event;
 
 use super::events::HealthChanged;
+use crate::agents::{self, AppEvent};
 use crate::db::Database;
 use crate::domain::health::{self, HabitId, HabitKind, HealthOverview, Medicine};
 use crate::domain::settings;
@@ -47,6 +48,7 @@ pub fn log_habit(
     kind: HabitKind,
 ) -> Result<(), CommandError> {
     database.with(|connection| health::log(connection, kind, Utc::now()))?;
+    agents::publish(&app, AppEvent::HabitLogged { kind })?;
     changed(&app, ())
 }
 

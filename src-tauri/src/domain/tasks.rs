@@ -204,6 +204,17 @@ pub fn completed_between(
     repo::count_completed_between(connection, from, to)
 }
 
+pub fn today_counts(
+    connection: &Connection,
+    start: DateTime<Utc>,
+    end: DateTime<Utc>,
+) -> Result<(u32, u32), AppError> {
+    Ok((
+        repo::count_completed_between(connection, start, end)?,
+        repo::count_open_for_today(connection, end)?,
+    ))
+}
+
 pub fn delete(connection: &Connection, id: TaskId) -> Result<(), AppError> {
     get(connection, id)?;
     repo::delete(connection, id)
@@ -332,6 +343,43 @@ mod tests {
         )
         .unwrap();
         assert_eq!(count, 1);
+    }
+
+    #[test]
+    fn today_counts_cover_top_three_and_due_tasks() {
+        let connection = test_connection();
+        let end = now() + chrono::Duration::hours(12);
+        let due = create(
+            &connection,
+            TaskInput {
+                due_at: Some(now()),
+                ..input("due")
+            },
+            now(),
+        )
+        .unwrap();
+        let top = create(&connection, input("top"), now()).unwrap();
+        set_top_three(&connection, top.id, true, now()).unwrap();
+        create(
+            &connection,
+            TaskInput {
+                due_at: Some(end + chrono::Duration::days(2)),
+                ..input("later")
+            },
+            now(),
+        )
+        .unwrap();
+        create(&connection, input("someday"), now()).unwrap();
+        assert_eq!(
+            today_counts(&connection, now() - chrono::Duration::hours(9), end).unwrap(),
+            (0, 2)
+        );
+
+        set_status(&connection, due.id, TaskStatus::Done, now()).unwrap();
+        assert_eq!(
+            today_counts(&connection, now() - chrono::Duration::hours(9), end).unwrap(),
+            (1, 1)
+        );
     }
 
     #[test]

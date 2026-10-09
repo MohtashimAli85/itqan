@@ -63,6 +63,9 @@ export const commands = {
 	setWaterTarget: (target: number) => typedError<null, CommandError>(__TAURI_INVOKE("set_water_target", { target })),
 	addMedicine: (name: string, times: string[]) => typedError<Medicine, CommandError>(__TAURI_INVOKE("add_medicine", { name, times })),
 	deleteMedicine: (id: number) => typedError<null, CommandError>(__TAURI_INVOKE("delete_medicine", { id })),
+	getProgress: () => typedError<ProgressSummary, CommandError>(__TAURI_INVOKE("get_progress")),
+	getRewardSound: () => typedError<boolean, CommandError>(__TAURI_INVOKE("get_reward_sound")),
+	setRewardSound: (enabled: boolean) => typedError<null, CommandError>(__TAURI_INVOKE("set_reward_sound", { enabled })),
 };
 
 /** Events */
@@ -72,6 +75,7 @@ export const events = {
 	modeChanged: makeEvent<ModeChanged>("mode-changed"),
 	overlayChanged: makeEvent<OverlayChanged>("overlay-changed"),
 	overlayCursor: makeEvent<OverlayCursor>("overlay-cursor"),
+	rewardEarned: makeEvent<RewardEarned>("reward-earned"),
 	tasksChanged: makeEvent<TasksChanged>("tasks-changed"),
 };
 
@@ -83,6 +87,15 @@ export type AppInfo = {
 	version: string,
 	schemaVersion: number,
 };
+
+export type Badge = {
+	id: BadgeId,
+	title: string,
+	description: string,
+	earned: boolean,
+};
+
+export type BadgeId = "firstShip" | "tenShips" | "firstFocus" | "focusFifty" | "weekStreak" | "monthStreak" | "learner";
 
 export type Bubble = {
 	id: number,
@@ -109,10 +122,19 @@ export type CategoryInput = {
 	icon: string,
 };
 
+export type Celebration = "levelUp" | "allDone";
+
 export type CoachStyle = "mentor" | "manager" | "trainer";
 
 export type CommandError = {
 	message: string,
+};
+
+export type DaySummary = {
+	date: string,
+	xp: number,
+	focusMinutes: number,
+	active: boolean,
 };
 
 export type FocusSession = {
@@ -307,6 +329,15 @@ export type Profile = {
 	updatedAt: string | null,
 };
 
+export type ProgressSummary = {
+	totalXp: number,
+	level: LevelProgress,
+	streak: Streak,
+	todayXp: number,
+	days: DaySummary[],
+	badges: Badge[],
+};
+
 export type QuickAddOutcome = {
 	task: Task,
 	notice: string | null,
@@ -340,11 +371,32 @@ export type ReminderInput = {
 	critical: boolean,
 };
 
+export type RewardEarned = {
+	outcome: RewardOutcome,
+	celebration: Celebration | null,
+	sound: boolean,
+};
+
+export type RewardOutcome = {
+	amount: number,
+	totalXp: number,
+	level: LevelProgress,
+	leveledUp: boolean,
+	streak: Streak,
+};
+
 export type Skill = {
 	id: number,
 	name: string,
 	xp: number,
 	level: LevelProgress,
+};
+
+export type Streak = {
+	current: number,
+	best: number,
+	freezes: number,
+	lastActiveDay: string | null,
 };
 
 export type Task = {

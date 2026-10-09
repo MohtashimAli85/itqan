@@ -270,6 +270,7 @@ pub fn resolve(app: &AppHandle, id: NudgeId, action: Option<&str>) -> Result<(),
                     app.state::<Activity>().reset_streak();
                 }
                 HealthChanged.emit(app)?;
+                super::publish(app, super::AppEvent::HabitLogged { kind })?;
             }
         }
         None => {}

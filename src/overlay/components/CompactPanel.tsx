@@ -10,6 +10,7 @@ import {
 } from "@/shared/components/ui/tabs";
 import { FocusRow } from "./FocusRow";
 import { HealthTab } from "./HealthTab";
+import { ProgressRow } from "./ProgressRow";
 import { QuickAdd } from "./QuickAdd";
 import { TaskRow } from "./TaskRow";
 
@@ -59,6 +60,8 @@ export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
             : `${topThree.length + due.length} left for today`}
         </p>
       </header>
+
+      <ProgressRow />
 
       <Tabs defaultValue="today">
         <TabsList className="w-full">

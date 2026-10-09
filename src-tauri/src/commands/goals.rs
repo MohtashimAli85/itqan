@@ -5,6 +5,7 @@ use tauri::{AppHandle, State};
 use tauri_specta::Event;
 
 use crate::agents::planner::{self, PlanProposal, PlanRequest};
+use crate::agents::{self, AppEvent};
 use crate::db::Database;
 use crate::domain::goals::{
     self, Goal, GoalId, GoalInput, GoalStatus, Milestone, MilestoneId, MilestoneInput,
@@ -60,6 +61,9 @@ pub fn set_goal_status(
     status: GoalStatus,
 ) -> Result<Goal, CommandError> {
     let goal = database.with(|connection| goals::set_status(connection, id, status, Utc::now()))?;
+    if status == GoalStatus::Done {
+        agents::publish(&app, AppEvent::GoalCompleted { goal_id: id })?;
+    }
     changed(&app, goal)
 }
 
@@ -106,6 +110,9 @@ pub fn set_milestone_status(
 ) -> Result<Milestone, CommandError> {
     let milestone = database
         .with(|connection| goals::set_milestone_status(connection, id, status, Utc::now()))?;
+    if status == MilestoneStatus::Done {
+        agents::publish(&app, AppEvent::MilestoneCompleted { milestone_id: id })?;
+    }
     changed(&app, milestone)
 }
 

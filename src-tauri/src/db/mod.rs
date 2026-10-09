@@ -8,6 +8,7 @@ pub mod nudges;
 pub mod prayer;
 pub mod profile;
 pub mod reminders;
+pub mod rewards;
 pub mod settings;
 pub mod skills;
 pub mod tasks;

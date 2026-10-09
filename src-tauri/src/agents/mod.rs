@@ -1,11 +1,15 @@
 pub mod coach;
 pub mod health;
 pub mod planner;
+pub mod rewards;
 pub mod rhythm;
 
 use chrono::{DateTime, Utc};
 use tauri::{App, AppHandle, Manager};
 
+use crate::domain::focus::FocusSessionId;
+use crate::domain::goals::{GoalId, MilestoneId};
+use crate::domain::health::HabitKind;
 use crate::domain::modes::Mode;
 use crate::domain::nudges::{AgentKind, Priority};
 use crate::domain::tasks::TaskId;
@@ -15,9 +19,26 @@ use crate::overlay::BubbleAction;
 #[derive(Debug, Clone, PartialEq)]
 pub enum AppEvent {
     Tick,
-    TaskCompleted { task_id: TaskId },
-    FocusCompleted,
-    ModeChanged { from: Option<Mode>, to: Mode },
+    TaskCompleted {
+        task_id: TaskId,
+    },
+    FocusCompleted {
+        session_id: FocusSessionId,
+        minutes: u16,
+    },
+    MilestoneCompleted {
+        milestone_id: MilestoneId,
+    },
+    GoalCompleted {
+        goal_id: GoalId,
+    },
+    HabitLogged {
+        kind: HabitKind,
+    },
+    ModeChanged {
+        from: Option<Mode>,
+        to: Mode,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -46,6 +67,7 @@ pub fn setup(app: &App) {
     app.manage(Agents(vec![
         Box::new(rhythm::RhythmAgent),
         Box::new(health::HealthAgent),
+        Box::new(rewards::RewardsAgent),
     ]));
     app.manage(coach::Coach::default());
 }
