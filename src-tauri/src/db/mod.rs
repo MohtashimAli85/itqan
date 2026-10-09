@@ -3,6 +3,7 @@ pub mod enums;
 pub mod focus;
 pub mod goals;
 pub mod migrations;
+pub mod nudges;
 pub mod prayer;
 pub mod profile;
 pub mod reminders;

@@ -1,5 +1,6 @@
 use tauri::{AppHandle, State};
 
+use crate::agents;
 use crate::error::CommandError;
 use crate::overlay::{
     self, BubbleAction, BubbleOrigin, FollowMode, HitAreas, OrbState, OverlaySnapshot,
@@ -83,6 +84,7 @@ pub fn resolve_bubble(
     match origin {
         Some(BubbleOrigin::Reminder { id, .. }) => scheduler::resolve_reminder(&app, id, action)?,
         Some(BubbleOrigin::Overtime) => scheduler::modes::resolve_overtime(&app, action)?,
+        Some(BubbleOrigin::Nudge { id, .. }) => agents::coach::resolve(&app, id, action)?,
         Some(BubbleOrigin::FocusDone) => {
             scheduler::modes::resolve_focus_done(&app, action)?;
             overlay::publish(&app, store.restore_base()?)?;

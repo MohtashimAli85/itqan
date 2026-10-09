@@ -4,6 +4,7 @@ pub mod focus;
 pub mod goals;
 pub mod levels;
 pub mod modes;
+pub mod nudges;
 pub mod profile;
 pub mod quick_add;
 pub mod recurrence;

@@ -8,6 +8,7 @@ use chrono::Utc;
 use tauri::{AppHandle, Manager};
 use tokio::sync::Notify;
 
+use crate::agents::{self, coach, AppEvent};
 use crate::db::Database;
 use crate::domain::reminders;
 use crate::error::AppError;
@@ -45,6 +46,12 @@ pub fn start(app: &AppHandle) {
                 },
                 |(_, pause)| pause,
             );
+            if let Err(error) = agents::publish(&app, AppEvent::Tick) {
+                tracing::warn!(%error, "agent tick failed");
+            }
+            if let Err(error) = coach::tick(&app, Utc::now()) {
+                tracing::warn!(%error, "coach tick failed");
+            }
             let pause = reminders.min(modes);
             tokio::select! {
                 () = tokio::time::sleep(pause) => {}
@@ -58,7 +65,18 @@ fn run_due(app: &AppHandle) -> Result<Duration, AppError> {
     let database = app.state::<Database>();
     let now = Utc::now();
     let due = database.with(|connection| reminders::due(connection, now))?;
+    let hold = modes::current(app)?.and_then(|status| {
+        status
+            .active_prayer
+            .map(|prayer| prayer.pause_until)
+            .or(status.focus.map(|focus| focus.ends_at))
+    });
     for reminder in &due {
+        if let (Some(until), false) = (hold, reminder.critical) {
+            database
+                .with(|connection| reminders::hold_until(connection, reminder.id, until, now))?;
+            continue;
+        }
         database.with(|connection| reminders::mark_fired(connection, reminder, now))?;
         delivery::deliver(app, reminder)?;
     }

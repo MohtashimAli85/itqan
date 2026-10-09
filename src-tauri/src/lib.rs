@@ -69,6 +69,9 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::goals::list_skills,
             commands::goals::create_skill,
             commands::goals::delete_skill,
+            commands::coach::get_nudge_budget,
+            commands::coach::set_nudge_budget,
+            commands::coach::list_recent_nudges,
         ])
         .events(collect_events![
             overlay::OverlayCursor,
@@ -111,6 +114,7 @@ pub fn run() {
             tray::setup(app)?;
             overlay::setup(app)?;
             overlay::restore_follow_mode(app.handle())?;
+            agents::setup(app);
             scheduler::start(app.handle());
             Ok(())
         })

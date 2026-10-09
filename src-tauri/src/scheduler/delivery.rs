@@ -4,6 +4,7 @@ use tauri_plugin_notification::NotificationExt;
 use tauri_specta::Event;
 
 use super::Scheduler;
+use crate::agents::{self, AppEvent};
 use crate::commands::events::TasksChanged;
 use crate::db::Database;
 use crate::domain::reminders::{self, Reminder, ReminderId, SNOOZE_MINUTES};
@@ -82,6 +83,7 @@ pub fn resolve_reminder(
                     tasks::set_status(connection, task_id, TaskStatus::Done, now)
                 })?;
                 TasksChanged.emit(app)?;
+                agents::publish(app, AppEvent::TaskCompleted { task_id })?;
             }
         }
         _ => {}

@@ -3,6 +3,7 @@ use tauri::{AppHandle, Manager, State};
 use tauri_specta::Event;
 
 use super::events::TasksChanged;
+use crate::agents::{self, AppEvent};
 use crate::db::Database;
 use crate::domain::categories::{self, Category, CategoryInput};
 use crate::domain::quick_add::{self, QuickAddOutcome};
@@ -57,6 +58,9 @@ pub fn set_task_status(
     status: TaskStatus,
 ) -> Result<Task, CommandError> {
     let task = database.with(|connection| tasks::set_status(connection, id, status, Utc::now()))?;
+    if status == TaskStatus::Done {
+        agents::publish(&app, AppEvent::TaskCompleted { task_id: id })?;
+    }
     changed(&app, task)
 }
 

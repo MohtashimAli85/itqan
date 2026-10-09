@@ -54,6 +54,9 @@ export const commands = {
 	listSkills: () => typedError<Skill[], CommandError>(__TAURI_INVOKE("list_skills")),
 	createSkill: (name: string) => typedError<Skill, CommandError>(__TAURI_INVOKE("create_skill", { name })),
 	deleteSkill: (id: number) => typedError<null, CommandError>(__TAURI_INVOKE("delete_skill", { id })),
+	getNudgeBudget: () => typedError<number, CommandError>(__TAURI_INVOKE("get_nudge_budget")),
+	setNudgeBudget: (perHour: number) => typedError<number, CommandError>(__TAURI_INVOKE("set_nudge_budget", { perHour })),
+	listRecentNudges: (limit: number) => typedError<Nudge[], CommandError>(__TAURI_INVOKE("list_recent_nudges", { limit })),
 };
 
 /** Events */
@@ -66,6 +69,8 @@ export const events = {
 };
 
 /* Types */
+export type AgentKind = "coach" | "planner" | "health" | "focusGuardian" | "learning" | "reviewer" | "memory";
+
 export type AppInfo = {
 	name: string,
 	version: string,
@@ -189,7 +194,23 @@ export type MotivatorWeight = {
 	weight: number,
 };
 
+export type Nudge = {
+	id: number,
+	agent: AgentKind,
+	kind: string,
+	priority: Priority,
+	text: string,
+	style: string | null,
+	mode: string | null,
+	firedAt: string,
+	outcome: Outcome | null,
+	action: string | null,
+	outcomeAt: string | null,
+};
+
 export type OrbState = "idle" | "happy" | "alert" | "focus" | "resting" | "critical" | "listening" | "evening";
+
+export type Outcome = "accepted" | "snoozed" | "dismissed" | "ignored";
 
 export type OverlayChanged = OverlaySnapshot;
 
@@ -238,6 +259,8 @@ export type PrayerWindow = {
 	pauseFrom: string,
 	pauseUntil: string,
 };
+
+export type Priority = "learningTip" | "rhythm" | "health" | "drift" | "critical";
 
 export type Profile = {
 	name: string | null,

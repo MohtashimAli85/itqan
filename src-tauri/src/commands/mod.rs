@@ -1,4 +1,5 @@
 pub mod app_info;
+pub mod coach;
 pub mod events;
 pub mod goals;
 pub mod modes;
