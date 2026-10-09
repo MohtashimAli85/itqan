@@ -584,7 +584,7 @@ After the app skeleton exists (step 0.5), run `codegraph init -i` so later sessi
 - [x] 1.9 Health agent (rules)
 - [x] 1.10 Rewards: XP, levels, streaks, sound, confetti
 - [x] 1.11 AI provider settings, keychain, routing
-- [ ] 1.12 Tray, main window screens, settings, autostart, hotkey
+- [x] 1.12 Tray, main window screens, settings, autostart, hotkey (sidebar vibrancy moved to 1.13)
 - [ ] 1.13 Performance and polish
 
 ---

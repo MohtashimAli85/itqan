@@ -1,21 +1,27 @@
-import { Link } from "@tanstack/react-router";
 import { AiSettingsForm } from "../settings/AiSettingsForm";
+import { HealthSettings } from "../settings/HealthSettings";
+import { NudgeSettings } from "../settings/NudgeSettings";
+import { OrbSettings } from "../settings/OrbSettings";
+import { Section } from "../settings/Section";
+import { SystemSettings } from "../settings/SystemSettings";
 
 export function Settings() {
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-8 p-10">
-      <header className="flex items-baseline justify-between">
-        <h1 className="font-heading text-3xl font-bold">Settings</h1>
-        <Link to="/" className="text-text-secondary text-sm underline">
-          Back
-        </Link>
-      </header>
-      <section aria-labelledby="ai" className="flex flex-col gap-4">
-        <h2 id="ai" className="font-heading text-xl font-semibold">
-          AI provider
-        </h2>
-        <AiSettingsForm />
-      </section>
+    <main className="flex min-w-0 flex-1 flex-col gap-6 overflow-y-auto p-8">
+      <h1 className="font-heading text-3xl font-bold">Settings</h1>
+      <div className="flex max-w-2xl flex-col gap-6">
+        <OrbSettings />
+        <NudgeSettings />
+        <HealthSettings />
+        <Section
+          id="ai"
+          title="AI provider"
+          description="Bring your own key, or run a model on this computer."
+        >
+          <AiSettingsForm />
+        </Section>
+        <SystemSettings />
+      </div>
     </main>
   );
 }

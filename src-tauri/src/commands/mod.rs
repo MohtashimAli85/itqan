@@ -10,4 +10,5 @@ pub mod profile;
 pub mod reminders;
 pub mod rewards;
 pub mod settings;
+pub mod system;
 pub mod tasks;

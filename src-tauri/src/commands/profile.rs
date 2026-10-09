@@ -27,10 +27,14 @@ pub fn is_onboarded(database: State<Database>) -> Result<bool, CommandError> {
 #[tauri::command]
 #[specta::specta]
 pub fn complete_onboarding(app: AppHandle, database: State<Database>) -> Result<(), CommandError> {
-    let name = database.with(|connection| {
+    let (first_time, name) = database.with(|connection| {
+        let first_time = !profile::is_onboarded(connection)?;
         profile::complete_onboarding(connection)?;
-        Ok(profile::get(connection)?.name)
+        Ok((first_time, profile::get(connection)?.name))
     })?;
+    if !first_time {
+        return Ok(());
+    }
     let greeting = match name {
         Some(name) => {
             format!("Assalamu alaikum, {name}. I'm here when you need me. Click me any time.")

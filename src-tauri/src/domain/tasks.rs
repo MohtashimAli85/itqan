@@ -204,6 +204,13 @@ pub fn completed_between(
     repo::count_completed_between(connection, from, to)
 }
 
+pub fn next_for_today(
+    connection: &Connection,
+    end: DateTime<Utc>,
+) -> Result<Option<Task>, AppError> {
+    repo::next_for_today(connection, end)
+}
+
 pub fn today_counts(
     connection: &Connection,
     start: DateTime<Utc>,

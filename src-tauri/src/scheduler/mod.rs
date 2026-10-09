@@ -12,6 +12,7 @@ use crate::agents::{self, coach, AppEvent};
 use crate::db::Database;
 use crate::domain::reminders;
 use crate::error::AppError;
+use crate::tray;
 
 pub use delivery::resolve_reminder;
 pub use modes::{ModeChanged, ModeEngine, ModeStatus};
@@ -52,6 +53,9 @@ pub fn start(app: &AppHandle) {
             if let Err(error) = coach::tick(&app, Utc::now()) {
                 tracing::warn!(%error, "coach tick failed");
             }
+            if let Err(error) = tray::refresh(&app) {
+                tracing::warn!(%error, "tray refresh failed");
+            }
             let pause = reminders.min(modes);
             tokio::select! {
                 () = tokio::time::sleep(pause) => {}
@@ -88,6 +92,7 @@ fn run_due(app: &AppHandle) -> Result<Duration, AppError> {
 
 pub fn refresh(app: &AppHandle) -> Result<ModeStatus, AppError> {
     let (status, _) = modes::evaluate(app)?;
+    tray::refresh(app)?;
     app.state::<Scheduler>().wake();
     Ok(status)
 }
