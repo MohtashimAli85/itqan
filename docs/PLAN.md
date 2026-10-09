@@ -563,7 +563,7 @@ After the app skeleton exists (step 0.5), run `codegraph init -i` so later sessi
 ## 13. Phase 0 steps (each is one MR)
 
 - [x] **0.1 Project docs.** Add `docs/PLAN.md` (this file), `CLAUDE.md`, `README.md` (short vision and status), `.gitignore`, `.editorconfig`, `LICENSE` (after the owner chooses, see section 14).
-- [ ] **0.2 Scaffold.** Tauri 2 + React + TS + Vite with pnpm (`pnpm create tauri-app`). If the CLI refuses a non-empty folder, scaffold in a temp folder and move the files in. App name Itqan, identifier agreed with the owner. App runs with `pnpm tauri dev`.
+- [x] **0.2 Scaffold.** Tauri 2 + React + TS + Vite with pnpm (`pnpm create tauri-app`). If the CLI refuses a non-empty folder, scaffold in a temp folder and move the files in. App name Itqan, identifier agreed with the owner. App runs with `pnpm tauri dev`.
 - [ ] **0.3 Tooling.** TS strict settings, ESLint, Prettier, rustfmt, clippy config, lefthook, commitlint, `.nvmrc`, `packageManager`, `rust-toolchain.toml`, package scripts.
 - [ ] **0.4 Design system.** Tailwind v4, then shadcn with `pnpm dlx shadcn@latest apply --preset b1FSRLMOG` exactly as given (if the CLI reports an unknown command, stop and ask). Add brand tokens from section 5, bundle the three fonts, light and dark themes, a small token preview page in the main window.
 - [ ] **0.5 Window structure.** Separate Vite entries for overlay and main; Tauri window config for both; capabilities with least privilege; tray icon with Quit; single-instance plugin. Then run `codegraph init -i`.
@@ -594,7 +594,7 @@ After the app skeleton exists (step 0.5), run `codegraph init -i` so later sessi
 1. ~~**Mac-first or cross-platform from day one?**~~ **Decided:** cross-platform by design, macOS first. Build and use on macOS first, keep platform code behind traits in `platform/`, check Windows from the overlay spike (1.0) onward.
 2. ~~**Licence.**~~ **Decided:** MIT. The repo is public.
 3. **Apple Developer account** for signing and notarisation (affects permissions and Gatekeeper warnings for other users).
-4. **App identifier**, for example `com.<owner>.itqan`.
+4. ~~**App identifier**~~ **Decided:** `dev.itqan.desktop`.
 5. **Repo host for the public release:** GitLab (current) or a GitHub mirror for discoverability.
 6. **Default coach style** for new users.
 
