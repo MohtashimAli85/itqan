@@ -32,6 +32,8 @@ version = "0.1.0"
 description = "Open-source desktop companion that keeps you focused and growing"
 authors = ["Mohtashim Ali"]
 edition = "2021"
+license = "MIT"
+publish = false
 
 [lib]
 # The `_lib` suffix may seem redundant but it is necessary

@@ -1,3 +1,5 @@
+#![allow(clippy::needless_pass_by_value)]
+
 use chrono::Utc;
 use itqan_contracts::TaskId;
 use tauri::State;

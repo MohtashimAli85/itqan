@@ -106,8 +106,7 @@ impl Subscriber for RhythmAgent {
             let local_midnight = timezone
                 .from_local_datetime(&today.and_hms_opt(0, 0, 0).unwrap_or_default())
                 .earliest()
-                .map(|midnight| midnight.with_timezone(&Utc))
-                .unwrap_or(now);
+                .map_or(now, |midnight| midnight.with_timezone(&Utc));
             let profile = profile::get(connection)?;
             let mut suggestions = Vec::new();
 

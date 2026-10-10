@@ -1,3 +1,5 @@
+#![allow(clippy::needless_pass_by_value)]
+
 use tauri::{AppHandle, State};
 
 use crate::coach;

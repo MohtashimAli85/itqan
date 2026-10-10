@@ -94,14 +94,19 @@ fn week_start(date: NaiveDate) -> NaiveDate {
     date - Duration::days(i64::from(date.weekday().num_days_from_monday()))
 }
 
-pub fn rule_plan(request: &PlanRequest) -> PlanProposal {
+fn horizon(request: &PlanRequest) -> (NaiveDate, i64, i64) {
     let first_week = week_start(request.today);
     let weeks = request
         .target_date
-        .map(|target| (target - first_week).num_days() / 7 + 1)
-        .unwrap_or(DEFAULT_WEEKS)
+        .map_or(DEFAULT_WEEKS, |target| {
+            (target - first_week).num_days() / 7 + 1
+        })
         .clamp(1, MAX_WEEKS);
-    let count = weeks.min(MAX_MILESTONES);
+    (first_week, weeks, weeks.min(MAX_MILESTONES))
+}
+
+pub fn rule_plan(request: &PlanRequest) -> PlanProposal {
+    let (first_week, weeks, count) = horizon(request);
     let kind = classify(&request.goal_title);
     let milestones: Vec<MilestoneInput> = (0..count)
         .map(|index| MilestoneInput {
@@ -207,13 +212,7 @@ pub async fn ai_plan(
     request: &PlanRequest,
     rules: &PlanProposal,
 ) -> Result<PlanProposal, AppError> {
-    let first_week = week_start(request.today);
-    let weeks = request
-        .target_date
-        .map(|target| (target - first_week).num_days() / 7 + 1)
-        .unwrap_or(DEFAULT_WEEKS)
-        .clamp(1, MAX_WEEKS);
-    let count = weeks.min(MAX_MILESTONES);
+    let (first_week, weeks, count) = horizon(request);
     let redaction = redact::redact(&request.goal_title);
     let user = format!(
         "Goal: <<<{}>>>\nWeeks available: {weeks}\nFree time: about {} sessions of {} minutes a week.",

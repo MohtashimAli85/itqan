@@ -50,6 +50,7 @@ struct EngineState {
     last: Option<ModeStatus>,
     extended_until: Option<DateTime<Utc>>,
     overtime_asked_at: Option<DateTime<Utc>>,
+    #[allow(clippy::option_option)]
     last_progress: Option<Option<f32>>,
 }
 
@@ -71,6 +72,7 @@ pub fn current(app: &AppHandle) -> Result<Option<ModeStatus>, AppError> {
     Ok(state.last.clone())
 }
 
+#[allow(clippy::too_many_lines)]
 pub fn evaluate(app: &AppHandle) -> Result<(ModeStatus, StdDuration), AppError> {
     let now = Utc::now();
     let database = app.state::<Database>();
@@ -81,6 +83,7 @@ pub fn evaluate(app: &AppHandle) -> Result<(ModeStatus, StdDuration), AppError> 
             let today = now.with_timezone(&timezone).date_naive();
             let (start, end) = crate::settings::day_bounds(timezone, today);
             let TodayCounts { done, open } = ports.today_task_counts(connection, start, end)?;
+            #[allow(clippy::cast_precision_loss)]
             let today_progress = (done + open > 0).then(|| done as f32 / (done + open) as f32);
             Ok((
                 modes::work_hours(connection)?,
@@ -101,7 +104,7 @@ pub fn evaluate(app: &AppHandle) -> Result<(ModeStatus, StdDuration), AppError> 
         celebrate_focus(app)?;
         bus::publish(
             app,
-            AppEvent::FocusCompleted {
+            &AppEvent::FocusCompleted {
                 session_id: id,
                 minutes,
             },
@@ -190,7 +193,7 @@ pub fn evaluate(app: &AppHandle) -> Result<(ModeStatus, StdDuration), AppError> 
     }
     drop(state);
     if mode_changed {
-        bus::publish(app, AppEvent::ModeChanged { from, to: mode })?;
+        bus::publish(app, &AppEvent::ModeChanged { from, to: mode })?;
     }
     let pause = if status.focus.is_some() {
         FOCUS_TICK

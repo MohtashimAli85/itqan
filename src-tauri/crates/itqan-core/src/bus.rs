@@ -97,12 +97,12 @@ impl Bus {
     }
 }
 
-pub fn publish(app: &AppHandle, event: AppEvent) -> Result<(), AppError> {
+pub fn publish(app: &AppHandle, event: &AppEvent) -> Result<(), AppError> {
     let now = Utc::now();
     let bus = app.state::<Bus>();
     let mut signals = Vec::new();
     for entry in &bus.subscribers {
-        match entry.subscriber.on_event(app, &event, now) {
+        match entry.subscriber.on_event(app, event, now) {
             Ok(mut found) => signals.append(&mut found),
             Err(error) => tracing::warn!(%error, owner = entry.owner, "agent failed"),
         }

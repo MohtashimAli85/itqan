@@ -88,7 +88,7 @@ fn load(app: &AppHandle) -> Result<TrayView, AppError> {
         let ports = app.state::<Ports>();
         let tasks_left = ports.today_task_counts(connection, now, end)?.open;
         let next_task = ports.next_task_for_today(connection, end)?;
-        Ok(view::view(TrayInputs {
+        Ok(view::view(&TrayInputs {
             focus_minutes_left: status
                 .as_ref()
                 .and_then(|status| status.focus.as_ref())

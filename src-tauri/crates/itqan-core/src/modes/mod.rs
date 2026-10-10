@@ -45,12 +45,9 @@ pub fn work_hours(connection: &Connection) -> Result<Vec<WorkDay>, AppError> {
     repo::list(connection)
 }
 
-pub fn set_work_hours(
-    connection: &Connection,
-    days: Vec<WorkDay>,
-) -> Result<Vec<WorkDay>, AppError> {
+pub fn set_work_hours(connection: &Connection, days: &[WorkDay]) -> Result<Vec<WorkDay>, AppError> {
     let mut seen = [false; 7];
-    for day in &days {
+    for day in days {
         let index = usize::from(day.weekday);
         if index > 6 || seen[index] {
             return Err(AppError::InvalidInput(
@@ -64,7 +61,7 @@ pub fn set_work_hours(
             ));
         }
     }
-    repo::save(connection, &days)?;
+    repo::save(connection, days)?;
     work_hours(connection)
 }
 
@@ -121,11 +118,11 @@ mod tests {
         let connection = test_connection();
         let mut days = work_hours(&connection).unwrap();
         days[0].end_minute = days[0].start_minute;
-        assert!(set_work_hours(&connection, days.clone()).is_err());
+        assert!(set_work_hours(&connection, &days).is_err());
 
         days[0].end_minute = 18 * 60;
         days[1].weekday = 0;
-        assert!(set_work_hours(&connection, days).is_err());
+        assert!(set_work_hours(&connection, &days).is_err());
     }
 
     #[test]

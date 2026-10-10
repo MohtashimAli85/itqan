@@ -24,9 +24,16 @@ pub fn schema_version(connection: &Connection) -> Result<u32, AppError> {
 
 pub fn run(connection: &mut Connection) -> Result<(), AppError> {
     let applied = schema_version(connection)? as usize;
+    if applied > MIGRATIONS.len() {
+        return Err(AppError::NewerSchema {
+            found: applied,
+            known: MIGRATIONS.len(),
+        });
+    }
     for (index, sql) in MIGRATIONS.iter().enumerate().skip(applied) {
         let transaction = connection.transaction()?;
         transaction.execute_batch(sql)?;
+        #[allow(clippy::cast_possible_wrap)]
         transaction.pragma_update(None, "user_version", index as i64 + 1)?;
         transaction.commit()?;
     }
@@ -117,6 +124,24 @@ mod tests {
             schema_version(&connection).unwrap() as usize,
             MIGRATIONS.len()
         );
+    }
+
+    #[test]
+    fn a_database_from_a_newer_build_is_refused() {
+        let mut connection = Connection::open_in_memory().unwrap();
+        run(&mut connection).unwrap();
+        connection
+            .pragma_update(
+                None,
+                "user_version",
+                i64::try_from(MIGRATIONS.len()).unwrap() + 1,
+            )
+            .unwrap();
+
+        assert!(matches!(
+            run(&mut connection),
+            Err(AppError::NewerSchema { .. })
+        ));
     }
 
     struct Notes(&'static [Migration]);

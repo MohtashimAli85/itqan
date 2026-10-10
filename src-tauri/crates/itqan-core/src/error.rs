@@ -23,6 +23,10 @@ pub enum AppError {
     Ai(#[from] crate::ai::client::AiError),
     #[error("platform error: {0}")]
     Platform(String),
+    #[error(
+        "this database is from a newer version of Itqan (schema {found}, this build knows {known})"
+    )]
+    NewerSchema { found: usize, known: usize },
 }
 
 #[derive(Debug, Serialize, Type)]

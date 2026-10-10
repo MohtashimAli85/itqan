@@ -65,12 +65,11 @@ fn resolve_all(
     for (kind, mut ids) in wanted {
         ids.sort_unstable();
         ids.dedup();
-        let infos = match ports.reminder_target(kind)? {
-            Some(owner) => Some(owner.describe(connection, &ids)?),
-            None => {
-                tracing::debug!(?kind, "reminders held: no target registered");
-                None
-            }
+        let infos = if let Some(owner) = ports.reminder_target(kind)? {
+            Some(owner.describe(connection, &ids)?)
+        } else {
+            tracing::debug!(?kind, "reminders held: no target registered");
+            None
         };
         known.insert(kind, infos);
     }
@@ -143,17 +142,17 @@ pub fn insert(
             "a reminder needs a task or a title".into(),
         ));
     }
-    let rrule = input
+    let rule = input
         .rrule
-        .map(|rule| rule.trim().to_owned())
-        .filter(|rule| !rule.is_empty());
-    let next_at = match &rrule {
-        Some(rule) => {
-            recurrence::validate(rule, input.at, timezone)?;
+        .map(|text| text.trim().to_owned())
+        .filter(|text| !text.is_empty());
+    let next_at = match &rule {
+        Some(text) => {
+            recurrence::validate(text, input.at, timezone)?;
             if input.at >= now {
                 Some(input.at)
             } else {
-                recurrence::next_after(rule, input.at, timezone, now)?
+                recurrence::next_after(text, input.at, timezone, now)?
             }
         }
         None => Some(input.at),
@@ -165,7 +164,7 @@ pub fn insert(
             title: title.as_deref(),
             anchor_at: input.at,
             next_at,
-            rrule: rrule.as_deref(),
+            rrule: rule.as_deref(),
             timezone: timezone.name(),
             critical: input.critical,
             created_at: now,
@@ -267,8 +266,8 @@ fn advance(
 ) -> Result<Option<DateTime<Utc>>, AppError> {
     match next_at {
         Some(next) if next <= now => match rrule {
-            Some(rule) => {
-                recurrence::next_after(rule, anchor_at, timezone.parse().unwrap_or(Tz::UTC), now)
+            Some(text) => {
+                recurrence::next_after(text, anchor_at, timezone.parse().unwrap_or(Tz::UTC), now)
             }
             None => Ok(None),
         },

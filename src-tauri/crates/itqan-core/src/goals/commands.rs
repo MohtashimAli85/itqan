@@ -1,3 +1,5 @@
+#![allow(clippy::needless_pass_by_value)]
+
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use specta::Type;
@@ -39,7 +41,7 @@ pub fn create_goal(
     database: State<Database>,
     input: GoalInput,
 ) -> Result<Goal, CommandError> {
-    let goal = database.with(|connection| goals::create(connection, input, Utc::now()))?;
+    let goal = database.with(|connection| goals::create(connection, &input, Utc::now()))?;
     changed(&app, goal)
 }
 
@@ -51,7 +53,7 @@ pub fn update_goal(
     id: GoalId,
     input: GoalInput,
 ) -> Result<Goal, CommandError> {
-    let goal = database.with(|connection| goals::update(connection, id, input))?;
+    let goal = database.with(|connection| goals::update(connection, id, &input))?;
     changed(&app, goal)
 }
 
@@ -65,7 +67,7 @@ pub fn set_goal_status(
 ) -> Result<Goal, CommandError> {
     let goal = database.with(|connection| goals::set_status(connection, id, status, Utc::now()))?;
     if status == GoalStatus::Done {
-        bus::publish(&app, AppEvent::GoalCompleted { goal_id: id })?;
+        bus::publish(&app, &AppEvent::GoalCompleted { goal_id: id })?;
     }
     changed(&app, goal)
 }
@@ -99,7 +101,7 @@ pub fn add_milestones(
     milestones: Vec<MilestoneInput>,
 ) -> Result<Vec<Milestone>, CommandError> {
     let saved =
-        database.with(|connection| goals::add_milestones(connection, goal_id, milestones))?;
+        database.with(|connection| goals::add_milestones(connection, goal_id, &milestones))?;
     changed(&app, saved)
 }
 
@@ -114,7 +116,7 @@ pub fn set_milestone_status(
     let milestone = database
         .with(|connection| goals::set_milestone_status(connection, id, status, Utc::now()))?;
     if status == MilestoneStatus::Done {
-        bus::publish(&app, AppEvent::MilestoneCompleted { milestone_id: id })?;
+        bus::publish(&app, &AppEvent::MilestoneCompleted { milestone_id: id })?;
     }
     changed(&app, milestone)
 }

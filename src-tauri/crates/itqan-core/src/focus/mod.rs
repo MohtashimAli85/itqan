@@ -92,6 +92,7 @@ pub fn status(session: FocusSession, now: DateTime<Utc>, windows: &[PrayerWindow
     let paused_for_prayer = windows
         .iter()
         .any(|window| window.pause_from <= now && now < window.pause_until);
+    #[allow(clippy::cast_precision_loss, clippy::cast_possible_truncation)]
     let progress = (elapsed.num_milliseconds() as f64 / planned.num_milliseconds() as f64) as f32;
     FocusStatus {
         session,

@@ -58,7 +58,7 @@ impl ActionHandler for HabitActions {
             app.state::<Activity>().reset_streak();
         }
         HealthChanged.emit(app)?;
-        bus::publish(app, AppEvent::HabitLogged { kind })
+        bus::publish(app, &AppEvent::HabitLogged { kind })
     }
 }
 
