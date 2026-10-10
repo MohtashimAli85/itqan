@@ -12,3 +12,7 @@ Phase 1 code is organised in layers (`commands/`, `domain/`, `db/`). Phase 2 tur
 - Migrations per module: tracking applied versions, ordering, and upgrading existing databases without data loss.
 - How tauri-specta collects commands and events from several crates.
 - The frontend module manifest and the boundary lint.
+- Owners for Phase 1 tables the module list does not name: `focus_sessions` (focus arrives in 2.6), `goals`, `milestones`, `skills` (learning arrives in 2.7), `work_hours` and modes, `nudges`.
+- How core avoids depending on modules while it needs their data (the Coach and focus need prayer windows; the mode engine needs today's task progress): provider traits in core implemented by modules, events, or both.
+- Where the reminder and recurrence engine lives, since both tasks and health create reminders and modules must not import each other.
+- How core-owned flows (onboarding, proposals) write to module-owned tables such as `tasks_areas`.

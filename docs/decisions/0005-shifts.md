@@ -11,3 +11,4 @@ Phase 2 splits the day into shifts, each with its own agent, tone and orb colour
 - `ShiftStarted` and `ShiftEnded` events and how the Coach uses them.
 - The day ledger: who writes notes, how commitments are followed up.
 - Orb colour and tone per shift.
+- Fallback anchors (clock times, work hours) when the salah module is disabled or has no location.

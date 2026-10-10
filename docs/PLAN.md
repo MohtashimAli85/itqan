@@ -13,11 +13,11 @@ These rules apply to every Claude session in this repo.
 1. **Go slow and do it properly.** Quality over speed. One small, reviewable step at a time.
 2. **One PR per step.** Each step in section 13 is one branch and one pull request. Do not combine steps.
 3. **Never push to `main`.** Work on a branch, commit, and open a PR. `main` is protected: PR and CI required.
-4. **The agent never merges.** It opens the PR with `gh`, runs an independent review pass (for example `/code-review`), fixes or explains every finding, reports, and stops. The owner merges. (The owner may grant a one-off exception, as for the Phase 2 overnight run on 2026-10-10.)
+4. **The agent never merges.** It opens the PR with `gh`, runs an independent review pass (for example `/code-review`), fixes or explains every finding, reports, and stops. The owner merges. The owner may grant a one-off exception for a named run; the only one so far covered steps 2.0.1 to 2.8 during the overnight run of 2026-10-10, and it does not carry over to later sessions.
 5. **Ask before adding any dependency** not listed in section 9. Retroactively approved: `regex`, `iana-time-zone`.
 6. **Ask before any decision this plan does not cover.** Do not guess on architecture.
 7. **Follow the code rules in section 11** and `CLAUDE.md`.
-8. **Keep this plan current.** When a step is done, tick it in section 13 in the same MR. If a decision changes, update this file in the same MR and say so in the MR description.
+8. **Keep this plan current.** When a step is done, tick it in section 13 in the same PR. If a decision changes, update this file in the same PR and say so in the PR description.
 9. **Run every check before saying a step is done:** lint, typecheck, tests, `cargo fmt --check`, `cargo clippy`. Report failures honestly.
 
 ---
@@ -314,7 +314,7 @@ New core tables:
 
 Changes:
 - `profile` slider weights migrate to `beliefs`.
-- `categories` becomes `tasks_areas` (owned by the tasks module).
+- `categories` becomes `tasks_categories` in 2.0.6 (rename only), then `tasks_areas` in 2.3 (owned by the tasks module).
 - Existing module tables are renamed with their module prefix during the 2.0 moves, with migrations that keep all user data. Every migration has a test proving existing rows survive.
 
 ---
@@ -394,6 +394,8 @@ Changes:
 | Dates | `chrono`, `chrono-tz`, `rrule` crate for recurrence in the scheduler |
 | HTTP for AI | `reqwest` with streaming |
 | Keychain | `keyring` |
+| Redaction | `regex` |
+| System timezone | `iana-time-zone` |
 | Tauri plugins | notification, autostart, global-shortcut, single-instance, updater, log; tray from core |
 | macOS | `tauri-nspanel` for the non-activating panel; `window-vibrancy` for the main window sidebar |
 
@@ -457,9 +459,9 @@ itqan/
     decisions/              one short ADR per decision that changes the plan
   .claude/
     skills/                 project skills (see 12)
-  .gitlab/
-    merge_request_templates/Default.md
-  .gitlab-ci.yml
+  .github/
+    pull_request_template.md
+    workflows/ci.yml
   src/
     overlay/                orb, bubbles, compact panel (own Vite entry, kept light)
     main/                   Today, Progress, Settings, Onboarding (own Vite entry)
@@ -537,6 +539,7 @@ Phase 2 moves this layout into a Cargo workspace and a module-based frontend. Se
 
 ### Quality gates (Phase 2, see section 16 C.6)
 - `cargo clippy -- -D warnings` everywhere, plus `clippy::pedantic` in `itqan-core` and `itqan-contracts`.
+- Once the Cargo workspace exists, every cargo check runs with `--workspace` so module crates are never skipped.
 - `cargo-deny` for licences, advisories and duplicate dependencies.
 - Coverage of at least 80% lines for core and module domain code; UI excluded.
 - Contract tests: every published event round-trips through serde.
@@ -563,8 +566,8 @@ Desktop companion app: Tauri 2 + Rust core + React/TS (Vite), pnpm only.
 Source of truth: docs/PLAN.md. Read it before starting any task.
 
 ## Workflow
-- One plan step = one branch = one MR. Never push to main.
-- Create MRs with glab only when asked.
+- One plan step = one branch = one PR (GitHub, `gh`). Never push to main.
+- Never merge: open the PR, run an independent review (`/code-review`), fix or explain every finding, then stop. The owner merges unless they grant a one-off exception for a named run.
 - Ask before adding dependencies or making decisions not in the plan.
 - Tick the step in docs/PLAN.md when done.
 
@@ -572,11 +575,13 @@ Source of truth: docs/PLAN.md. Read it before starting any task.
 - pnpm dev / pnpm build
 - pnpm lint / pnpm typecheck / pnpm test
 - cargo fmt --check / cargo clippy -- -D warnings / cargo test (in src-tauri)
+- cargo test also regenerates src/shared/bindings/bindings.ts; commit it with Rust command changes
 
 ## Rules
 - No comments unless truly needed.
 - TS strict, no any. Tailwind tokens only, no raw hex.
 - Rust: no unwrap outside tests; logic in domain/, commands stay thin.
+- Structs crossing IPC use `#[serde(rename_all = "camelCase")]`.
 - Times in UTC. Keys only in the OS keychain. Never log secrets or captured text.
 - Overlay must be idle when nothing moves.
 - All Day.js imports via src/shared/lib/dayjs.ts.
@@ -635,11 +640,11 @@ Each step is one PR unless split further during the work. Every step that introd
 
 **2.0 Module architecture (no behaviour change)**
 - [ ] 2.0.1 ADR 0003: module contract, contracts crate, event bus, migrations per module, frontend manifest
-- [ ] 2.0.2 Cargo workspace with `itqan-contracts` and `itqan-core`; move bus, db and settings framework; app still behaves the same
+- [ ] 2.0.2 Cargo workspace with `itqan-contracts` and `itqan-core`; move the event dispatch (today's `agents::publish`), db and settings framework; app still behaves the same
 - [ ] 2.0.3 Frontend `core` / `shared` / `modules` layout, module registry, boundary lint in CI
 - [ ] 2.0.4 Move Salah into `itqan-salah` and `src/modules/salah`
 - [ ] 2.0.5 Move Health
-- [ ] 2.0.6 Move Tasks (with reminders and categories)
+- [ ] 2.0.6 Move Tasks (with reminders and categories; `categories` is renamed `tasks_categories` with the same meaning, and becomes `tasks_areas` in 2.3)
 - [ ] 2.0.7 Move Progress (XP, levels, streaks, badges)
 - [ ] 2.0.8 Quality gates: cargo-deny, coverage thresholds, clippy pedantic on core and contracts, contract tests, PR checklist update
 - [ ] 2.0.9 Module enable and disable in Settings
@@ -679,7 +684,7 @@ Each step is one PR unless split further during the work. Every step that introd
 5. ~~**Repo host for the public release.**~~ **Decided:** GitHub with `gh` and pull requests.
 6. **Default coach style** for new users.
 
-### Phase 2 decisions (section G of the Phase 2 plan), decided by the owner on 2026-10-10
+### Phase 2 decisions, made by the owner on 2026-10-10
 1. **Shifts:** use the five defaults (Morning, Work, Break / salah, Evening, Night). Work hours come from the existing work-hours settings.
 2. **Coverage threshold:** 80% lines for core and module logic.
 3. **Health Level 3** (phone data): not in Phase 2; decide later.

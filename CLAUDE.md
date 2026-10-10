@@ -5,7 +5,7 @@ Source of truth: docs/PLAN.md. Read it before starting any task.
 
 ## Workflow
 - One plan step = one branch = one PR (GitHub, `gh`). Never push to main.
-- Never merge: open the PR, run an independent review (`/code-review`), fix or explain every finding, then stop. The owner merges.
+- Never merge: open the PR, run an independent review (`/code-review`), fix or explain every finding, then stop. The owner merges unless they grant a one-off exception for a named run.
 - Ask before adding dependencies or making decisions not in the plan.
 - Tick the step in docs/PLAN.md when done.
 
