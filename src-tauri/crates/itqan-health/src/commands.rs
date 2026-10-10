@@ -2,9 +2,10 @@ use chrono::{NaiveTime, TimeZone, Utc};
 use tauri::{AppHandle, State};
 use tauri_specta::Event;
 
-use super::events::HealthChanged;
-use crate::agents::{self, AppEvent};
-use crate::domain::health::{self, HabitId, HabitKind, HealthOverview, Medicine};
+use crate::habits::{self as health, HabitId, HabitKind, HealthOverview, Medicine};
+use crate::HealthChanged;
+use itqan_contracts::AppEvent;
+use itqan_core::bus;
 use itqan_core::db::Database;
 use itqan_core::error::{AppError, CommandError};
 use itqan_core::scheduler::Scheduler;
@@ -48,7 +49,7 @@ pub fn log_habit(
     kind: HabitKind,
 ) -> Result<(), CommandError> {
     database.with(|connection| health::log(connection, kind, Utc::now()))?;
-    agents::publish(&app, AppEvent::HabitLogged { kind })?;
+    bus::publish(&app, AppEvent::HabitLogged { kind })?;
     changed(&app, ())
 }
 

@@ -5,7 +5,7 @@ import { Label } from "@/shared/components/ui/label";
 import { Switch } from "@/shared/components/ui/switch";
 import { unwrap } from "@/shared/lib/result";
 import { useAppInfo } from "../hooks/useAppInfo";
-import { Section } from "./Section";
+import { Section } from "@/core/ui/Section";
 
 function useToggle(
   key: string,

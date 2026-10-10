@@ -9,13 +9,11 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/shared/components/ui/tabs";
-import { HealthTab } from "./HealthTab";
 import { ProgressRow } from "./ProgressRow";
 import { TodayTab } from "./TodayTab";
 
 const coreTabs: PanelTab[] = [
   { id: "today", label: "Today", order: 10, Component: TodayTab },
-  { id: "health", label: "Health", order: 20, Component: HealthTab },
 ];
 
 type CompactPanelProps = {

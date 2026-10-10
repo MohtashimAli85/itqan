@@ -5,9 +5,9 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Switch } from "@/shared/components/ui/switch";
-import { useHealthOverview } from "@/shared/hooks/useHealth";
+import { useHealthOverview } from "../hooks/useHealth";
 import { unwrap } from "@/shared/lib/result";
-import { Section } from "./Section";
+import { Section } from "@/core/ui/Section";
 
 export function HealthSettings() {
   const { data: health } = useHealthOverview();

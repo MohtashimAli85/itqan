@@ -5,9 +5,6 @@ use specta::Type;
 pub struct TasksChanged;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type, tauri_specta::Event)]
-pub struct HealthChanged;
-
-#[derive(Debug, Clone, Serialize, Deserialize, Type, tauri_specta::Event)]
 pub struct Navigate {
     pub to: String,
 }

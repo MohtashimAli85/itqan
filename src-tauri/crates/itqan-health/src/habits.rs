@@ -4,7 +4,7 @@ use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
-use crate::db::health as repo;
+use crate::repo;
 
 use itqan_core::db::settings as settings_repo;
 use itqan_core::error::AppError;
@@ -232,7 +232,11 @@ mod tests {
     use chrono::TimeZone;
 
     use super::*;
-    use itqan_core::db::test_connection;
+    use rusqlite::Connection;
+
+    fn test_connection() -> Connection {
+        itqan_core::db::test_connection_with(&[&crate::HealthModule])
+    }
 
     fn now() -> DateTime<Utc> {
         Utc.with_ymd_and_hms(2026, 10, 10, 6, 0, 0).unwrap()

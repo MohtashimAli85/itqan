@@ -4,13 +4,15 @@ use tauri::{AppHandle, Manager};
 use itqan_core::actions::{ActionHandler, LATER};
 use tauri_specta::Event;
 
-use super::{action, AppEvent, Signal, Subscriber};
-use crate::commands::events::HealthChanged;
-use crate::domain::health::{self, AgeBand, HabitKind};
+use crate::habits::{self as health, AgeBand, HabitKind};
+use crate::HealthChanged;
+use itqan_contracts::AppEvent;
 use itqan_core::activity::Activity;
+use itqan_core::bus::{self, Signal, Subscriber};
 use itqan_core::db::Database;
 use itqan_core::error::AppError;
 use itqan_core::nudges::{self, AgentKind, Priority};
+use itqan_core::overlay::action;
 use itqan_core::profile;
 use itqan_core::settings;
 
@@ -56,7 +58,7 @@ impl ActionHandler for HabitActions {
             app.state::<Activity>().reset_streak();
         }
         HealthChanged.emit(app)?;
-        super::publish(app, AppEvent::HabitLogged { kind })
+        bus::publish(app, AppEvent::HabitLogged { kind })
     }
 }
 
@@ -67,7 +69,7 @@ fn due(last: Option<DateTime<Utc>>, now: DateTime<Utc>, every: Duration) -> bool
 fn suggestion(
     kind: &str,
     text: String,
-    actions: Vec<crate::overlay::BubbleAction>,
+    actions: Vec<itqan_core::overlay::BubbleAction>,
     now: DateTime<Utc>,
 ) -> Signal {
     Signal {

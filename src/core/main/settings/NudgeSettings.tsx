@@ -5,7 +5,7 @@ import { Label } from "@/shared/components/ui/label";
 import { Slider } from "@/shared/components/ui/slider";
 import { dayjs } from "@/shared/lib/dayjs";
 import { unwrap } from "@/shared/lib/result";
-import { Section } from "./Section";
+import { Section } from "@/core/ui/Section";
 
 const key = ["coach-settings"];
 
