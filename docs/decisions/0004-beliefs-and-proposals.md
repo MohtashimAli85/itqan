@@ -93,7 +93,8 @@ Rule-based learners (2.1.5) read observations, update observed beliefs (section 
 
 ### 6. AI and the no-key fallback (2.1.4)
 - **With a key:** the five onboarding questions (PLAN D.2) are answered in a short chat. The smart model turns the answers into a JSON list of `{statement, kind, subject, value, strength}`. For motivators, the relative weight comes from the strength (high 3, medium 2, low 1), never from a number the model makes up. It is parsed the way the planner parses its plan: extract the JSON, validate every field against the known kinds and subjects, drop anything invalid, and treat unknown subjects as `note`. The user sees the list and can edit or remove each item before saving. Saved items are `source = said`, `confidence = 0.8`. Answers are redacted before sending, as all AI input is.
-- **Without a key:** the same screen offers simple choices: pick what matters from the motivator list (each pick becomes a medium-strength motivator belief with relative weight 2, so the picks share equally after normalising) and choose a coach style. The chat is offered later from Settings once a key exists.
+- **Without a key:** the step keeps its simple choices: the motivator sliders and the coach-style picker (amended in 2.1.4; the sliders were already the simple path, and replacing them with plain picks would have lost the user's relative weights). The chat is offered whenever an AI provider is ready, including from Settings → Edit profile once a key exists.
+- **Who writes what:** chat motivators and the coach style go back into the onboarding form, so `profile::save` stays their single writer. Only `note` drafts are saved directly, as `said` beliefs.
 - AI never creates an active belief on its own: chat output is shown for review first, and anything learned later goes through a proposal.
 
 ### 7. Where proposals appear

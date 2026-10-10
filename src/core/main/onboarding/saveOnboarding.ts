@@ -19,5 +19,8 @@ export async function saveOnboarding(
   const settings = toPrayerSettings(values, prayer);
   if (settings) unwrap(await commands.setPrayerSettings(settings));
   unwrap(await commands.setFollowMode(values.followMode));
+  if (values.beliefNotes.length > 0) {
+    unwrap(await commands.saveBeliefNotes(values.beliefNotes));
+  }
   unwrap(await commands.completeOnboarding());
 }

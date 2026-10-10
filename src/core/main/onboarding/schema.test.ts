@@ -5,6 +5,7 @@ import type {
   WorkDay,
 } from "@/shared/bindings/bindings";
 import {
+  applyDrafts,
   defaultValues,
   onboardingSchema,
   toPrayerSettings,
@@ -83,5 +84,52 @@ describe("onboarding schema", () => {
     expect(settings?.enabled).toBe(true);
     expect(settings?.city).toBe("Karachi");
     expect(toPrayerSettings({ ...values, cityId: "" }, prayer)).toBeNull();
+  });
+});
+
+describe("applyDrafts", () => {
+  const values = defaultValues(profile, workDays, prayer, "follow");
+
+  it("turns motivator strengths into weights and keeps notes aside", () => {
+    const next = applyDrafts(values, [
+      {
+        statement: "Rust matters a lot",
+        kind: "motivator",
+        subject: { type: "motivator", motivator: "learning" },
+        strength: "high",
+      },
+      {
+        statement: "Family time",
+        kind: "motivator",
+        subject: { type: "motivator", motivator: "family" },
+        strength: "low",
+      },
+      {
+        statement: "Be direct",
+        kind: "preference",
+        subject: { type: "coachStyle", style: "manager" },
+        strength: "medium",
+      },
+      {
+        statement: "I lose evenings to YouTube",
+        kind: "pattern",
+        subject: { type: "note" },
+        strength: "medium",
+      },
+    ]);
+
+    expect(next.motivators.learning).toBe(9);
+    expect(next.motivators.family).toBe(3);
+    expect(next.motivators.building).toBe(0);
+    expect(next.coachStyle).toBe("manager");
+    expect(next.beliefNotes.map((note) => note.statement)).toEqual([
+      "I lose evenings to YouTube",
+    ]);
+  });
+
+  it("keeps what was there when the chat named no motivator or style", () => {
+    const next = applyDrafts(values, []);
+    expect(next.motivators).toEqual(values.motivators);
+    expect(next.coachStyle).toBe(values.coachStyle);
   });
 });

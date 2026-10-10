@@ -653,7 +653,7 @@ Each step is one PR unless split further during the work. Every step that introd
 - [x] 2.1.1 ADR 0004: beliefs and proposals
 - [x] 2.1.2 Beliefs tables and migration from sliders
 - [x] 2.1.3 Proposals engine and approval UI (panel and main window)
-- [ ] 2.1.4 Conversational onboarding with no-key fallback
+- [x] 2.1.4 Conversational onboarding with no-key fallback
 - [ ] 2.1.5 Signal collection and rule-based proposals
 
 **2.2 Shifts**

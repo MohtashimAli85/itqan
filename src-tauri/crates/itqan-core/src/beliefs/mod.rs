@@ -1,3 +1,5 @@
+pub mod commands;
+pub mod drafts;
 mod repo;
 
 use chrono::{DateTime, Utc};
@@ -12,9 +14,9 @@ pub type BeliefId = i32;
 
 const MOTIVATOR_PREFIX: &str = "motivator.";
 const COACH_STYLE: &str = "coach.style";
-const SAID_CONFIDENCE: f64 = 0.8;
+pub(crate) const SAID_CONFIDENCE: f64 = 0.8;
 const CONFIRMED_CONFIDENCE: f64 = 0.9;
-const NOTE: &str = "note";
+pub(crate) const NOTE: &str = "note";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
