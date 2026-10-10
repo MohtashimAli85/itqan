@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use rusqlite::{params, params_from_iter, Connection, OptionalExtension, Row};
+use rusqlite::{params, Connection, OptionalExtension, Row};
 
 use super::{NewProposal, Proposal, ProposalId, ProposalStatus};
 use crate::beliefs::BeliefId;
@@ -35,11 +35,35 @@ pub fn is_blocked(
     Ok(connection.query_row(
         "SELECT EXISTS (
              SELECT 1 FROM proposals
-             WHERE key = ?1 AND (status = 'pending' OR suppressed_until > ?2)
+             WHERE key = ?1
+               AND ((status = 'pending' AND expires_at > ?2) OR suppressed_until > ?2)
          )",
         params![key, now],
         |row| row.get(0),
     )?)
+}
+
+pub struct Due {
+    pub id: ProposalId,
+    pub kind: String,
+    pub key: String,
+    pub expires_at: DateTime<Utc>,
+}
+
+pub fn due(connection: &Connection, now: DateTime<Utc>) -> Result<Vec<Due>, AppError> {
+    let mut statement = connection.prepare(
+        "SELECT id, kind, key, expires_at FROM proposals
+         WHERE status = 'pending' AND expires_at <= ?1",
+    )?;
+    let rows = statement.query_map([now], |row| {
+        Ok(Due {
+            id: row.get(0)?,
+            kind: row.get(1)?,
+            key: row.get(2)?,
+            expires_at: row.get(3)?,
+        })
+    })?;
+    Ok(rows.collect::<rusqlite::Result<_>>()?)
 }
 
 pub fn insert(
@@ -75,50 +99,38 @@ fn placeholders(count: usize, offset: usize) -> String {
         .join(", ")
 }
 
-pub fn pending(connection: &Connection, kinds: &[String]) -> Result<Vec<Proposal>, AppError> {
+pub fn pending(
+    connection: &Connection,
+    kinds: &[String],
+    now: DateTime<Utc>,
+) -> Result<Vec<Proposal>, AppError> {
     if kinds.is_empty() {
         return Ok(Vec::new());
     }
     let sql = format!(
-        "SELECT {COLUMNS} FROM proposals WHERE status = 'pending' AND kind IN ({})
+        "SELECT {COLUMNS} FROM proposals
+         WHERE status = 'pending' AND expires_at > ?1 AND kind IN ({})
          ORDER BY created_at, id",
-        placeholders(kinds.len(), 1)
+        placeholders(kinds.len(), 2)
     );
+    let mut values: Vec<&dyn rusqlite::ToSql> = vec![&now];
+    values.extend(kinds.iter().map(|kind| kind as &dyn rusqlite::ToSql));
     let mut statement = connection.prepare(&sql)?;
-    let rows = statement.query_map(params_from_iter(kinds), from_row)?;
+    let rows = statement.query_map(values.as_slice(), from_row)?;
     Ok(rows.collect::<rusqlite::Result<_>>()?)
 }
 
-pub fn expire(
+pub fn find_pending(
     connection: &Connection,
-    kinds: &[String],
+    id: ProposalId,
     now: DateTime<Utc>,
-    quiet_until: DateTime<Utc>,
-) -> Result<(), AppError> {
-    if kinds.is_empty() {
-        return Ok(());
-    }
+) -> Result<Option<Stored>, AppError> {
     let sql = format!(
-        "UPDATE proposals SET status = 'expired', decided_at = ?1, suppressed_until = ?2
-         WHERE status = 'pending' AND expires_at <= ?1 AND kind IN ({})",
-        placeholders(kinds.len(), 3)
-    );
-    let mut values: Vec<Box<dyn rusqlite::ToSql>> = vec![Box::new(now), Box::new(quiet_until)];
-    values.extend(
-        kinds
-            .iter()
-            .map(|kind| Box::new(kind.clone()) as Box<dyn rusqlite::ToSql>),
-    );
-    connection.execute(&sql, params_from_iter(values.iter().map(AsRef::as_ref)))?;
-    Ok(())
-}
-
-pub fn find_pending(connection: &Connection, id: ProposalId) -> Result<Option<Stored>, AppError> {
-    let sql = format!(
-        "SELECT {COLUMNS}, payload, belief_id FROM proposals WHERE id = ?1 AND status = 'pending'"
+        "SELECT {COLUMNS}, payload, belief_id FROM proposals
+         WHERE id = ?1 AND status = 'pending' AND expires_at > ?2"
     );
     connection
-        .query_row(&sql, [id], |row| {
+        .query_row(&sql, params![id, now], |row| {
             let payload: String = row.get(8)?;
             Ok((from_row(row)?, payload, row.get(9)?))
         })

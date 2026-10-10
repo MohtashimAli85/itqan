@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 use tauri::AppHandle;
 
-use crate::beliefs::{self, BeliefId};
+use crate::beliefs::{self, BeliefId, BeliefStatus};
 use crate::error::AppError;
 
 pub type ProposalId = i32;
@@ -131,11 +131,42 @@ impl ProposalRegistry {
     }
 }
 
+fn expire(connection: &Connection, due: &repo::Due) -> Result<(), AppError> {
+    repo::decide(
+        connection,
+        due.id,
+        ProposalStatus::Expired,
+        due.expires_at,
+        Some(due.expires_at + Duration::days(QUIET_AFTER_EXPIRY)),
+    )
+}
+
+pub fn sweep(
+    connection: &Connection,
+    registry: &ProposalRegistry,
+    now: DateTime<Utc>,
+) -> Result<bool, AppError> {
+    let kinds = registry.kinds()?;
+    let mut expired = false;
+    for due in repo::due(connection, now)? {
+        if kinds.contains(&due.kind) {
+            expire(connection, &due)?;
+            expired = true;
+        }
+    }
+    Ok(expired)
+}
+
 pub fn open(
     connection: &Connection,
     proposal: &NewProposal,
     now: DateTime<Utc>,
 ) -> Result<Option<ProposalId>, AppError> {
+    for due in repo::due(connection, now)? {
+        if due.key == proposal.key {
+            expire(connection, &due)?;
+        }
+    }
     if repo::is_blocked(connection, &proposal.key, now)? {
         return Ok(None);
     }
@@ -147,14 +178,7 @@ pub fn pending(
     registry: &ProposalRegistry,
     now: DateTime<Utc>,
 ) -> Result<Vec<Proposal>, AppError> {
-    let kinds = registry.kinds()?;
-    repo::expire(
-        connection,
-        &kinds,
-        now,
-        now + Duration::days(QUIET_AFTER_EXPIRY),
-    )?;
-    repo::pending(connection, &kinds)
+    repo::pending(connection, &registry.kinds()?, now)
 }
 
 pub fn accept(
@@ -164,9 +188,23 @@ pub fn accept(
     now: DateTime<Utc>,
 ) -> Result<Option<Arc<dyn ProposalHandler>>, AppError> {
     let transaction = connection.unchecked_transaction()?;
-    let Some(stored) = repo::find_pending(&transaction, id)? else {
+    let Some(stored) = repo::find_pending(&transaction, id, now)? else {
         return Ok(None);
     };
+    if let Some(belief) = stored.belief_id {
+        let status = beliefs::find(&transaction, belief)?.status;
+        if !matches!(status, BeliefStatus::Proposed | BeliefStatus::Active) {
+            repo::decide(
+                &transaction,
+                id,
+                ProposalStatus::Expired,
+                now,
+                Some(now + Duration::days(QUIET_AFTER_EXPIRY)),
+            )?;
+            transaction.commit()?;
+            return Ok(None);
+        }
+    }
     let handler = registry
         .handler(&stored.proposal.kind)?
         .ok_or_else(|| AppError::NotFound(format!("a handler for {}", stored.proposal.kind)))?;
@@ -181,11 +219,13 @@ pub fn accept(
 
 pub fn reject(connection: &Connection, id: ProposalId, now: DateTime<Utc>) -> Result<(), AppError> {
     let transaction = connection.unchecked_transaction()?;
-    let Some(stored) = repo::find_pending(&transaction, id)? else {
+    let Some(stored) = repo::find_pending(&transaction, id, now)? else {
         return Ok(());
     };
     if let Some(belief) = stored.belief_id {
-        beliefs::reject(&transaction, belief, now)?;
+        if beliefs::find(&transaction, belief)?.status == BeliefStatus::Proposed {
+            beliefs::reject(&transaction, belief, now)?;
+        }
     }
     repo::decide(
         &transaction,
@@ -203,7 +243,7 @@ mod tests {
     use chrono::TimeZone;
 
     use super::*;
-    use crate::beliefs::{BeliefKind, BeliefSource, BeliefStatus, NewBelief, Strength};
+    use crate::beliefs::{BeliefKind, BeliefSource, NewBelief, Strength};
     use crate::db::settings;
     use crate::db::test_connection;
 
@@ -352,6 +392,58 @@ mod tests {
     }
 
     #[test]
+    fn an_expired_proposal_cannot_be_accepted_and_does_not_block_a_new_one() {
+        let connection = test_connection();
+        let registry = registry();
+        let id = open(&connection, &focus(30, None), now()).unwrap().unwrap();
+        let late = now() + Duration::days(15);
+
+        assert!(accept(&connection, &registry, id, late).unwrap().is_none());
+        assert!(settings::get(&connection, "focus_minutes")
+            .unwrap()
+            .is_none());
+        assert!(
+            open(&connection, &focus(30, None), now() + Duration::days(29))
+                .unwrap()
+                .is_some()
+        );
+    }
+
+    #[test]
+    fn rejecting_never_demotes_an_active_belief() {
+        let connection = test_connection();
+        let belief = observed(&connection, 30);
+        beliefs::confirm(&connection, belief, now()).unwrap();
+        let id = open(&connection, &focus(30, Some(belief)), now())
+            .unwrap()
+            .unwrap();
+
+        reject(&connection, id, now()).unwrap();
+
+        assert_eq!(
+            beliefs::find(&connection, belief).unwrap().status,
+            BeliefStatus::Active
+        );
+    }
+
+    #[test]
+    fn a_stale_belief_turns_the_proposal_away() {
+        let connection = test_connection();
+        let registry = registry();
+        let belief = observed(&connection, 30);
+        let id = open(&connection, &focus(30, Some(belief)), now())
+            .unwrap()
+            .unwrap();
+        beliefs::reject(&connection, belief, now()).unwrap();
+
+        assert!(accept(&connection, &registry, id, now()).unwrap().is_none());
+        assert!(settings::get(&connection, "focus_minutes")
+            .unwrap()
+            .is_none());
+        assert!(pending(&connection, &registry, now()).unwrap().is_empty());
+    }
+
+    #[test]
     fn one_pending_proposal_per_key() {
         let connection = test_connection();
         assert!(open(&connection, &focus(30, None), now())
@@ -388,8 +480,9 @@ mod tests {
         let without = ProposalRegistry::default();
 
         let later = now() + Duration::days(20);
-        assert!(pending(&connection, &without, later).unwrap().is_empty());
-        assert!(accept(&connection, &without, 1, later).is_err());
+        assert!(pending(&connection, &without, now()).unwrap().is_empty());
+        assert!(!sweep(&connection, &without, later).unwrap());
+        assert!(accept(&connection, &without, 1, now()).is_err());
 
         full.unregister("core:focus_minutes").unwrap();
         full.register("core:focus_minutes", SetFocus).unwrap();

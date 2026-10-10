@@ -60,6 +60,9 @@ pub fn start(app: &AppHandle) {
             if let Err(error) = coach::tick(&app, Utc::now()) {
                 tracing::warn!(%error, "coach tick failed");
             }
+            if let Err(error) = crate::proposals::commands::sweep(&app) {
+                tracing::warn!(%error, "proposal sweep failed");
+            }
             if let Err(error) = tray::refresh(&app) {
                 tracing::warn!(%error, "tray refresh failed");
             }

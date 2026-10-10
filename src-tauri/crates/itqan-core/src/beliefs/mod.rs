@@ -117,6 +117,14 @@ pub fn find(connection: &Connection, id: BeliefId) -> Result<Belief, AppError> {
 
 pub fn confirm(connection: &Connection, id: BeliefId, now: DateTime<Utc>) -> Result<(), AppError> {
     let belief = find(connection, id)?;
+    if matches!(
+        belief.status,
+        BeliefStatus::Rejected | BeliefStatus::Archived
+    ) {
+        return Err(AppError::InvalidInput(format!(
+            "belief {id} is no longer open"
+        )));
+    }
     if belief.subject != NOTE {
         if let Some(current) = repo::active_for(connection, &belief.subject)? {
             if current.id != id {

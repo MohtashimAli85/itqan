@@ -13,6 +13,16 @@ use crate::error::{AppError, CommandError};
 #[derive(Debug, Clone, Serialize, Deserialize, Type, tauri_specta::Event)]
 pub struct ProposalsChanged;
 
+pub fn sweep(app: &AppHandle) -> Result<(), AppError> {
+    let expired = app.state::<Database>().with(|connection| {
+        super::sweep(connection, &app.state::<ProposalRegistry>(), Utc::now())
+    })?;
+    if expired {
+        ProposalsChanged.emit(app)?;
+    }
+    Ok(())
+}
+
 #[tauri::command]
 #[specta::specta]
 pub fn list_proposals(
