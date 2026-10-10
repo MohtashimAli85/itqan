@@ -1,8 +1,6 @@
+import { lazyRouteComponent } from "@tanstack/react-router";
 import type { ModuleManifest } from "@/core/registry/types";
 import { AreasNav, TasksNav } from "./components/TasksNav";
-import { CategoryView } from "./pages/CategoryView";
-import { Today } from "./pages/Today";
-import { Upcoming } from "./pages/Upcoming";
 import { TodayLeft } from "./panel/TodayLeft";
 import { TodayTab } from "./panel/TodayTab";
 import { TasksSync } from "./TasksSync";
@@ -10,9 +8,24 @@ import { TasksSync } from "./TasksSync";
 export const tasks: ModuleManifest = {
   id: "tasks",
   routes: [
-    { path: "/", Component: Today },
-    { path: "/upcoming", Component: Upcoming },
-    { path: "/category/$categoryId", Component: CategoryView },
+    {
+      path: "/",
+      Component: lazyRouteComponent(() => import("./pages/Today"), "Today"),
+    },
+    {
+      path: "/upcoming",
+      Component: lazyRouteComponent(
+        () => import("./pages/Upcoming"),
+        "Upcoming",
+      ),
+    },
+    {
+      path: "/category/$categoryId",
+      Component: lazyRouteComponent(
+        () => import("./pages/CategoryView"),
+        "CategoryView",
+      ),
+    },
   ],
   sidebarSections: [
     { id: "tasks", order: 10, Component: TasksNav },
