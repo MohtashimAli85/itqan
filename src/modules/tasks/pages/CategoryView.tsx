@@ -1,8 +1,8 @@
 import { useParams } from "@tanstack/react-router";
-import { useCategories, useTasks } from "@/shared/hooks/useTasks";
-import { todaySections, upcomingGroups } from "@/shared/lib/taskGroups";
-import { TaskScreen } from "../layout/TaskScreen";
-import { TaskSection } from "../tasks/TaskSection";
+import { useCategories, useTasks } from "@/modules/tasks/hooks/useTasks";
+import { todaySections, upcomingGroups } from "@/modules/tasks/lib/taskGroups";
+import { TaskScreen } from "@/modules/tasks/components/TaskScreen";
+import { TaskSection } from "@/modules/tasks/components/TaskSection";
 
 export function CategoryView() {
   const { categoryId } = useParams({ from: "/app/category/$categoryId" });

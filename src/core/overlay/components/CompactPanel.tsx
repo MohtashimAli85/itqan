@@ -1,7 +1,5 @@
 import { useEffect, useRef } from "react";
 import { useContributions } from "@/core/registry/contributions";
-import type { PanelTab } from "@/core/registry/types";
-import { useTodayTasks } from "@/shared/hooks/useTasks";
 import { greeting } from "@/shared/lib/today";
 import {
   Tabs,
@@ -10,11 +8,6 @@ import {
   TabsTrigger,
 } from "@/shared/components/ui/tabs";
 import { ProgressRow } from "./ProgressRow";
-import { TodayTab } from "./TodayTab";
-
-const coreTabs: PanelTab[] = [
-  { id: "today", label: "Today", order: 10, Component: TodayTab },
-];
 
 type CompactPanelProps = {
   onClose: () => void;
@@ -23,8 +16,11 @@ type CompactPanelProps = {
 
 export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
   const panel = useRef<HTMLDivElement>(null);
-  const { topThree, due } = useTodayTasks();
-  const tabs = useContributions((manifest) => manifest.panelTabs, coreTabs);
+  const tabs = useContributions((manifest) => manifest.panelTabs, []);
+  const headerLines = useContributions(
+    (manifest) => manifest.panelHeaderLines,
+    [],
+  );
 
   useEffect(() => {
     const element = panel.current;
@@ -52,11 +48,9 @@ export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
     >
       <header>
         <p className="font-heading text-lg font-semibold">{greeting()}</p>
-        <p className="text-xs text-caption">
-          {topThree.length + due.length === 0
-            ? "Nothing due today. Add your top 3."
-            : `${topThree.length + due.length} left for today`}
-        </p>
+        {headerLines.map(({ id, Component }) => (
+          <Component key={id} />
+        ))}
       </header>
 
       <ProgressRow />

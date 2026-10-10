@@ -1,7 +1,7 @@
-import { openTasks, useTasks } from "@/shared/hooks/useTasks";
-import { upcomingGroups } from "@/shared/lib/taskGroups";
-import { TaskScreen } from "../layout/TaskScreen";
-import { TaskSection } from "../tasks/TaskSection";
+import { openTasks, useTasks } from "@/modules/tasks/hooks/useTasks";
+import { upcomingGroups } from "@/modules/tasks/lib/taskGroups";
+import { TaskScreen } from "@/modules/tasks/components/TaskScreen";
+import { TaskSection } from "@/modules/tasks/components/TaskSection";
 
 export function Upcoming() {
   const { data: tasks = [] } = useTasks(openTasks);

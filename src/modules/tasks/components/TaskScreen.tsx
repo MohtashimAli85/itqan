@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { TaskDetail } from "../tasks/TaskDetail";
+import { TaskDetail } from "./TaskDetail";
 
 type TaskScreenProps = {
   title: string;

@@ -1,6 +1,9 @@
 import type { Task } from "@/shared/bindings/bindings";
-import { useSetTaskStatus, useTodayTasks } from "@/shared/hooks/useTasks";
-import { FocusRow } from "./FocusRow";
+import {
+  useSetTaskStatus,
+  useTodayTasks,
+} from "@/modules/tasks/hooks/useTasks";
+import { FocusRow } from "@/core/ui/FocusRow";
 import { QuickAdd } from "./QuickAdd";
 import { TaskRow } from "./TaskRow";
 

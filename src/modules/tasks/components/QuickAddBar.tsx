@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Plus } from "lucide-react";
 import { Input } from "@/shared/components/ui/input";
-import { useQuickAdd } from "@/shared/hooks/useTasks";
+import { useQuickAdd } from "@/modules/tasks/hooks/useTasks";
 
 export function QuickAddBar() {
   const [text, setText] = useState("");

@@ -9,7 +9,6 @@ import {
 import { commands, events } from "@/shared/bindings/bindings";
 import { useRewardSync } from "@/shared/hooks/useProgress";
 import { useTauriEvent } from "@/shared/hooks/useTauriEvent";
-import { useTasksSync } from "@/shared/hooks/useTasks";
 import { Bubble } from "./components/Bubble";
 import { CompactPanel } from "./components/CompactPanel";
 import { Orb } from "./components/Orb";
@@ -30,7 +29,6 @@ const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 export function Overlay() {
   const { data: snapshot } = useOverlaySnapshot();
-  useTasksSync();
   useRewardSync(celebrateReward);
   const anchor = useRef<HTMLDivElement>(null);
   const body = useRef<HTMLDivElement>(null);

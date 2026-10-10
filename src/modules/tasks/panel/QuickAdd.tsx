@@ -3,7 +3,7 @@ import { Plus } from "lucide-react";
 import { Input } from "@/shared/components/ui/input";
 import { useMutation } from "@tanstack/react-query";
 import { commands } from "@/shared/bindings/bindings";
-import { useQuickAdd } from "@/shared/hooks/useTasks";
+import { useQuickAdd } from "@/modules/tasks/hooks/useTasks";
 import { unwrap } from "@/shared/lib/result";
 
 export function QuickAdd() {

@@ -19,8 +19,8 @@ import {
   useSetTopThree,
   useTasks,
   useUpdateTask,
-} from "@/shared/hooks/useTasks";
-import { useMainUi } from "../uiStore";
+} from "@/modules/tasks/hooks/useTasks";
+import { useMainUi } from "@/modules/tasks/uiStore";
 import {
   detailSchema,
   kinds,

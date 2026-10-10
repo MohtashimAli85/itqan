@@ -2,7 +2,10 @@ import { useState, type FormEvent } from "react";
 import type { Task } from "@/shared/bindings/bindings";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Input } from "@/shared/components/ui/input";
-import { useCreateTask, useSetTaskStatus } from "@/shared/hooks/useTasks";
+import {
+  useCreateTask,
+  useSetTaskStatus,
+} from "@/modules/tasks/hooks/useTasks";
 
 type SubtasksProps = {
   parent: Task;

@@ -1,10 +1,10 @@
-import { allTasks, useTasks } from "@/shared/hooks/useTasks";
+import { allTasks, useTasks } from "@/modules/tasks/hooks/useTasks";
 import { dayjs } from "@/shared/lib/dayjs";
-import { doneToday, todaySections } from "@/shared/lib/taskGroups";
+import { doneToday, todaySections } from "@/modules/tasks/lib/taskGroups";
 import { greeting } from "@/shared/lib/today";
-import { TaskScreen } from "../layout/TaskScreen";
-import { QuickAddBar } from "../tasks/QuickAddBar";
-import { TaskSection } from "../tasks/TaskSection";
+import { TaskScreen } from "@/modules/tasks/components/TaskScreen";
+import { QuickAddBar } from "@/modules/tasks/components/QuickAddBar";
+import { TaskSection } from "@/modules/tasks/components/TaskSection";
 
 export function Today() {
   const { data: tasks = [] } = useTasks(allTasks);
