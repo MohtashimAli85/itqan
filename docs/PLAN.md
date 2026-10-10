@@ -734,10 +734,10 @@ Each step is one PR unless split further during the work. Every step that introd
 |---|---|
 | `tasks` | tasks, subtasks, Top 3, life areas (reminders are a core scheduler primitive, ADR 0003) |
 | `salah` | prayer times, pause windows, Jumu'ah, Ramadan timings |
-| `health` | habits, health reminders, later weight, steps, sleep |
+| `health` | habits and habit logs (its reminders run on the core scheduler), later weight, steps, sleep |
 | `progress` | XP, levels, streaks, badges, celebrations |
-| `focus` (2.6) | focus sessions, front-app tracking, drift detection |
-| `learning` (2.7) | skills, roadmaps, project ideas |
+| `focus` (2.6) | front-app tracking, drift detection, built on core focus sessions |
+| `learning` (2.7) | roadmaps and project ideas, built on core goals and skills |
 | `memory` (Phase 3) | screen text capture and retrieval |
 
 Module-specific agents (for example the health agent) live inside their module and send **signals** to the core. Only the Coach in the core turns signals into words for the user.
