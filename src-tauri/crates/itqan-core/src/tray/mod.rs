@@ -5,7 +5,7 @@ use std::sync::Mutex;
 use chrono::{Duration, NaiveTime, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
 use specta::Type;
-use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu};
+use tauri::menu::{CheckMenuItem, IsMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::tray::TrayIconBuilder;
 use tauri::{App, AppHandle, Manager, Wry};
 use tauri_specta::Event;
@@ -88,7 +88,9 @@ fn load(app: &AppHandle) -> Result<TrayView, AppError> {
         let ports = app.state::<Ports>();
         let tasks_left = ports.today_task_counts(connection, now, end)?.open;
         let next_task = ports.next_task_for_today(connection, end)?;
+        let tasks = ports.has_task_stats()?;
         Ok(view::view(&TrayInputs {
+            tasks,
             focus_minutes_left: status
                 .as_ref()
                 .and_then(|status| status.focus.as_ref())
@@ -173,23 +175,28 @@ fn menu(app: &AppHandle, view: &TrayView) -> tauri::Result<Menu<Wry>> {
     let open = MenuItem::with_id(app, OPEN, "Open Itqan", true, None::<&str>)?;
     let settings = MenuItem::with_id(app, SETTINGS, "Settings…", true, None::<&str>)?;
     let quit = MenuItem::with_id(app, QUIT, "Quit Itqan", true, None::<&str>)?;
-    Menu::with_items(
-        app,
-        &[
-            &next,
-            &PredefinedMenuItem::separator(app)?,
-            &focus,
-            &quick_add,
-            &pause,
-            &rest,
-            &orb,
-            &PredefinedMenuItem::separator(app)?,
-            &open,
-            &settings,
-            &PredefinedMenuItem::separator(app)?,
-            &quit,
-        ],
-    )
+    let separator = PredefinedMenuItem::separator(app)?;
+    let mut items: Vec<&dyn IsMenuItem<Wry>> = Vec::new();
+    if view.tasks {
+        items.extend([&next as &dyn IsMenuItem<Wry>, &separator]);
+    }
+    items.push(&focus);
+    if view.tasks {
+        items.push(&quick_add);
+    }
+    let lower = PredefinedMenuItem::separator(app)?;
+    let last = PredefinedMenuItem::separator(app)?;
+    items.extend([
+        &pause as &dyn IsMenuItem<Wry>,
+        &rest,
+        &orb,
+        &lower,
+        &open,
+        &settings,
+        &last,
+        &quit,
+    ]);
+    Menu::with_items(app, &items)
 }
 
 pub fn refresh(app: &AppHandle) -> Result<(), AppError> {

@@ -7,6 +7,8 @@ import { TasksSync } from "./TasksSync";
 
 export const tasks: ModuleManifest = {
   id: "tasks",
+  name: "Tasks",
+  description: "Tasks, Top 3, areas, reminders on tasks and quick add.",
   routes: [
     {
       path: "/",

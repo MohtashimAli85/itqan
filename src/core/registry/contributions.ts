@@ -1,5 +1,5 @@
-import { modules } from "@/modules";
 import type { Contribution, ModuleManifest } from "./types";
+import { useEnabledModules } from "./useModules";
 
 export function contributions<T extends Contribution>(
   pick: (manifest: ModuleManifest) => T[] | undefined,
@@ -23,5 +23,5 @@ export function useContributions<T extends Contribution>(
   pick: (manifest: ModuleManifest) => T[] | undefined,
   core: T[],
 ): T[] {
-  return contributions(pick, core, modules);
+  return contributions(pick, core, useEnabledModules());
 }

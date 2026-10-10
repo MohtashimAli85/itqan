@@ -77,6 +77,8 @@ export const commands = {
 	setAutostart: (enabled: boolean) => typedError<boolean, CommandError>(__TAURI_INVOKE("set_autostart", { enabled })),
 	getCoachSettings: () => typedError<CoachSettings, CommandError>(__TAURI_INVOKE("get_coach_settings")),
 	setNudgesPaused: (minutes: number | null) => typedError<CoachSettings, CommandError>(__TAURI_INVOKE("set_nudges_paused", { minutes })),
+	listModules: () => typedError<ModuleState[], CommandError>(__TAURI_INVOKE("list_modules")),
+	setModuleEnabled: (id: string, enabled: boolean) => typedError<ModuleState[], CommandError>(__TAURI_INVOKE("set_module_enabled", { id, enabled })),
 };
 
 /** Events */
@@ -84,6 +86,7 @@ export const events = {
 	goalsChanged: makeEvent<GoalsChanged>("goals-changed"),
 	healthChanged: makeEvent<HealthChanged>("health-changed"),
 	modeChanged: makeEvent<ModeChanged>("mode-changed"),
+	modulesChanged: makeEvent<ModulesChanged>("modules-changed"),
 	navigate: makeEvent<Navigate>("navigate"),
 	overlayChanged: makeEvent<OverlayChanged>("overlay-changed"),
 	overlayCursor: makeEvent<OverlayCursor>("overlay-cursor"),
@@ -273,6 +276,13 @@ export type ModeStatus = {
 	nextPrayer: PrayerWindow | null,
 	activePrayer: PrayerWindow | null,
 };
+
+export type ModuleState = {
+	id: string,
+	enabled: boolean,
+};
+
+export type ModulesChanged = null;
 
 export type Motivator = "learning" | "building" | "health" | "money" | "recognition" | "family" | "freedom" | "status";
 

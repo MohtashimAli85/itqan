@@ -38,11 +38,20 @@ impl Module for TasksModule {
     fn setup(&self, app: &AppHandle) -> Result<(), AppError> {
         register(&app.state::<Ports>())
     }
+
+    fn teardown(&self, app: &AppHandle) -> Result<(), AppError> {
+        unregister(&app.state::<Ports>())
+    }
 }
 
 fn register(ports: &Ports) -> Result<(), AppError> {
     targets::register(ports)?;
     ports.set_task_stats(Stats)
+}
+
+fn unregister(ports: &Ports) -> Result<(), AppError> {
+    ports.clear_reminder_target(itqan_core::ports::ReminderTargetKind::Task)?;
+    ports.clear_task_stats()
 }
 
 struct Stats;
@@ -206,5 +215,12 @@ mod tests {
             .unwrap()
             .is_some());
         assert!(ports.set_task_stats(Stats).is_err());
+
+        unregister(&ports).unwrap();
+        assert!(ports
+            .reminder_target(ReminderTargetKind::Task)
+            .unwrap()
+            .is_none());
+        register(&ports).unwrap();
     }
 }

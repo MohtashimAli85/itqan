@@ -7,6 +7,8 @@ import { RewardSettings } from "./settings/RewardSettings";
 
 export const progress: ModuleManifest = {
   id: "progress",
+  name: "Progress",
+  description: "XP, levels, streaks, badges and celebrations.",
   routes: [
     {
       path: "/progress",

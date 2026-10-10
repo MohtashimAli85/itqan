@@ -11,6 +11,8 @@ import { AppShell } from "./layout/AppShell";
 import { Onboarding } from "./onboarding/Onboarding";
 import { ensureOnboarded } from "./onboardingStatus";
 import { modules } from "@/modules";
+import { gate } from "./ModuleGate";
+import { modulesQuery } from "@/core/registry/useModules";
 import { Goals } from "./screens/Goals";
 import { Settings } from "./screens/Settings";
 
@@ -27,6 +29,7 @@ const appRoute = createRoute({
     if (!(await ensureOnboarded(context.queryClient))) {
       throw redirect({ to: "/onboarding" });
     }
+    await context.queryClient.ensureQueryData(modulesQuery).catch(() => null);
   },
   component: AppShell,
 });
@@ -37,7 +40,9 @@ const page = <Path extends string>(path: Path, component: RouteComponent) =>
 const routeTree = rootRoute.addChildren([
   appRoute.addChildren([
     ...modules.flatMap((manifest) =>
-      (manifest.routes ?? []).map((route) => page(route.path, route.Component)),
+      (manifest.routes ?? []).map((route) =>
+        page(route.path, gate(manifest.id, route.Component)),
+      ),
     ),
     page("/goals", Goals),
     page("/settings", Settings),

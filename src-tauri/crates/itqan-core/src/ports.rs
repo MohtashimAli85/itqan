@@ -117,6 +117,10 @@ impl Ports {
         Ok(())
     }
 
+    pub fn has_task_stats(&self) -> Result<bool, AppError> {
+        Ok(self.task_stats()?.is_some())
+    }
+
     fn task_stats(&self) -> Result<Option<Arc<dyn TaskStats>>, AppError> {
         Ok(self
             .tasks

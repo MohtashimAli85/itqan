@@ -5,6 +5,7 @@ use specta::Type;
 use tauri::{AppHandle, Manager};
 
 use crate::error::AppError;
+use crate::module::Modules;
 use crate::overlay::BubbleAction;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Type)]
@@ -100,8 +101,20 @@ impl Bus {
 pub fn publish(app: &AppHandle, event: &AppEvent) -> Result<(), AppError> {
     let now = Utc::now();
     let bus = app.state::<Bus>();
+    let modules = app.try_state::<Modules>();
+    let enabled = |owner: &str| {
+        modules.as_ref().is_none_or(|modules| {
+            modules.is_enabled(owner).unwrap_or_else(|error| {
+                tracing::warn!(%error, owner, "module state unreadable, treating as enabled");
+                true
+            })
+        })
+    };
     let mut signals = Vec::new();
     for entry in &bus.subscribers {
+        if !enabled(entry.owner) {
+            continue;
+        }
         match entry.subscriber.on_event(app, event, now) {
             Ok(mut found) => signals.append(&mut found),
             Err(error) => tracing::warn!(%error, owner = entry.owner, "agent failed"),

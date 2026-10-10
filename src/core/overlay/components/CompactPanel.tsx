@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useContributions } from "@/core/registry/contributions";
 import { greeting } from "@/shared/lib/today";
 import {
@@ -16,6 +16,8 @@ type CompactPanelProps = {
 export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
   const panel = useRef<HTMLDivElement>(null);
   const tabs = useContributions((manifest) => manifest.panelTabs, []);
+  const [chosen, setChosen] = useState<string>();
+  const selected = tabs.some(({ id }) => id === chosen) ? chosen : tabs[0]?.id;
   const headerLines = useContributions(
     (manifest) => manifest.panelHeaderLines,
     [],
@@ -57,7 +59,7 @@ export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
         <Component key={id} />
       ))}
 
-      <Tabs defaultValue={tabs[0]?.id}>
+      <Tabs value={selected} onValueChange={setChosen}>
         <TabsList className="w-full">
           {tabs.map(({ id, label }) => (
             <TabsTrigger key={id} value={id}>
