@@ -639,13 +639,13 @@ After the app skeleton exists (step 0.5), run `codegraph init -i` so later sessi
 Each step is one PR unless split further during the work. Every step that introduces a design starts with its ADR.
 
 **2.0 Module architecture (no behaviour change)**
-- [ ] 2.0.1 ADR 0003: module contract, contracts crate, event bus, migrations per module, frontend manifest
+- [x] 2.0.1 ADR 0003: module contract, contracts crate, event bus, migrations per module, frontend manifest (see `docs/decisions/0003-module-architecture.md`)
 - [ ] 2.0.2 Cargo workspace with `itqan-contracts` and `itqan-core`; move the event dispatch (today's `agents::publish`), db and settings framework; app still behaves the same
 - [ ] 2.0.3 Frontend `core` / `shared` / `modules` layout, module registry, boundary lint in CI
 - [ ] 2.0.4 Move Salah into `itqan-salah` and `src/modules/salah`
-- [ ] 2.0.5 Move Health
-- [ ] 2.0.6 Move Tasks (with reminders and categories; `categories` is renamed `tasks_categories` with the same meaning, and becomes `tasks_areas` in 2.3)
-- [ ] 2.0.7 Move Progress (XP, levels, streaks, badges)
+- [ ] 2.0.5 Move reminders and recurrence into core (shared by tasks and health, ADR 0003), then move Health
+- [ ] 2.0.6 Move Tasks (with categories and quick add; `categories` is renamed `tasks_categories` with the same meaning, and becomes `tasks_areas` in 2.3)
+- [ ] 2.0.7 Move Progress (XP, levels, streaks, badges), then move the remaining shell (Coach, mode engine, scheduler, overlay, tray) into core
 - [ ] 2.0.8 Quality gates: cargo-deny, coverage thresholds, clippy pedantic on core and contracts, contract tests, PR checklist update
 - [ ] 2.0.9 Module enable and disable in Settings
 
@@ -732,12 +732,12 @@ Each step is one PR unless split further during the work. Every step that introd
 **Modules** (each can be turned off):
 | Module | Owns |
 |---|---|
-| `tasks` | tasks, subtasks, reminders, Top 3, life areas |
+| `tasks` | tasks, subtasks, Top 3, life areas (reminders are a core scheduler primitive, ADR 0003) |
 | `salah` | prayer times, pause windows, Jumu'ah, Ramadan timings |
-| `health` | habits, health reminders, later weight, steps, sleep |
+| `health` | habits and habit logs (its reminders run on the core scheduler), later weight, steps, sleep |
 | `progress` | XP, levels, streaks, badges, celebrations |
-| `focus` (2.6) | focus sessions, front-app tracking, drift detection |
-| `learning` (2.7) | skills, roadmaps, project ideas |
+| `focus` (2.6) | front-app tracking, drift detection, built on core focus sessions |
+| `learning` (2.7) | roadmaps and project ideas, built on core goals and skills |
 | `memory` (Phase 3) | screen text capture and retrieval |
 
 Module-specific agents (for example the health agent) live inside their module and send **signals** to the core. Only the Coach in the core turns signals into words for the user.
