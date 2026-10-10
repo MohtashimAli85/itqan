@@ -32,22 +32,26 @@ Beliefs are core data (`beliefs` table, core migration).
 | `status` | `active`, `proposed`, `rejected`, `archived` |
 | `created_at`, `confirmed_at`, `updated_at` | UTC |
 
-- At most one **active** belief per subject, except `note`. Saying or confirming a new value for a subject archives the old one.
+- At most one **active** belief per subject, except `note` (a partial unique index enforces it). Saying or confirming a new value for a subject archives the old one in the same transaction.
+- **Observed beliefs are never active.** A learner writes or updates an observed belief with `status = proposed`. It only becomes active when the user accepts the proposal that carries it (section 4). So nothing learned changes behaviour without a yes.
+- **Motivator weights are relative.** `value.weight` is a relative weight, not a share of 100. `beliefs::motivator_weights` reads every active `motivator.*` belief and normalises the set to 100 with the existing `profile::normalize`. Readers (`rewards::multiplier`, the rhythm's top motivator) therefore keep getting the same shape as today, whatever mix of said, confirmed and AI-made beliefs exists.
+- **The motivator set is replaced as a whole** when the user saves it in Settings or onboarding: every active `motivator.*` belief not in the new set is archived. Removing a motivator removes its influence.
+- **Defaults when nothing is stated:** no active `coach.style` belief means `Mentor`, and no motivator beliefs means no weights. Both are today's defaults for a fresh profile.
 - Code reads beliefs only through typed accessors in core (`beliefs::motivator_weights`, `beliefs::coach_style`, `beliefs::focus_minutes`, …), never raw JSON.
 - `Profile` stays as the read model: `profile::get` fills `motivators` and `coach_style` from active beliefs, so the rewards, rhythm and Coach code does not change. `profile::save` writes those two parts as beliefs (`source = said`) and the rest (name, situation, free hours, age, family time) to the `profile` row as today. Those stay plain settings: they are facts the user states, not things Itqan learns.
 
 ### 2. Migrating the sliders
 A core migration copies the current profile into beliefs, once:
 - each motivator weight > 0 becomes `kind = motivator`, `subject = motivator.<name>`, `value = {"weight": w}`, `strength` high for w ≥ 30, medium for w ≥ 15, otherwise low, `source = said`, `confidence = 0.8`, `status = active`, `statement` "<Motivator> matters to me";
-- the coach style becomes `kind = preference`, `subject = coach.style`, `value = {"style": "<style>"}`, `source = said`, `confidence = 0.8`.
+- the coach style becomes `kind = preference`, `subject = coach.style`, `value = {"style": "<style>"}`, `source = said`, `confidence = 0.8`, **only if the user finished onboarding** (`onboarding_completed`). A fresh install's default `mentor` was never said by anyone, so it isn't recorded as if it had been.
 
 The `profile.motivators` and `profile.coach_style` columns stay (no destructive change) but are no longer read. The migration test checks that `profile::get` returns the same motivators and coach style before and after.
 
 ### 3. Confidence
 - Said by the user: 0.8. Confirmed through a proposal: at least 0.9.
-- Observed: starts at 0.3. Each new supporting observation adds 0.1, capped at 0.85 (only the user can push it past that, by confirming).
+- Observed (always `proposed`, section 1): starts at 0.3. Each new supporting observation adds 0.1, capped at 0.85; only the user can push it past that, by confirming.
 - Contradicting evidence subtracts 0.15. An observed belief below 0.2 is archived.
-- A rejected proposal subtracts 0.2 from its belief and suppresses the same proposal (section 4).
+- A rejected proposal marks its belief `rejected`. New observations for that subject start a fresh belief only after the suppression ends (section 4), so two lucky observations can't undo a no.
 
 ### 4. Proposals
 Core data (`proposals` table, core migration).
@@ -56,7 +60,7 @@ Core data (`proposals` table, core migration).
 |---|---|
 | `id` | |
 | `kind` | `<owner>:<name>`, e.g. `core:belief`, `core:focus_minutes`, `tasks:area` (2.3) |
-| `key` | dedupe key, e.g. `core:focus_minutes:30`; at most one pending proposal per key |
+| `key` | what the proposal is about, **without the value**: `core:focus_minutes`, `tasks:area:archive:12`; at most one pending proposal per key |
 | `title` | what would change: "Make 30 minutes the default focus length?" |
 | `reason` | why, with the evidence in plain words |
 | `effect` | what accepting does, in one sentence |
@@ -64,12 +68,21 @@ Core data (`proposals` table, core migration).
 | `belief_id` | the belief this proposal would confirm, if any |
 | `status` | `pending`, `accepted`, `rejected`, `expired` |
 | `created_at`, `decided_at`, `expires_at` | UTC; pending proposals expire after 14 days |
+| `suppressed_until` | set on reject or expiry; no new proposal with the same `key` before it |
 
 - **Who applies it:** each owner registers a `ProposalHandler` per kind with core's `ProposalRegistry` (the same pattern as the `ActionRouter`). Core stores and shows proposals; the handler applies the change. Core never writes a module's tables (ADR 0003, section 5).
-- **Accept:** the handler's `apply` runs first. Only if it succeeds is the proposal marked `accepted`, and its belief becomes `active`, `source = confirmed`, confidence at least 0.9, `confirmed_at = now`.
-- **Reject:** marked `rejected`; the belief loses 0.2 confidence; the same `key` is not proposed again for 30 days.
-- **Owner disabled:** a pending proposal whose kind has no registered handler is hidden, not deleted, and returns when the module is turned back on.
-- **Never auto-applied** (owner decision 5, section 14: "auto-approve small tweaks: never, for now").
+- **Accept** is one transaction:
+  1. Check the proposal is still `pending`, which makes a double accept a no-op.
+  2. Run the handler's `apply(connection, payload)`, which does the data change.
+  3. Archive the subject's current active belief.
+  4. Activate the proposal's belief with `source = confirmed`, confidence at least 0.9 and `confirmed_at = now`.
+  5. Mark the proposal `accepted`.
+
+  If any part fails, nothing changes. Side effects that need the app (scheduler refresh, events) run after the commit, through the handler's `after_apply(app)`.
+- **Reject:** the proposal and its belief are marked `rejected`. `suppressed_until = now + 30 days` for the key, whatever value a later learner computes, so the user is not asked about the same setting again right after saying no.
+- **Expire:** after 14 days pending, the proposal is marked `expired` and its key is suppressed for 14 days. Confidence doesn't change, since ignoring is not a no, but the user isn't nagged in a loop.
+- **Owner disabled:** a pending proposal whose kind has no registered handler is hidden and is not counted, so the sidebar count and the panel row only count proposals that can be accepted. The expiry sweep skips it too, so it really does return when the module is turned back on.
+- **Never auto-applied** (PLAN section 14, Phase 2 decision 5: "auto-approve small timing tweaks: never, for now").
 
 ### 5. Observations (the D.3 "learning signals")
 The word "signal" already means a module's suggestion to the Coach (ADR 0003). Behaviour that feeds learning is called an **observation**: core table `observations(id, kind, subject, value, at)`. Examples: `task.done` with the area and kind, `task.postponed`, `focus.ended` with planned minutes and whether it completed, `nudge.outcome` with the nudge kind and outcome. A core subscriber writes them from bus events and nudge outcomes; nothing is sent anywhere. Rows older than 90 days are deleted on startup.
@@ -77,8 +90,8 @@ The word "signal" already means a module's suggestion to the Coach (ADR 0003). B
 Rule-based learners (2.1.5) read observations, update observed beliefs (section 3) and open proposals when a belief crosses 0.6 confidence and differs from what is active.
 
 ### 6. AI and the no-key fallback (2.1.4)
-- **With a key:** the five onboarding questions (PLAN D.2) are answered in a short chat. The smart model turns the answers into a JSON list of `{statement, kind, subject, value, strength}`. It is parsed the way the planner parses its plan: extract the JSON, validate every field against the known kinds and subjects, drop anything invalid, and treat unknown subjects as `note`. The user sees the list and can edit or remove each item before saving. Saved items are `source = said`, `confidence = 0.8`. Answers are redacted before sending, as all AI input is.
-- **Without a key:** the same screen offers simple choices: pick what matters from the motivator list (each pick becomes a medium-strength motivator belief) and choose a coach style. The chat is offered later from Settings once a key exists.
+- **With a key:** the five onboarding questions (PLAN D.2) are answered in a short chat. The smart model turns the answers into a JSON list of `{statement, kind, subject, value, strength}`. For motivators, the relative weight comes from the strength (high 3, medium 2, low 1), never from a number the model makes up. It is parsed the way the planner parses its plan: extract the JSON, validate every field against the known kinds and subjects, drop anything invalid, and treat unknown subjects as `note`. The user sees the list and can edit or remove each item before saving. Saved items are `source = said`, `confidence = 0.8`. Answers are redacted before sending, as all AI input is.
+- **Without a key:** the same screen offers simple choices: pick what matters from the motivator list (each pick becomes a medium-strength motivator belief with relative weight 2, so the picks share equally after normalising) and choose a coach style. The chat is offered later from Settings once a key exists.
 - AI never creates an active belief on its own: chat output is shown for review first, and anything learned later goes through a proposal.
 
 ### 7. Where proposals appear
