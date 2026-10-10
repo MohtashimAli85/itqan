@@ -9,4 +9,3 @@ pub mod profile;
 pub mod rewards;
 pub mod settings;
 pub mod system;
-pub mod tasks;

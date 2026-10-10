@@ -3,9 +3,9 @@ use rusqlite::{params, Connection};
 
 use crate::domain::rewards::{Award, Streak, XpSource};
 use crate::domain::skills::SkillId;
-use crate::domain::tasks::TaskKind;
 use itqan_core::db::enums::{column, to_text};
 use itqan_core::error::AppError;
+use itqan_tasks::tasks::TaskKind;
 
 pub fn insert_event(
     connection: &Connection,

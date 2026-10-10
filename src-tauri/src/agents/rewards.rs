@@ -7,14 +7,16 @@ use tauri::{AppHandle, Manager};
 use tauri_specta::Event;
 
 use super::{AppEvent, Signal, Subscriber};
+use crate::domain::modes;
 use crate::domain::rewards::{self, Award, RewardOutcome, XpSource};
-use crate::domain::{modes, tasks};
 use crate::overlay::{self, OrbState, OverlayStore};
 use itqan_core::db::{settings as settings_repo, Database};
 use itqan_core::error::AppError;
 use itqan_core::nudges::{AgentKind, Priority};
+use itqan_core::ports::{Ports, TodayCounts};
 use itqan_core::profile;
 use itqan_core::settings;
+use itqan_tasks::tasks;
 
 const SOUND: &str = "reward_sound";
 const LAST_ALL_DONE: &str = "last_all_done_date";
@@ -155,7 +157,9 @@ impl Subscriber for RewardsAgent {
                     != Some(&today.to_string())
             {
                 let (start, end) = itqan_core::settings::day_bounds(timezone, today);
-                let (done, open) = tasks::today_counts(connection, start, end)?;
+                let TodayCounts { done, open } = app
+                    .state::<Ports>()
+                    .today_task_counts(connection, start, end)?;
                 all_done = done > 0 && open == 0;
                 if all_done {
                     settings_repo::set(connection, LAST_ALL_DONE, &today.to_string())?;

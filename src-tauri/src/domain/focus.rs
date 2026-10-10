@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 
 use crate::db::focus as repo;
-use crate::domain::tasks::TaskId;
+use itqan_contracts::TaskId;
 use itqan_core::error::AppError;
 
 pub use itqan_contracts::FocusSessionId;

@@ -10,13 +10,12 @@ use tauri_specta::Event;
 use crate::agents::{self, AppEvent};
 use crate::domain::focus::{self, FocusStatus, DEFAULT_MINUTES};
 use crate::domain::modes::{self, Mode};
-use crate::domain::tasks;
 use crate::overlay::{self, Activity, BubbleOrigin, OrbState, OverlayStore};
 use itqan_contracts::PrayerWindow;
 use itqan_core::db::Database;
 use itqan_core::error::AppError;
 use itqan_core::overlay::action;
-use itqan_core::ports::Ports;
+use itqan_core::ports::{Ports, TodayCounts};
 use itqan_core::settings;
 
 const FOCUS_TICK: StdDuration = StdDuration::from_secs(15);
@@ -80,7 +79,7 @@ pub fn evaluate(app: &AppHandle) -> Result<(ModeStatus, StdDuration), AppError> 
             let timezone = settings::timezone(connection)?;
             let today = now.with_timezone(&timezone).date_naive();
             let (start, end) = itqan_core::settings::day_bounds(timezone, today);
-            let (done, open) = tasks::today_counts(connection, start, end)?;
+            let TodayCounts { done, open } = ports.today_task_counts(connection, start, end)?;
             let today_progress = (done + open > 0).then(|| done as f32 / (done + open) as f32);
             Ok((
                 modes::work_hours(connection)?,

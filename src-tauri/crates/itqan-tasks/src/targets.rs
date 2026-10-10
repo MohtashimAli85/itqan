@@ -8,9 +8,10 @@ use rusqlite::{params_from_iter, Connection};
 use tauri::{AppHandle, Manager};
 use tauri_specta::Event;
 
-use crate::agents::{self, AppEvent};
-use crate::commands::events::TasksChanged;
-use crate::domain::tasks::{self, TaskStatus};
+use crate::tasks::{self, TaskStatus};
+use crate::TasksChanged;
+use itqan_contracts::AppEvent;
+use itqan_core::bus;
 
 pub struct TaskReminders;
 
@@ -40,7 +41,7 @@ impl ReminderTarget for TaskReminders {
         app.state::<Database>()
             .with(|connection| tasks::set_status(connection, id, TaskStatus::Done, Utc::now()))?;
         TasksChanged.emit(app)?;
-        agents::publish(app, AppEvent::TaskCompleted { task_id: id })
+        bus::publish(app, AppEvent::TaskCompleted { task_id: id })
     }
 }
 
@@ -50,13 +51,13 @@ pub fn register(ports: &Ports) -> Result<(), AppError> {
 
 #[cfg(test)]
 mod tests {
+    use crate::test_connection;
     use chrono::TimeZone;
     use chrono_tz::Tz;
-    use itqan_core::db::test_connection;
     use itqan_core::reminders::{self, ReminderInput};
 
     use super::*;
-    use crate::domain::tasks::TaskInput;
+    use crate::tasks::TaskInput;
 
     #[test]
     fn task_reminders_follow_their_task() {

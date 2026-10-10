@@ -281,7 +281,7 @@ Rules:
 | settings | theme, sound, orb placement, size, hotkeys, nudge budget, AI provider config (no keys) |
 | schedules | work hours per day, modes |
 | salah_settings (salah module; `prayer_settings` before 2.0.4) | city, coordinates, method, Asr school, pause windows, Jumu'ah break |
-| categories | name, colour, icon, built-in or custom |
+| tasks_categories (tasks module; `categories` before 2.0.6, `tasks_areas` from 2.3) | name, colour, icon, built-in or custom |
 | goals | title, target date, motivator link, status |
 | skills | name, level, XP |
 | milestones | goal, title, week, status |

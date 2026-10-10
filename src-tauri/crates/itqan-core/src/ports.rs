@@ -47,8 +47,37 @@ pub trait ReminderTarget: Send + Sync {
     fn complete(&self, app: &AppHandle, id: i32) -> Result<(), AppError>;
 }
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct TodayCounts {
+    pub done: u32,
+    pub open: u32,
+}
+
+pub trait TaskStats: Send + Sync {
+    fn today_counts(
+        &self,
+        connection: &Connection,
+        start: DateTime<Utc>,
+        end: DateTime<Utc>,
+    ) -> Result<TodayCounts, AppError>;
+
+    fn next_for_today(
+        &self,
+        connection: &Connection,
+        end: DateTime<Utc>,
+    ) -> Result<Option<String>, AppError>;
+
+    fn completed_between(
+        &self,
+        connection: &Connection,
+        from: DateTime<Utc>,
+        to: DateTime<Utc>,
+    ) -> Result<u32, AppError>;
+}
+
 #[derive(Default)]
 pub struct Ports {
+    tasks: RwLock<Option<Arc<dyn TaskStats>>>,
     prayer: RwLock<Option<Arc<dyn PrayerSchedule>>>,
     reminder_targets: RwLock<HashMap<ReminderTargetKind, Arc<dyn ReminderTarget>>>,
 }
@@ -68,6 +97,61 @@ impl Ports {
     pub fn clear_prayer(&self) -> Result<(), AppError> {
         *self.prayer.write().map_err(|_| AppError::LockPoisoned)? = None;
         Ok(())
+    }
+
+    pub fn set_task_stats(&self, stats: impl TaskStats + 'static) -> Result<(), AppError> {
+        let mut slot = self.tasks.write().map_err(|_| AppError::LockPoisoned)?;
+        if slot.is_some() {
+            return Err(AppError::InvalidInput(
+                "task stats are already registered".into(),
+            ));
+        }
+        *slot = Some(Arc::new(stats));
+        Ok(())
+    }
+
+    pub fn clear_task_stats(&self) -> Result<(), AppError> {
+        *self.tasks.write().map_err(|_| AppError::LockPoisoned)? = None;
+        Ok(())
+    }
+
+    fn task_stats(&self) -> Result<Option<Arc<dyn TaskStats>>, AppError> {
+        Ok(self
+            .tasks
+            .read()
+            .map_err(|_| AppError::LockPoisoned)?
+            .clone())
+    }
+
+    pub fn today_task_counts(
+        &self,
+        connection: &Connection,
+        start: DateTime<Utc>,
+        end: DateTime<Utc>,
+    ) -> Result<TodayCounts, AppError> {
+        self.task_stats()?
+            .map_or(Ok(TodayCounts::default()), |stats| {
+                stats.today_counts(connection, start, end)
+            })
+    }
+
+    pub fn next_task_for_today(
+        &self,
+        connection: &Connection,
+        end: DateTime<Utc>,
+    ) -> Result<Option<String>, AppError> {
+        self.task_stats()?
+            .map_or(Ok(None), |stats| stats.next_for_today(connection, end))
+    }
+
+    pub fn tasks_completed_between(
+        &self,
+        connection: &Connection,
+        from: DateTime<Utc>,
+        to: DateTime<Utc>,
+    ) -> Result<u32, AppError> {
+        self.task_stats()?
+            .map_or(Ok(0), |stats| stats.completed_between(connection, from, to))
     }
 
     pub fn set_reminder_target(
@@ -182,6 +266,25 @@ mod tests {
         assert_eq!(
             ports.prayer(&connection, now, Tz::UTC).unwrap(),
             PrayerSnapshot::default()
+        );
+    }
+
+    #[test]
+    fn task_answers_are_neutral_without_a_tasks_module() {
+        let connection = test_connection();
+        let ports = Ports::default();
+        let now = window(Prayer::Asr).at;
+
+        assert_eq!(
+            ports.today_task_counts(&connection, now, now).unwrap(),
+            TodayCounts::default()
+        );
+        assert_eq!(ports.next_task_for_today(&connection, now).unwrap(), None);
+        assert_eq!(
+            ports
+                .tasks_completed_between(&connection, now, now)
+                .unwrap(),
+            0
         );
     }
 }

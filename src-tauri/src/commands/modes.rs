@@ -3,8 +3,8 @@ use tauri::{AppHandle, State};
 
 use crate::domain::focus;
 use crate::domain::modes::{self, WorkDay};
-use crate::domain::tasks::TaskId;
 use crate::scheduler::{self, ModeStatus};
+use itqan_contracts::TaskId;
 use itqan_core::db::Database;
 use itqan_core::error::CommandError;
 
