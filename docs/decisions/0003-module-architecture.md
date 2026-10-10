@@ -58,7 +58,7 @@ Frontend events (`TasksChanged`, `HealthChanged`, `ModeChanged`, …) are **not*
 
 ### 4. Bus, subscribers and signals
 - `itqan_core::bus` owns `Subscriber` (today's `Agent` trait, renamed), `Signal` (today's `Suggestion`, already with priority and expiry) and `publish`.
-- Subscribers are registered in a `Subscribers` registry in Tauri state, each tagged with its owner. Modules contribute theirs through `Module::subscribers`. Core and the app crate (rhythm today, and agents that haven't moved yet) register directly with `bus::register`. Core-owned subscribers always run.
+- Subscribers are registered in a `Subscribers` registry in Tauri state, each tagged with its owner. Modules contribute theirs through `Module::subscribers`. Core and the app crate (rhythm today, and agents that haven't moved yet) register directly with `Bus::register` while the bus is built at startup, before it is put in Tauri state; it is immutable afterwards. Core-owned subscribers always run.
 - `publish` calls every subscriber whose owner is enabled, in registration order, synchronously, on the caller's thread, as today. Registration order matches today's agent order (rhythm, health, rewards), so behaviour is unchanged. A failing subscriber is logged and skipped. Handlers must be quick (a few queries). Slow work (AI) is spawned with `tauri::async_runtime::spawn`.
 - Signals go to one `SignalSink` registered in Tauri state, which is the Coach. Core defines the sink trait, so the bus never names the Coach type, and the Coach can move into core later without changing callers.
 - `AgentKind`, `Priority` and `BubbleAction` move to core because `Signal` uses them.

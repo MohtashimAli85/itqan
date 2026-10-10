@@ -3,7 +3,9 @@ use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
-use crate::db::{profile as repo, settings as settings_repo};
+use crate::db::profile as repo;
+
+use itqan_core::db::settings as settings_repo;
 use itqan_core::error::AppError;
 
 const ONBOARDED: &str = "onboarding_completed";
@@ -154,7 +156,7 @@ mod tests {
     use chrono::TimeZone;
 
     use super::*;
-    use crate::db::test_connection;
+    use itqan_core::db::test_connection;
 
     fn weight(motivator: Motivator, weight: u8) -> MotivatorWeight {
         MotivatorWeight { motivator, weight }

@@ -3,7 +3,7 @@ members = ["crates/*"]
 resolver = "2"
 
 [workspace.dependencies]
-tauri = { version = "2", features = ["tray-icon", "macos-private-api"] }
+tauri = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 rusqlite = { version = "0.40.2", features = ["bundled", "chrono"] }
@@ -43,11 +43,10 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 itqan-contracts = { path = "crates/itqan-contracts" }
 itqan-core = { path = "crates/itqan-core" }
-tauri.workspace = true
+tauri = { workspace = true, features = ["tray-icon", "macos-private-api"] }
 serde.workspace = true
 serde_json.workspace = true
 rusqlite.workspace = true
-thiserror.workspace = true
 tracing.workspace = true
 tauri-plugin-log = "2.10.0"
 tauri-specta.workspace = true

@@ -6,8 +6,8 @@ mod tracker;
 use tauri::{App, AppHandle, Manager, WebviewWindow};
 use tauri_specta::Event;
 
-use crate::db::{settings as settings_repo, Database};
 use crate::platform;
+use itqan_core::db::{settings as settings_repo, Database};
 use itqan_core::error::AppError;
 
 pub use activity::Activity;

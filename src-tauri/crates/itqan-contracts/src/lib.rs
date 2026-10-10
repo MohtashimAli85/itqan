@@ -73,22 +73,31 @@ mod tests {
         ]
     }
 
-    fn covered(event: &AppEvent) -> bool {
+    const VARIANTS: usize = 7;
+
+    fn variant(event: &AppEvent) -> usize {
         match event {
-            AppEvent::Tick
-            | AppEvent::TaskCompleted { .. }
-            | AppEvent::FocusCompleted { .. }
-            | AppEvent::MilestoneCompleted { .. }
-            | AppEvent::GoalCompleted { .. }
-            | AppEvent::HabitLogged { .. }
-            | AppEvent::ModeChanged { .. } => true,
+            AppEvent::Tick => 0,
+            AppEvent::TaskCompleted { .. } => 1,
+            AppEvent::FocusCompleted { .. } => 2,
+            AppEvent::MilestoneCompleted { .. } => 3,
+            AppEvent::GoalCompleted { .. } => 4,
+            AppEvent::HabitLogged { .. } => 5,
+            AppEvent::ModeChanged { .. } => 6,
         }
+    }
+
+    #[test]
+    fn samples_cover_every_variant() {
+        let mut seen: Vec<usize> = samples().iter().map(variant).collect();
+        seen.sort_unstable();
+        seen.dedup();
+        assert_eq!(seen, (0..VARIANTS).collect::<Vec<_>>());
     }
 
     #[test]
     fn every_event_round_trips_through_serde() {
         for event in samples() {
-            assert!(covered(&event));
             let json = serde_json::to_string(&event).unwrap();
             assert_eq!(serde_json::from_str::<AppEvent>(&json).unwrap(), event);
         }

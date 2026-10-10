@@ -7,11 +7,11 @@ use tauri::{AppHandle, Manager};
 use tauri_specta::Event;
 
 use super::{AppEvent, Signal, Subscriber};
-use crate::db::{settings as settings_repo, Database};
 use crate::domain::nudges::{AgentKind, Priority};
 use crate::domain::rewards::{self, Award, RewardOutcome, XpSource};
 use crate::domain::{modes, profile, tasks};
 use crate::overlay::{self, OrbState, OverlayStore};
+use itqan_core::db::{settings as settings_repo, Database};
 use itqan_core::error::AppError;
 use itqan_core::settings;
 

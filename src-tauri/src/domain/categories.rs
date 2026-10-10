@@ -56,7 +56,7 @@ pub fn create(connection: &Connection, input: CategoryInput) -> Result<Category,
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::db::test_connection;
+    use itqan_core::db::test_connection;
 
     fn input(name: &str, colour: &str) -> CategoryInput {
         CategoryInput {

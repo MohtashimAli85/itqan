@@ -10,8 +10,3 @@ pub mod rewards;
 pub mod skills;
 pub mod tasks;
 pub mod work_hours;
-
-pub use itqan_core::db::{enums, migrations, settings, Database};
-
-#[cfg(test)]
-pub use itqan_core::db::test_connection;

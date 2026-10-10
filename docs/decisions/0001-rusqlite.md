@@ -12,4 +12,4 @@ Use `rusqlite` with the bundled SQLite build and hand-written versioned migratio
 
 ## Consequences
 - Queries are plain SQL strings in `db/` repositories, so repositories need their own tests.
-- Migrations live in `src-tauri/migrations/` as numbered `.sql` files embedded at compile time and applied in order at startup.
+- Migrations live in `src-tauri/migrations/` as numbered `.sql` files embedded at compile time and applied in order at startup. (Since step 2.0.2 core migrations live in `src-tauri/crates/itqan-core/migrations/`, and module migrations in each module crate; see ADR 0003 section 7.)

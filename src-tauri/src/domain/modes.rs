@@ -3,7 +3,9 @@ use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
-use crate::db::{settings as settings_repo, work_hours as repo};
+use crate::db::work_hours as repo;
+
+use itqan_core::db::settings as settings_repo;
 use itqan_core::error::AppError;
 
 pub use itqan_contracts::Mode;
@@ -88,7 +90,7 @@ mod tests {
     use chrono::NaiveDate;
 
     use super::*;
-    use crate::db::test_connection;
+    use itqan_core::db::test_connection;
 
     fn at(day: u32, hour: u32, minute: u32) -> NaiveDateTime {
         NaiveDate::from_ymd_opt(2026, 10, day)

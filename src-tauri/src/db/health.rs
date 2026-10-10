@@ -1,8 +1,8 @@
 use chrono::{DateTime, Utc};
 use rusqlite::{params, Connection, OptionalExtension, Row};
 
-use super::enums::{column, to_text};
 use crate::domain::health::{Habit, HabitId, HabitKind};
+use itqan_core::db::enums::{column, to_text};
 use itqan_core::error::AppError;
 
 const COLUMNS: &str = "id, kind, name, target, enabled";

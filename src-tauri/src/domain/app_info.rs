@@ -2,7 +2,7 @@ use rusqlite::Connection;
 use serde::Serialize;
 use specta::Type;
 
-use crate::db::migrations;
+use itqan_core::db::migrations;
 use itqan_core::error::AppError;
 
 #[derive(Debug, Serialize, Type)]

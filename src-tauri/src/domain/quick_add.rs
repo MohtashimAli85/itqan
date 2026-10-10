@@ -331,7 +331,7 @@ mod tests {
 
     #[test]
     fn create_resolves_known_categories_and_keeps_unknown_tags() {
-        let connection = crate::db::test_connection();
+        let connection = itqan_core::db::test_connection();
 
         let known = create(
             &connection,
@@ -356,7 +356,7 @@ mod tests {
 
     #[test]
     fn create_reports_a_full_top_three_without_failing() {
-        let connection = crate::db::test_connection();
+        let connection = itqan_core::db::test_connection();
         for index in 0..3 {
             create(
                 &connection,
@@ -380,7 +380,7 @@ mod tests {
 
     #[test]
     fn create_adds_a_reminder_only_for_explicit_times() {
-        let connection = crate::db::test_connection();
+        let connection = itqan_core::db::test_connection();
         let zone = chrono_tz::Tz::Asia__Karachi;
 
         let timed = create(&connection, "buy dahi at 7pm", now(), zone).unwrap();

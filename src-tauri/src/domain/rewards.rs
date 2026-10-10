@@ -307,8 +307,8 @@ mod tests {
     use chrono::{Datelike, TimeZone, Weekday};
 
     use super::*;
-    use crate::db::test_connection;
     use crate::domain::profile::MotivatorWeight;
+    use itqan_core::db::test_connection;
 
     fn date(day: u32) -> NaiveDate {
         NaiveDate::from_ymd_opt(2026, 10, day).unwrap()

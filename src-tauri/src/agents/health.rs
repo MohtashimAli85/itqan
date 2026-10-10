@@ -3,11 +3,11 @@ use tauri::{AppHandle, Manager};
 
 use super::coach::LATER;
 use super::{action, AppEvent, Signal, Subscriber};
-use crate::db::Database;
 use crate::domain::health::{self, AgeBand, HabitKind};
 use crate::domain::nudges::{self, AgentKind, Priority};
 use crate::domain::profile;
 use crate::overlay::Activity;
+use itqan_core::db::Database;
 use itqan_core::error::AppError;
 use itqan_core::settings;
 

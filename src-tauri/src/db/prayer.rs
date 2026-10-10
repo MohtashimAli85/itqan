@@ -1,6 +1,6 @@
 use rusqlite::{params, Connection};
 
-use super::enums::{column, to_text};
+use itqan_core::db::enums::{column, to_text};
 
 use crate::prayer::method::{HighLatitudeRule, Madhab, Method};
 use crate::prayer::settings::PrayerSettings;

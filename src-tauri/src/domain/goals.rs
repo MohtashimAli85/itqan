@@ -169,7 +169,7 @@ mod tests {
     use chrono::TimeZone;
 
     use super::*;
-    use crate::db::test_connection;
+    use itqan_core::db::test_connection;
 
     fn now() -> DateTime<Utc> {
         Utc.with_ymd_and_hms(2026, 10, 10, 9, 0, 0).unwrap()

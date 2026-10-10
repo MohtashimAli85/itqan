@@ -87,7 +87,7 @@ mod tests {
     use chrono::TimeZone;
 
     use super::*;
-    use crate::db::test_connection;
+    use itqan_core::db::test_connection;
 
     fn at(minute: u32) -> DateTime<Utc> {
         Utc.with_ymd_and_hms(2026, 10, 10, 9, minute, 0).unwrap()

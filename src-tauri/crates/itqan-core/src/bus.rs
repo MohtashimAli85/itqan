@@ -49,6 +49,17 @@ pub trait Subscriber: Send + Sync {
     ) -> Result<Vec<Signal>, AppError>;
 }
 
+impl<T: Subscriber + ?Sized> Subscriber for Box<T> {
+    fn on_event(
+        &self,
+        app: &AppHandle,
+        event: &AppEvent,
+        now: DateTime<Utc>,
+    ) -> Result<Vec<Signal>, AppError> {
+        (**self).on_event(app, event, now)
+    }
+}
+
 pub trait SignalSink: Send + Sync {
     fn consider(
         &self,
@@ -93,7 +104,7 @@ pub fn publish(app: &AppHandle, event: AppEvent) -> Result<(), AppError> {
     for entry in &bus.subscribers {
         match entry.subscriber.on_event(app, &event, now) {
             Ok(mut found) => signals.append(&mut found),
-            Err(error) => tracing::warn!(%error, owner = entry.owner, "subscriber failed"),
+            Err(error) => tracing::warn!(%error, owner = entry.owner, "agent failed"),
         }
     }
     bus.sink.consider(app, signals, now)

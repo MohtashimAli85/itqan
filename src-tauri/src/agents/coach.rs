@@ -8,7 +8,6 @@ use tauri_specta::Event;
 use super::health as health_agent;
 use super::Signal;
 use crate::commands::events::HealthChanged;
-use crate::db::{settings as settings_repo, Database};
 use crate::domain::health::{self, HabitKind};
 use crate::domain::modes::Mode;
 use crate::domain::nudges::{self, NewNudge, NudgeId, Outcome, Priority};
@@ -16,6 +15,7 @@ use crate::domain::profile;
 use crate::overlay::{self, Activity, BubbleOrigin, OverlayStore};
 use crate::scheduler::{modes as mode_engine, ModeStatus};
 use crate::tray;
+use itqan_core::db::{settings as settings_repo, Database};
 use itqan_core::error::AppError;
 use itqan_core::settings;
 
@@ -395,7 +395,7 @@ mod tests {
 
     #[test]
     fn budget_setting_is_capped() {
-        let connection = crate::db::test_connection();
+        let connection = itqan_core::db::test_connection();
         assert_eq!(budget(&connection).unwrap(), 3);
         assert_eq!(set_budget(&connection, 5).unwrap(), 5);
         assert_eq!(budget(&connection).unwrap(), 5);

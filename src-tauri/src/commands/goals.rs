@@ -6,7 +6,6 @@ use tauri_specta::Event;
 
 use crate::agents::planner::{self, PlanProposal, PlanRequest};
 use crate::agents::{self, AppEvent};
-use crate::db::Database;
 use crate::domain::goals::{
     self, Goal, GoalId, GoalInput, GoalStatus, Milestone, MilestoneId, MilestoneInput,
     MilestoneStatus,
@@ -14,6 +13,7 @@ use crate::domain::goals::{
 use crate::domain::profile;
 use crate::domain::skills::{self, Skill, SkillId};
 use itqan_core::ai;
+use itqan_core::db::Database;
 use itqan_core::error::{AppError, CommandError};
 use itqan_core::settings;
 

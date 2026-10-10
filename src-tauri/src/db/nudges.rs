@@ -1,8 +1,8 @@
 use chrono::{DateTime, Utc};
 use rusqlite::{params, Connection, Row};
 
-use super::enums::{column, optional_column, to_text};
 use crate::domain::nudges::{NewNudge, Nudge, NudgeId, Outcome, Priority};
+use itqan_core::db::enums::{column, optional_column, to_text};
 use itqan_core::error::AppError;
 
 fn nudge(row: &Row) -> rusqlite::Result<Nudge> {

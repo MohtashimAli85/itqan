@@ -1,9 +1,9 @@
 use chrono::Utc;
 use tauri::{AppHandle, Manager, State};
 
-use crate::db::Database;
 use crate::domain::profile::{self, Profile};
 use crate::overlay::{self, OverlayStore};
+use itqan_core::db::Database;
 use itqan_core::error::CommandError;
 
 #[tauri::command]

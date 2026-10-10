@@ -3,11 +3,11 @@ use tauri::{AppHandle, Manager};
 
 use super::coach::{LATER, OPEN_MAIN, OPEN_PANEL};
 use super::{action, AppEvent, Signal, Subscriber};
-use crate::db::{settings as settings_repo, Database};
 use crate::domain::modes;
 use crate::domain::nudges::{AgentKind, Priority};
 use crate::domain::profile::{CoachStyle, Motivator, Profile};
 use crate::domain::{profile, tasks};
+use itqan_core::db::{settings as settings_repo, Database};
 use itqan_core::error::AppError;
 use itqan_core::settings;
 

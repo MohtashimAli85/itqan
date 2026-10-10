@@ -2200,7 +2200,6 @@ dependencies = [
  "tauri-plugin-notification",
  "tauri-plugin-single-instance",
  "tauri-specta",
- "thiserror 2.0.21",
  "tokio",
  "tracing",
 ]

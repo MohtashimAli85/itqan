@@ -4,8 +4,10 @@ use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
-use crate::db::{health as repo, settings as settings_repo};
+use crate::db::health as repo;
+
 use crate::domain::reminders::{self, Reminder, ReminderInput};
+use itqan_core::db::settings as settings_repo;
 use itqan_core::error::AppError;
 
 pub use itqan_contracts::HabitKind;
@@ -232,7 +234,7 @@ mod tests {
     use chrono::TimeZone;
 
     use super::*;
-    use crate::db::test_connection;
+    use itqan_core::db::test_connection;
 
     fn now() -> DateTime<Utc> {
         Utc.with_ymd_and_hms(2026, 10, 10, 6, 0, 0).unwrap()
