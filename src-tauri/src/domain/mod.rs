@@ -11,6 +11,5 @@ pub mod quick_add;
 pub mod recurrence;
 pub mod reminders;
 pub mod rewards;
-pub mod settings;
 pub mod skills;
 pub mod tasks;

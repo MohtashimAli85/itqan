@@ -9,7 +9,7 @@ use crate::domain::levels::{self, LevelProgress};
 use crate::domain::profile::{Motivator, Profile};
 use crate::domain::skills::SkillId;
 use crate::domain::tasks::{TaskId, TaskKind};
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 const MAX_FREEZES: u8 = 2;
 const FREEZE_EVERY: u32 = 7;

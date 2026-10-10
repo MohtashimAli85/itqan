@@ -3,8 +3,8 @@ use tauri::{AppHandle, Manager, State};
 
 use crate::db::Database;
 use crate::domain::profile::{self, Profile};
-use crate::error::CommandError;
 use crate::overlay::{self, OverlayStore};
+use itqan_core::error::CommandError;
 
 #[tauri::command]
 #[specta::specta]

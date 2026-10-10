@@ -9,8 +9,8 @@ use crate::commands::events::TasksChanged;
 use crate::db::Database;
 use crate::domain::reminders::{self, Reminder, ReminderId, SNOOZE_MINUTES};
 use crate::domain::tasks::{self, TaskStatus};
-use crate::error::AppError;
 use crate::overlay::{self, BubbleAction, BubbleOrigin, FollowMode, OrbState, OverlayStore};
+use itqan_core::error::AppError;
 
 pub const DONE: &str = "done";
 pub const SNOOZE: &str = "snooze";

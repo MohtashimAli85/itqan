@@ -4,21 +4,14 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 
 use crate::db::{settings as settings_repo, work_hours as repo};
-use crate::error::AppError;
+use itqan_core::error::AppError;
+
+pub use itqan_contracts::Mode;
 
 pub const MORNING_START_MINUTE: u16 = 6 * 60;
 const DEFAULT_EVENING_END_MINUTE: u16 = 23 * 60;
 const EVENING_END: &str = "evening_end_minute";
 const REST_UNTIL: &str = "rest_until";
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
-#[serde(rename_all = "camelCase")]
-pub enum Mode {
-    Work,
-    Evening,
-    Rest,
-    Focus,
-}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]

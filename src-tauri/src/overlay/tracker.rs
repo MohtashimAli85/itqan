@@ -7,8 +7,8 @@ use tauri::{AppHandle, Manager, Monitor, PhysicalPosition, WebviewWindow};
 use tauri_specta::Event;
 
 use super::{publish, Activity, HitAreas, OverlayStore, OVERLAY_LABEL};
-use crate::error::AppError;
 use crate::platform;
+use itqan_core::error::AppError;
 
 const ACTIVE_TICK: Duration = Duration::from_millis(16);
 const STILL_TICK: Duration = Duration::from_millis(100);

@@ -6,17 +6,18 @@ use tauri::{AppHandle, Manager};
 use tauri_specta::Event;
 
 use super::health as health_agent;
-use super::Suggestion;
+use super::Signal;
 use crate::commands::events::HealthChanged;
 use crate::db::{settings as settings_repo, Database};
 use crate::domain::health::{self, HabitKind};
 use crate::domain::modes::Mode;
 use crate::domain::nudges::{self, NewNudge, NudgeId, Outcome, Priority};
-use crate::domain::{profile, settings};
-use crate::error::AppError;
+use crate::domain::profile;
 use crate::overlay::{self, Activity, BubbleOrigin, OverlayStore};
 use crate::scheduler::{modes as mode_engine, ModeStatus};
 use crate::tray;
+use itqan_core::error::AppError;
+use itqan_core::settings;
 
 pub const OPEN_PANEL: &str = "open-panel";
 pub const OPEN_MAIN: &str = "open-main";
@@ -52,7 +53,7 @@ pub struct GateInput {
     pub busy: bool,
 }
 
-pub fn gate(suggestion: &Suggestion, now: DateTime<Utc>, input: &GateInput) -> Gate {
+pub fn gate(suggestion: &Signal, now: DateTime<Utc>, input: &GateInput) -> Gate {
     if suggestion.expires_at <= now {
         return Gate::Drop;
     }
@@ -122,8 +123,8 @@ pub fn set_budget(connection: &rusqlite::Connection, value: u32) -> Result<u32, 
 
 #[derive(Default)]
 struct CoachState {
-    pending: Vec<Suggestion>,
-    shown: HashMap<NudgeId, Suggestion>,
+    pending: Vec<Signal>,
+    shown: HashMap<NudgeId, Signal>,
 }
 
 #[derive(Default)]
@@ -137,7 +138,7 @@ impl Coach {
 
 pub fn consider(
     app: &AppHandle,
-    suggestions: Vec<Suggestion>,
+    suggestions: Vec<Signal>,
     now: DateTime<Utc>,
 ) -> Result<(), AppError> {
     {
@@ -310,8 +311,8 @@ mod tests {
         Utc.with_ymd_and_hms(2026, 10, 10, 9, minute, 0).unwrap()
     }
 
-    fn suggestion(priority: Priority) -> Suggestion {
-        Suggestion {
+    fn suggestion(priority: Priority) -> Signal {
+        Signal {
             agent: AgentKind::Coach,
             kind: "standup".into(),
             priority,
@@ -374,7 +375,7 @@ mod tests {
 
     #[test]
     fn snoozed_suggestions_wait() {
-        let later = Suggestion {
+        let later = Signal {
             not_before: Some(at(10)),
             ..suggestion(Priority::Rhythm)
         };

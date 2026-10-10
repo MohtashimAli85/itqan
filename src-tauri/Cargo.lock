@@ -2183,10 +2183,8 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "chrono-tz",
- "iana-time-zone",
- "keyring",
- "regex",
- "reqwest",
+ "itqan-contracts",
+ "itqan-core",
  "rrule",
  "rusqlite",
  "serde",
@@ -2202,6 +2200,36 @@ dependencies = [
  "tauri-plugin-notification",
  "tauri-plugin-single-instance",
  "tauri-specta",
+ "thiserror 2.0.21",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "itqan-contracts"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "specta",
+]
+
+[[package]]
+name = "itqan-core"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "chrono-tz",
+ "iana-time-zone",
+ "itqan-contracts",
+ "keyring",
+ "regex",
+ "reqwest",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "specta",
+ "tauri",
  "thiserror 2.0.21",
  "tokio",
  "tracing",

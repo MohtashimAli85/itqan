@@ -3,7 +3,7 @@ use rusqlite::{params, Connection, OptionalExtension, Row};
 
 use crate::domain::focus::{FocusSession, FocusSessionId};
 use crate::domain::tasks::TaskId;
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 const COLUMNS: &str = "id, task_id, started_at, planned_minutes, ended_at, completed";
 

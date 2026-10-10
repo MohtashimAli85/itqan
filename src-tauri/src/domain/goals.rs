@@ -5,10 +5,9 @@ use specta::Type;
 
 use crate::db::goals as repo;
 use crate::domain::profile::Motivator;
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
-pub type GoalId = i32;
-pub type MilestoneId = i32;
+pub use itqan_contracts::{GoalId, MilestoneId};
 
 const MAX_TITLE_LENGTH: usize = 200;
 

@@ -7,8 +7,8 @@ use tauri::{App, AppHandle, Manager, WebviewWindow};
 use tauri_specta::Event;
 
 use crate::db::{settings as settings_repo, Database};
-use crate::error::AppError;
 use crate::platform;
+use itqan_core::error::AppError;
 
 pub use activity::Activity;
 pub use hit_areas::{HitAreas, Rect};

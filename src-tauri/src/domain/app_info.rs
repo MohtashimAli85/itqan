@@ -3,7 +3,7 @@ use serde::Serialize;
 use specta::Type;
 
 use crate::db::migrations;
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 #[derive(Debug, Serialize, Type)]
 #[serde(rename_all = "camelCase")]

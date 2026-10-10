@@ -6,21 +6,14 @@ use specta::Type;
 
 use crate::db::{health as repo, settings as settings_repo};
 use crate::domain::reminders::{self, Reminder, ReminderInput};
-use crate::error::AppError;
+use itqan_core::error::AppError;
+
+pub use itqan_contracts::HabitKind;
 
 pub type HabitId = i32;
 
 const ENABLED: &str = "health_enabled";
 const MAX_WATER_TARGET: u16 = 20;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
-#[serde(rename_all = "camelCase")]
-pub enum HabitKind {
-    Stretch,
-    EyeRest,
-    Water,
-    Medicine,
-}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]

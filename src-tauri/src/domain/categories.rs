@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 
 use crate::db::categories as repo;
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 pub type CategoryId = i32;
 

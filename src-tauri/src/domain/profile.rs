@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 
 use crate::db::{profile as repo, settings as settings_repo};
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 const ONBOARDED: &str = "onboarding_completed";
 const MAX_NAME_LENGTH: usize = 60;

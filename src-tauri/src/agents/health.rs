@@ -2,13 +2,14 @@ use chrono::{DateTime, Duration, NaiveTime, TimeZone, Utc};
 use tauri::{AppHandle, Manager};
 
 use super::coach::LATER;
-use super::{action, Agent, AppEvent, Suggestion};
+use super::{action, AppEvent, Signal, Subscriber};
 use crate::db::Database;
 use crate::domain::health::{self, AgeBand, HabitKind};
 use crate::domain::nudges::{self, AgentKind, Priority};
-use crate::domain::{profile, settings};
-use crate::error::AppError;
+use crate::domain::profile;
 use crate::overlay::Activity;
+use itqan_core::error::AppError;
+use itqan_core::settings;
 
 const WATER_EVERY: Duration = Duration::hours(2);
 const EXPIRES_AFTER: Duration = Duration::minutes(15);
@@ -47,8 +48,8 @@ fn suggestion(
     text: String,
     actions: Vec<crate::overlay::BubbleAction>,
     now: DateTime<Utc>,
-) -> Suggestion {
-    Suggestion {
+) -> Signal {
+    Signal {
         agent: AgentKind::Health,
         kind: kind.into(),
         priority: Priority::Health,
@@ -59,13 +60,13 @@ fn suggestion(
     }
 }
 
-impl Agent for HealthAgent {
+impl Subscriber for HealthAgent {
     fn on_event(
         &self,
         app: &AppHandle,
         event: &AppEvent,
         now: DateTime<Utc>,
-    ) -> Result<Vec<Suggestion>, AppError> {
+    ) -> Result<Vec<Signal>, AppError> {
         if *event != AppEvent::Tick {
             return Ok(Vec::new());
         }

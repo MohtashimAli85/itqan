@@ -4,12 +4,12 @@ use tauri::{AppHandle, State};
 use crate::db::{prayer as prayer_repo, Database};
 use crate::domain::focus;
 use crate::domain::modes::{self, WorkDay};
-use crate::domain::settings;
 use crate::domain::tasks::TaskId;
-use crate::error::{AppError, CommandError};
 use crate::prayer::schedule::{self, PrayerWindow};
 use crate::prayer::settings::PrayerSettings;
 use crate::scheduler::{self, ModeStatus};
+use itqan_core::error::{AppError, CommandError};
+use itqan_core::settings;
 
 #[tauri::command]
 #[specta::specta]

@@ -6,7 +6,7 @@ use specta::Type;
 use crate::domain::categories;
 use crate::domain::reminders::{self, ReminderInput};
 use crate::domain::tasks::{self, Task, TaskInput};
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]

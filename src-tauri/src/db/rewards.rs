@@ -5,7 +5,7 @@ use super::enums::{column, to_text};
 use crate::domain::rewards::{Award, Streak, XpSource};
 use crate::domain::skills::SkillId;
 use crate::domain::tasks::TaskKind;
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 pub fn insert_event(
     connection: &Connection,

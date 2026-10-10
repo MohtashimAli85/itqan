@@ -14,4 +14,4 @@ pre-commit:
       run: pnpm exec prettier --check {staged_files}
     rustfmt:
       glob: "*.rs"
-      run: cargo fmt --manifest-path src-tauri/Cargo.toml --check
+      run: cargo fmt --manifest-path src-tauri/Cargo.toml --all --check

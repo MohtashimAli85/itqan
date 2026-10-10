@@ -2,13 +2,14 @@ use chrono::{DateTime, Datelike, Duration, NaiveDate, TimeZone, Timelike, Utc};
 use tauri::{AppHandle, Manager};
 
 use super::coach::{LATER, OPEN_MAIN, OPEN_PANEL};
-use super::{action, Agent, AppEvent, Suggestion};
+use super::{action, AppEvent, Signal, Subscriber};
 use crate::db::{settings as settings_repo, Database};
 use crate::domain::modes;
 use crate::domain::nudges::{AgentKind, Priority};
 use crate::domain::profile::{CoachStyle, Motivator, Profile};
-use crate::domain::{profile, settings, tasks};
-use crate::error::AppError;
+use crate::domain::{profile, tasks};
+use itqan_core::error::AppError;
+use itqan_core::settings;
 
 const STANDUP_WINDOW_MINUTES: i64 = 180;
 const CHECKIN_WINDOW_MINUTES: i64 = 240;
@@ -75,13 +76,13 @@ fn read_date(connection: &rusqlite::Connection, key: &str) -> Result<Option<Naiv
     Ok(settings_repo::get(connection, key)?.and_then(|value| value.parse().ok()))
 }
 
-impl Agent for RhythmAgent {
+impl Subscriber for RhythmAgent {
     fn on_event(
         &self,
         app: &AppHandle,
         event: &AppEvent,
         now: DateTime<Utc>,
-    ) -> Result<Vec<Suggestion>, AppError> {
+    ) -> Result<Vec<Signal>, AppError> {
         if !matches!(event, AppEvent::Tick | AppEvent::ModeChanged { .. }) {
             return Ok(Vec::new());
         }
@@ -111,7 +112,7 @@ impl Agent for RhythmAgent {
                 && read_date(connection, LAST_STANDUP)? != Some(today)
             {
                 settings_repo::set(connection, LAST_STANDUP, &today.to_string())?;
-                suggestions.push(Suggestion {
+                suggestions.push(Signal {
                     agent: AgentKind::Coach,
                     kind: "standup".into(),
                     priority: Priority::Rhythm,
@@ -126,7 +127,7 @@ impl Agent for RhythmAgent {
             {
                 settings_repo::set(connection, LAST_CHECKIN, &today.to_string())?;
                 let completed = tasks::completed_between(connection, local_midnight, now)?;
-                suggestions.push(Suggestion {
+                suggestions.push(Signal {
                     agent: AgentKind::Coach,
                     kind: "checkin".into(),
                     priority: Priority::Rhythm,

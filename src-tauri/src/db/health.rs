@@ -3,7 +3,7 @@ use rusqlite::{params, Connection, OptionalExtension, Row};
 
 use super::enums::{column, to_text};
 use crate::domain::health::{Habit, HabitId, HabitKind};
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 const COLUMNS: &str = "id, kind, name, target, enabled";
 

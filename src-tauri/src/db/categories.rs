@@ -1,7 +1,7 @@
 use rusqlite::{params, Connection, OptionalExtension, Row};
 
 use crate::domain::categories::{Category, CategoryId};
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 const COLUMNS: &str = "id, name, colour, icon, builtin";
 

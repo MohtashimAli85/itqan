@@ -3,7 +3,7 @@ use rusqlite::types::Type as SqlType;
 use rusqlite::{named_params, params, Connection, OptionalExtension, Row};
 
 use crate::domain::tasks::{Task, TaskFilter, TaskId, TaskInput, TaskKind, TaskStatus};
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 const COLUMNS: &str = "id, title, notes, category_id, kind, priority, due_at, is_top_three, \
                        status, completed_at, parent_id, created_at, updated_at, goal_id, skill_id";

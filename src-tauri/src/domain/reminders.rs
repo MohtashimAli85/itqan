@@ -8,7 +8,7 @@ use crate::db::reminders as repo;
 use crate::domain::health::HabitId;
 use crate::domain::recurrence;
 use crate::domain::tasks::TaskId;
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 pub type ReminderId = i32;
 

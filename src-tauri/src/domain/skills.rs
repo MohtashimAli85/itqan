@@ -5,7 +5,7 @@ use specta::Type;
 
 use crate::db::skills as repo;
 use crate::domain::levels::{self, LevelProgress};
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 pub type SkillId = i32;
 

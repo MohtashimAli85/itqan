@@ -4,7 +4,7 @@ use rusqlite::{params, Connection, OptionalExtension, Row};
 use crate::domain::health::HabitId;
 use crate::domain::reminders::{Reminder, ReminderId};
 use crate::domain::tasks::TaskId;
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 const SELECT: &str = "SELECT r.id, r.task_id, coalesce(t.title, r.title), r.anchor_at, r.next_at,
                              r.rrule, r.timezone, r.critical, r.snoozed_until, r.last_fired_at

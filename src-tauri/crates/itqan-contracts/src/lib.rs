@@ -1,0 +1,96 @@
+use serde::{Deserialize, Serialize};
+use specta::Type;
+
+pub type TaskId = i32;
+pub type GoalId = i32;
+pub type MilestoneId = i32;
+pub type FocusSessionId = i32;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub enum Mode {
+    Work,
+    Evening,
+    Rest,
+    Focus,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub enum HabitKind {
+    Stretch,
+    EyeRest,
+    Water,
+    Medicine,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum AppEvent {
+    Tick,
+    TaskCompleted {
+        task_id: TaskId,
+    },
+    FocusCompleted {
+        session_id: FocusSessionId,
+        minutes: u16,
+    },
+    MilestoneCompleted {
+        milestone_id: MilestoneId,
+    },
+    GoalCompleted {
+        goal_id: GoalId,
+    },
+    HabitLogged {
+        kind: HabitKind,
+    },
+    ModeChanged {
+        from: Option<Mode>,
+        to: Mode,
+    },
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn samples() -> Vec<AppEvent> {
+        vec![
+            AppEvent::Tick,
+            AppEvent::TaskCompleted { task_id: 7 },
+            AppEvent::FocusCompleted {
+                session_id: 3,
+                minutes: 25,
+            },
+            AppEvent::MilestoneCompleted { milestone_id: 2 },
+            AppEvent::GoalCompleted { goal_id: 1 },
+            AppEvent::HabitLogged {
+                kind: HabitKind::Water,
+            },
+            AppEvent::ModeChanged {
+                from: Some(Mode::Work),
+                to: Mode::Evening,
+            },
+        ]
+    }
+
+    fn covered(event: &AppEvent) -> bool {
+        match event {
+            AppEvent::Tick
+            | AppEvent::TaskCompleted { .. }
+            | AppEvent::FocusCompleted { .. }
+            | AppEvent::MilestoneCompleted { .. }
+            | AppEvent::GoalCompleted { .. }
+            | AppEvent::HabitLogged { .. }
+            | AppEvent::ModeChanged { .. } => true,
+        }
+    }
+
+    #[test]
+    fn every_event_round_trips_through_serde() {
+        for event in samples() {
+            assert!(covered(&event));
+            let json = serde_json::to_string(&event).unwrap();
+            assert_eq!(serde_json::from_str::<AppEvent>(&json).unwrap(), event);
+        }
+    }
+}

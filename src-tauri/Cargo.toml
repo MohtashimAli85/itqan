@@ -1,11 +1,34 @@
+[workspace]
+members = ["crates/*"]
+resolver = "2"
+
+[workspace.dependencies]
+tauri = { version = "2", features = ["tray-icon", "macos-private-api"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.40.2", features = ["bundled", "chrono"] }
+thiserror = "2.0.21"
+tracing = { version = "0.1.44", features = ["log"] }
+tauri-specta = { version = "=2.0.0-rc.25", features = ["derive", "typescript"] }
+specta = { version = "=2.0.0-rc.25", features = ["derive", "chrono"] }
+chrono = { version = "0.4.45", features = ["serde"] }
+chrono-tz = "0.10"
+iana-time-zone = "0.1"
+tokio = { version = "1", features = ["time", "sync", "macros"] }
+keyring = "4"
+reqwest = { version = "0.13", features = ["json", "stream"] }
+regex = "1"
+
+[workspace.lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+
 [package]
 name = "itqan"
 version = "0.1.0"
 description = "Open-source desktop companion that keeps you focused and growing"
 authors = ["Mohtashim Ali"]
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
 # The `_lib` suffix may seem redundant but it is necessary
@@ -18,26 +41,26 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = ["tray-icon", "macos-private-api"] }
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-rusqlite = { version = "0.40.2", features = ["bundled", "chrono"] }
-thiserror = "2.0.21"
-tracing = { version = "0.1.44", features = ["log"] }
+itqan-contracts = { path = "crates/itqan-contracts" }
+itqan-core = { path = "crates/itqan-core" }
+tauri.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+rusqlite.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
 tauri-plugin-log = "2.10.0"
-tauri-specta = { version = "=2.0.0-rc.25", features = ["derive", "typescript"] }
-specta = { version = "=2.0.0-rc.25", features = ["derive", "chrono"] }
+tauri-specta.workspace = true
+specta.workspace = true
 specta-typescript = "0.0.12"
-chrono = { version = "0.4.45", features = ["serde"] }
+chrono.workspace = true
 rrule = "0.14"
-chrono-tz = "0.10"
-iana-time-zone = "0.1"
-tokio = { version = "1", features = ["time", "sync", "macros"] }
+chrono-tz.workspace = true
+tokio.workspace = true
 tauri-plugin-notification = "2"
-keyring = "4"
-reqwest = { version = "0.13", features = ["json", "stream"] }
-regex = "1"
 
+[dev-dependencies]
+itqan-core = { path = "crates/itqan-core", features = ["test-support"] }
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
 [profile.release]
@@ -47,9 +70,8 @@ opt-level = 3
 panic = "abort"
 strip = true
 
-[lints.clippy]
-unwrap_used = "deny"
-expect_used = "deny"
+[lints]
+workspace = true
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-autostart = "2"

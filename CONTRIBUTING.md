@@ -24,7 +24,7 @@ pnpm typecheck
 pnpm test
 pnpm format:rust:check
 pnpm lint:rust
-cargo test --manifest-path src-tauri/Cargo.toml
+pnpm test:rust
 ```
 
 Git hooks (lefthook) run lint, format checks and commitlint automatically after `pnpm install`.

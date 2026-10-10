@@ -1,8 +1,8 @@
 use chrono::{Datelike, Duration, NaiveDate};
 use tauri::AppHandle;
 
-use crate::ai::{self, redact, Job};
-use crate::error::AppError;
+use itqan_core::ai::{self, redact, Job};
+use itqan_core::error::AppError;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 

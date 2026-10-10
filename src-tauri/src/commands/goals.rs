@@ -6,15 +6,16 @@ use tauri_specta::Event;
 
 use crate::agents::planner::{self, PlanProposal, PlanRequest};
 use crate::agents::{self, AppEvent};
-use crate::ai;
 use crate::db::Database;
 use crate::domain::goals::{
     self, Goal, GoalId, GoalInput, GoalStatus, Milestone, MilestoneId, MilestoneInput,
     MilestoneStatus,
 };
+use crate::domain::profile;
 use crate::domain::skills::{self, Skill, SkillId};
-use crate::domain::{profile, settings};
-use crate::error::{AppError, CommandError};
+use itqan_core::ai;
+use itqan_core::error::{AppError, CommandError};
+use itqan_core::settings;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type, tauri_specta::Event)]
 pub struct GoalsChanged;

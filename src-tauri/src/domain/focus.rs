@@ -5,10 +5,10 @@ use specta::Type;
 
 use crate::db::focus as repo;
 use crate::domain::tasks::TaskId;
-use crate::error::AppError;
 use crate::prayer::schedule::{self, PrayerWindow};
+use itqan_core::error::AppError;
 
-pub type FocusSessionId = i32;
+pub use itqan_contracts::FocusSessionId;
 
 pub const DEFAULT_MINUTES: u16 = 25;
 const MAX_MINUTES: u16 = 240;

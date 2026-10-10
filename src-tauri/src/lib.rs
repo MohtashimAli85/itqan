@@ -1,9 +1,7 @@
 mod agents;
-mod ai;
 mod commands;
 mod db;
 mod domain;
-mod error;
 mod overlay;
 mod platform;
 mod prayer;
