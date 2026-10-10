@@ -197,7 +197,7 @@ The original accountability features are built as modules on top:
    - **Today:** sidebar (Today, Upcoming, Work, Personal, Health, Progress, Settings, next prayer card), quick add, Top 3, sections, task detail panel with subtasks and notes
    - **Progress:** level and XP, streak, weekly focus hours chart, 5-week streak calendar, badges, skill levels
    - **Settings:** orb behaviour and personality, work hours, prayer times, nudges and distracting apps, AI provider and keys, rewards and sound, privacy
-   - **Onboarding:** welcome, motivation profile, work hours and city, orb placement, AI key, notification permission
+   - **Onboarding:** welcome, AI key (before the motivation step so the profile chat can run, 2.1.4), motivation profile (chat with AI, sliders without), work hours and city, orb placement, notification permission
 
 ### Orb states
 | State | Look | When |

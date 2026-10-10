@@ -8,9 +8,10 @@ export function AiStep() {
           Bring your own AI (optional)
         </h2>
         <p className="text-sm text-text-secondary">
-          AI helps me plan goals and answer questions. Use a provider key or a
-          model running on this computer. Without it, I still work with simple
-          rules. You can set this up later.
+          Save a provider here and the next step becomes a short conversation
+          instead of sliders. AI also helps me plan goals and answer questions.
+          Use a provider key or a model running on this computer. Without it, I
+          still work with simple rules. You can set this up later.
         </p>
       </div>
       <AiSettingsForm />

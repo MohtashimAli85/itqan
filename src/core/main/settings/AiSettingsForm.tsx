@@ -142,6 +142,7 @@ function Form({ status }: { status: AiStatus }) {
 
       <div className="flex items-center gap-3">
         <Button
+          type="button"
           variant="secondary"
           disabled={test.isPending || !status.settings.enabled}
           onClick={() => test.mutate()}

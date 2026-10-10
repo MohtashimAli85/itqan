@@ -22,6 +22,7 @@ import { useOnboardingData } from "./useOnboardingData";
 
 const steps = [
   { Component: WelcomeStep, fields: ["name"] },
+  { Component: AiStep, fields: [] },
   {
     Component: MotivationStep,
     fields: ["motivators", "coachStyle", "freeHours", "age"],
@@ -38,7 +39,6 @@ const steps = [
     ],
   },
   { Component: OrbStep, fields: ["followMode"] },
-  { Component: AiStep, fields: [] },
   { Component: NotificationsStep, fields: [] },
 ] as const satisfies {
   Component: () => React.ReactNode;
@@ -108,6 +108,7 @@ function OnboardingForm({ defaults, prayer }: OnboardingFormProps) {
           className="flex w-full max-w-2xl flex-col gap-8 rounded-3xl bg-card p-10 shadow-sm ring-1 ring-border"
           onSubmit={(event) => {
             event.preventDefault();
+            if (event.target !== event.currentTarget) return;
             void next();
           }}
         >
