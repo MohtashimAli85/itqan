@@ -28,11 +28,6 @@ export function SystemSettings() {
     async () => unwrap(await commands.getAutostart()),
     async (value) => unwrap(await commands.setAutostart(value)),
   );
-  const sound = useToggle(
-    "reward-sound",
-    async () => unwrap(await commands.getRewardSound()),
-    async (value) => unwrap(await commands.setRewardSound(value)),
-  );
 
   return (
     <>
@@ -55,14 +50,6 @@ export function SystemSettings() {
             id="autostart"
             checked={autostart.value ?? false}
             onCheckedChange={autostart.set}
-          />
-        </div>
-        <div className="flex items-center justify-between">
-          <Label htmlFor="sound">Reward sounds</Label>
-          <Switch
-            id="sound"
-            checked={sound.value ?? true}
-            onCheckedChange={sound.set}
           />
         </div>
       </Section>

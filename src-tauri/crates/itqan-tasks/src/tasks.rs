@@ -8,42 +8,11 @@ use crate::repo::tasks as repo;
 use itqan_contracts::{GoalId, SkillId};
 use itqan_core::error::AppError;
 
-pub use itqan_contracts::TaskId;
+pub use itqan_contracts::{TaskId, TaskKind};
 
 pub const MAX_TOP_THREE: u32 = 3;
 const MAX_TITLE_LENGTH: usize = 500;
 const MAX_PRIORITY: u8 = 3;
-
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
-#[serde(rename_all = "camelCase")]
-pub enum TaskKind {
-    #[default]
-    Output,
-    Learning,
-    DeepWork,
-    Habit,
-}
-
-impl TaskKind {
-    pub fn as_str(self) -> &'static str {
-        match self {
-            Self::Output => "output",
-            Self::Learning => "learning",
-            Self::DeepWork => "deepWork",
-            Self::Habit => "habit",
-        }
-    }
-
-    pub fn parse(value: &str) -> Option<Self> {
-        match value {
-            "output" => Some(Self::Output),
-            "learning" => Some(Self::Learning),
-            "deepWork" => Some(Self::DeepWork),
-            "habit" => Some(Self::Habit),
-            _ => None,
-        }
-    }
-}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
@@ -201,6 +170,10 @@ pub fn completed_between(
     to: DateTime<Utc>,
 ) -> Result<u32, AppError> {
     repo::count_completed_between(connection, from, to)
+}
+
+pub fn done_count(connection: &Connection, kind: TaskKind) -> Result<u32, AppError> {
+    repo::count_done(connection, kind)
 }
 
 pub fn next_for_today(

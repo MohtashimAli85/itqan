@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 
 use chrono::{DateTime, Utc};
 use chrono_tz::Tz;
-use itqan_contracts::PrayerWindow;
+use itqan_contracts::{PrayerWindow, TaskKind};
 use rusqlite::Connection;
 use tauri::AppHandle;
 
@@ -73,6 +73,8 @@ pub trait TaskStats: Send + Sync {
         from: DateTime<Utc>,
         to: DateTime<Utc>,
     ) -> Result<u32, AppError>;
+
+    fn done_count(&self, connection: &Connection, kind: TaskKind) -> Result<u32, AppError>;
 }
 
 #[derive(Default)]
@@ -152,6 +154,15 @@ impl Ports {
     ) -> Result<u32, AppError> {
         self.task_stats()?
             .map_or(Ok(0), |stats| stats.completed_between(connection, from, to))
+    }
+
+    pub fn tasks_done_count(
+        &self,
+        connection: &Connection,
+        kind: TaskKind,
+    ) -> Result<u32, AppError> {
+        self.task_stats()?
+            .map_or(Ok(0), |stats| stats.done_count(connection, kind))
     }
 
     pub fn set_reminder_target(
@@ -283,6 +294,12 @@ mod tests {
         assert_eq!(
             ports
                 .tasks_completed_between(&connection, now, now)
+                .unwrap(),
+            0
+        );
+        assert_eq!(
+            ports
+                .tasks_done_count(&connection, TaskKind::Output)
                 .unwrap(),
             0
         );

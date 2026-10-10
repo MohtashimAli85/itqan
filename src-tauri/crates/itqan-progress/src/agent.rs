@@ -6,8 +6,9 @@ use specta::Type;
 use tauri::{AppHandle, Manager};
 use tauri_specta::Event;
 
-use super::{AppEvent, Signal, Subscriber};
-use crate::domain::rewards::{self, Award, RewardOutcome, XpSource};
+use crate::rewards::{self, Award, RewardOutcome, XpSource};
+use itqan_contracts::AppEvent;
+use itqan_core::bus::{Signal, Subscriber};
 use itqan_core::db::{settings as settings_repo, Database};
 use itqan_core::error::AppError;
 use itqan_core::modes;
@@ -16,7 +17,6 @@ use itqan_core::overlay::{self, OrbState, OverlayStore};
 use itqan_core::ports::{Ports, TodayCounts};
 use itqan_core::profile;
 use itqan_core::settings;
-use itqan_tasks::tasks;
 
 const SOUND: &str = "reward_sound";
 const LAST_ALL_DONE: &str = "last_all_done_date";
@@ -59,14 +59,17 @@ fn award_for(
         reference_id,
     };
     Ok(match *event {
-        AppEvent::TaskCompleted { task_id } => {
-            let task = tasks::get(connection, task_id)?;
-            let amount = rewards::task_xp(task.kind, &profile::get(connection)?);
+        AppEvent::TaskCompleted {
+            task_id,
+            kind,
+            skill_id,
+        } => {
+            let amount = rewards::task_xp(kind, &profile::get(connection)?);
             Some(award(
                 XpSource::Task,
                 amount,
                 Some(task_id),
-                task.skill_id,
+                skill_id,
                 Some(task_id),
             ))
         }

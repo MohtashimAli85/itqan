@@ -6,6 +6,7 @@ pub mod targets;
 pub mod tasks;
 
 use chrono::{DateTime, Utc};
+use itqan_contracts::TaskKind;
 use itqan_core::error::AppError;
 use itqan_core::module::{Migration, Module};
 use itqan_core::ports::{Ports, TaskStats, TodayCounts};
@@ -72,6 +73,10 @@ impl TaskStats for Stats {
         to: DateTime<Utc>,
     ) -> Result<u32, AppError> {
         tasks::completed_between(connection, from, to)
+    }
+
+    fn done_count(&self, connection: &Connection, kind: TaskKind) -> Result<u32, AppError> {
+        tasks::done_count(connection, kind)
     }
 }
 

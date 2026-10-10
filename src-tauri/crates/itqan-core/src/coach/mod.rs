@@ -1,4 +1,5 @@
 pub mod commands;
+mod sink;
 
 use std::collections::HashMap;
 use std::sync::Mutex;
@@ -21,6 +22,7 @@ use crate::tray;
 pub const OPEN_PANEL: &str = "open-panel";
 pub const OPEN_MAIN: &str = "open-main";
 pub use crate::actions::LATER;
+pub use sink::setup;
 
 const IGNORE_AFTER_MINUTES: i64 = 3;
 const LATER_MINUTES: i64 = 30;

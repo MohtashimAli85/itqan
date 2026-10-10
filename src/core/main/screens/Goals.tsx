@@ -1,7 +1,7 @@
 import { useGoals } from "@/shared/hooks/useGoals";
 import { GoalCard } from "../goals/GoalCard";
 import { NewGoalForm } from "../goals/NewGoalForm";
-import { SkillsPanel } from "../goals/SkillsPanel";
+import { SkillsPanel } from "@/core/ui/SkillsPanel";
 
 export function Goals() {
   const { data: goals = [] } = useGoals();

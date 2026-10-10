@@ -73,6 +73,17 @@ pub fn finish(
     repo::finish(connection, id, now, completed)
 }
 
+pub fn completed_since(
+    connection: &Connection,
+    since: DateTime<Utc>,
+) -> Result<Vec<(DateTime<Utc>, u16)>, AppError> {
+    repo::completed_since(connection, since)
+}
+
+pub fn completed_count(connection: &Connection) -> Result<u32, AppError> {
+    repo::completed_count(connection)
+}
+
 pub fn status(session: FocusSession, now: DateTime<Utc>, windows: &[PrayerWindow]) -> FocusStatus {
     let planned = Duration::minutes(i64::from(session.planned_minutes));
     let paused = paused_overlap(windows, session.started_at, now);

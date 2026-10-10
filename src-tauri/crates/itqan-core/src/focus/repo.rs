@@ -54,3 +54,23 @@ pub fn finish(
     )?;
     Ok(())
 }
+
+pub fn completed_since(
+    connection: &Connection,
+    since: DateTime<Utc>,
+) -> Result<Vec<(DateTime<Utc>, u16)>, AppError> {
+    let mut statement = connection.prepare(
+        "SELECT started_at, planned_minutes FROM focus_sessions
+         WHERE completed = 1 AND started_at >= ?1",
+    )?;
+    let rows = statement.query_map([since], |row| Ok((row.get(0)?, row.get(1)?)))?;
+    Ok(rows.collect::<rusqlite::Result<_>>()?)
+}
+
+pub fn completed_count(connection: &Connection) -> Result<u32, AppError> {
+    Ok(connection.query_row(
+        "SELECT count(*) FROM focus_sessions WHERE completed = 1",
+        [],
+        |row| row.get(0),
+    )?)
+}

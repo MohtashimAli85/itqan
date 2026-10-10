@@ -3,7 +3,6 @@ import {
   createRootRouteWithContext,
   createRoute,
   createRouter,
-  lazyRouteComponent,
   Outlet,
   redirect,
   type RouteComponent,
@@ -41,10 +40,6 @@ const routeTree = rootRoute.addChildren([
       (manifest.routes ?? []).map((route) => page(route.path, route.Component)),
     ),
     page("/goals", Goals),
-    page(
-      "/progress",
-      lazyRouteComponent(() => import("./screens/Progress"), "Progress"),
-    ),
     page("/settings", Settings),
   ]),
   createRoute({

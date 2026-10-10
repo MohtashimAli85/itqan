@@ -1,14 +1,25 @@
-import { Settings, Target, TrendingUp } from "lucide-react";
+import { Settings, Target } from "lucide-react";
 import { useContributions } from "@/core/registry/contributions";
 import type { Contribution } from "@/core/registry/types";
 import { NavLink } from "@/core/ui/NavLink";
 
+const GoalsLink = () => <NavLink to="/goals" icon={Target} label="Goals" />;
+const SettingsLink = () => (
+  <NavLink to="/settings" icon={Settings} label="Settings" />
+);
+
+const coreItems: Contribution[] = [
+  { id: "goals", order: 10, Component: GoalsLink },
+  { id: "settings", order: 90, Component: SettingsLink },
+];
+
 function CoreNav() {
+  const items = useContributions((manifest) => manifest.navItems, coreItems);
   return (
     <div className="flex flex-col gap-0.5">
-      <NavLink to="/goals" icon={Target} label="Goals" />
-      <NavLink to="/progress" icon={TrendingUp} label="Progress" />
-      <NavLink to="/settings" icon={Settings} label="Settings" />
+      {items.map(({ id, Component }) => (
+        <Component key={id} />
+      ))}
     </div>
   );
 }

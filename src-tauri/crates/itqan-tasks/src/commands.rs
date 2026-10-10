@@ -61,7 +61,14 @@ pub fn set_task_status(
 ) -> Result<Task, CommandError> {
     let task = database.with(|connection| tasks::set_status(connection, id, status, Utc::now()))?;
     if status == TaskStatus::Done {
-        bus::publish(&app, AppEvent::TaskCompleted { task_id: id })?;
+        bus::publish(
+            &app,
+            AppEvent::TaskCompleted {
+                task_id: id,
+                kind: task.kind,
+                skill_id: task.skill_id,
+            },
+        )?;
     }
     changed(&app, task)
 }

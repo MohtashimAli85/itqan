@@ -1,9 +1,9 @@
 import { Flame, Snowflake } from "lucide-react";
-import { useProgress } from "@/shared/hooks/useProgress";
-import { SkillsPanel } from "../goals/SkillsPanel";
-import { BadgeGrid } from "../progress/BadgeGrid";
-import { FocusChart } from "../progress/FocusChart";
-import { StreakCalendar } from "../progress/StreakCalendar";
+import { SkillsPanel } from "@/core/ui/SkillsPanel";
+import { useProgress } from "../hooks/useProgress";
+import { BadgeGrid } from "../components/BadgeGrid";
+import { FocusChart } from "../components/FocusChart";
+import { StreakCalendar } from "../components/StreakCalendar";
 
 export function Progress() {
   const { data: progress } = useProgress();
