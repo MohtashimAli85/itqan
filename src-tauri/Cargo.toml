@@ -18,6 +18,7 @@ tokio = { version = "1", features = ["time", "sync", "macros"] }
 keyring = "4"
 reqwest = { version = "0.13", features = ["json", "stream"] }
 regex = "1"
+rrule = "0.14"
 
 [workspace.lints.clippy]
 unwrap_used = "deny"
@@ -54,7 +55,6 @@ tauri-specta.workspace = true
 specta.workspace = true
 specta-typescript = "0.0.12"
 chrono.workspace = true
-rrule = "0.14"
 chrono-tz.workspace = true
 tokio.workspace = true
 tauri-plugin-notification = "2"

@@ -6,6 +6,7 @@ pub type TaskId = i32;
 pub type GoalId = i32;
 pub type MilestoneId = i32;
 pub type FocusSessionId = i32;
+pub type HabitId = i32;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]

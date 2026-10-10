@@ -7,15 +7,15 @@ use specta::Type;
 use tauri::{AppHandle, Manager};
 use tauri_specta::Event;
 
-use crate::agents::rewards as rewards_agent;
 use crate::agents::{self, AppEvent};
 use crate::domain::focus::{self, FocusStatus, DEFAULT_MINUTES};
 use crate::domain::modes::{self, Mode};
 use crate::domain::tasks;
-use crate::overlay::{self, Activity, BubbleAction, BubbleOrigin, OrbState, OverlayStore};
+use crate::overlay::{self, Activity, BubbleOrigin, OrbState, OverlayStore};
 use itqan_contracts::PrayerWindow;
 use itqan_core::db::Database;
 use itqan_core::error::AppError;
+use itqan_core::overlay::action;
 use itqan_core::ports::Ports;
 use itqan_core::settings;
 
@@ -65,13 +65,6 @@ fn appearance(mode: Mode) -> OrbState {
     }
 }
 
-fn action(id: &str, label: &str) -> BubbleAction {
-    BubbleAction {
-        id: id.into(),
-        label: label.into(),
-    }
-}
-
 pub fn current(app: &AppHandle) -> Result<Option<ModeStatus>, AppError> {
     let engine = app.state::<ModeEngine>();
     let state = engine.0.lock().map_err(|_| AppError::LockPoisoned)?;
@@ -86,7 +79,7 @@ pub fn evaluate(app: &AppHandle) -> Result<(ModeStatus, StdDuration), AppError> 
         .with(|connection| {
             let timezone = settings::timezone(connection)?;
             let today = now.with_timezone(&timezone).date_naive();
-            let (start, end) = rewards_agent::day_bounds(timezone, today);
+            let (start, end) = itqan_core::settings::day_bounds(timezone, today);
             let (done, open) = tasks::today_counts(connection, start, end)?;
             let today_progress = (done + open > 0).then(|| done as f32 / (done + open) as f32);
             Ok((

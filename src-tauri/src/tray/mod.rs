@@ -77,7 +77,7 @@ fn load(app: &AppHandle) -> Result<TrayView, AppError> {
     app.state::<Database>().with(|connection| {
         let timezone = settings::timezone(connection)?;
         let today = now.with_timezone(&timezone).date_naive();
-        let (_, end) = crate::agents::rewards::day_bounds(timezone, today);
+        let (_, end) = itqan_core::settings::day_bounds(timezone, today);
         let (_, tasks_left) = tasks::today_counts(connection, now, end)?;
         let next_task = tasks::next_for_today(connection, end)?.map(|task| task.title);
         Ok(view::view(TrayInputs {

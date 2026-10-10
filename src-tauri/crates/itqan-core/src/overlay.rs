@@ -6,3 +6,10 @@ pub struct BubbleAction {
     pub id: String,
     pub label: String,
 }
+
+pub fn action(id: &str, label: &str) -> BubbleAction {
+    BubbleAction {
+        id: id.into(),
+        label: label.into(),
+    }
+}

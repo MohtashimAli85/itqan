@@ -3,25 +3,22 @@ use std::sync::Mutex;
 
 use chrono::{DateTime, Duration, Timelike, Utc};
 use tauri::{AppHandle, Manager};
-use tauri_specta::Event;
 
-use super::health as health_agent;
 use super::Signal;
-use crate::commands::events::HealthChanged;
-use crate::domain::health::{self, HabitKind};
 use crate::domain::modes::Mode;
-use crate::domain::nudges::{self, NewNudge, NudgeId, Outcome, Priority};
-use crate::domain::profile;
-use crate::overlay::{self, Activity, BubbleOrigin, OverlayStore};
+use crate::overlay::{self, BubbleOrigin, OverlayStore};
 use crate::scheduler::{modes as mode_engine, ModeStatus};
 use crate::tray;
+use itqan_core::actions::ActionRouter;
 use itqan_core::db::{settings as settings_repo, Database};
 use itqan_core::error::AppError;
+use itqan_core::nudges::{self, NewNudge, NudgeId, Outcome, Priority};
+use itqan_core::profile;
 use itqan_core::settings;
 
 pub const OPEN_PANEL: &str = "open-panel";
 pub const OPEN_MAIN: &str = "open-main";
-pub const LATER: &str = "later";
+pub use itqan_core::actions::LATER;
 
 const IGNORE_AFTER_MINUTES: i64 = 3;
 const LATER_MINUTES: i64 = 30;
@@ -285,15 +282,7 @@ pub fn resolve(app: &AppHandle, id: NudgeId, action: Option<&str>) -> Result<(),
         Some(OPEN_PANEL) => overlay::open_panel(app)?,
         Some(OPEN_MAIN) => tray::show_main_window(app),
         Some(other) => {
-            if let Some(kind) = health_agent::parse_habit_action(other) {
-                app.state::<Database>()
-                    .with(|connection| health::log(connection, kind, now))?;
-                if kind == HabitKind::Stretch {
-                    app.state::<Activity>().reset_streak();
-                }
-                HealthChanged.emit(app)?;
-                super::publish(app, super::AppEvent::HabitLogged { kind })?;
-            }
+            app.state::<ActionRouter>().route(app, other)?;
         }
         None => {}
     }
@@ -305,7 +294,7 @@ mod tests {
     use chrono::TimeZone;
 
     use super::*;
-    use crate::domain::nudges::AgentKind;
+    use itqan_core::nudges::AgentKind;
 
     fn at(minute: u32) -> DateTime<Utc> {
         Utc.with_ymd_and_hms(2026, 10, 10, 9, minute, 0).unwrap()

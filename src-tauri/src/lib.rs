@@ -11,6 +11,7 @@ mod tray;
 use tauri::Manager;
 use tauri_specta::{collect_commands, collect_events, Builder};
 
+use itqan_core::actions::ActionRouter;
 use itqan_core::db::Database;
 use itqan_core::module::Module;
 use itqan_core::ports::Ports;
@@ -42,9 +43,9 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::tasks::list_categories,
             commands::tasks::create_category,
             commands::tasks::quick_add_task,
-            commands::reminders::create_reminder,
-            commands::reminders::list_task_reminders,
-            commands::reminders::delete_reminder,
+            itqan_core::reminders::commands::create_reminder,
+            itqan_core::reminders::commands::list_task_reminders,
+            itqan_core::reminders::commands::delete_reminder,
             commands::settings::get_timezone,
             commands::settings::set_timezone,
             commands::modes::get_mode_status,
@@ -152,7 +153,12 @@ pub fn run() {
             let database = Database::open(&data_dir.join("itqan.db"), MODULES)?;
             app.manage(database);
             tracing::info!("database ready");
-            app.manage(Ports::default());
+            let ports = Ports::default();
+            scheduler::targets::register(&ports)?;
+            app.manage(ports);
+            let actions = ActionRouter::default();
+            actions.register(agents::health::HABIT_ACTIONS, agents::health::HabitActions)?;
+            app.manage(actions);
             app.manage(Refresher::new(|app| scheduler::refresh(app).map(|_| ())));
             for module in MODULES {
                 module.setup(app.handle())?;

@@ -1,30 +1,22 @@
 use chrono::Utc;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_notification::NotificationExt;
-use tauri_specta::Event;
 
-use super::Scheduler;
-use crate::agents::{self, AppEvent};
-use crate::commands::events::TasksChanged;
-use crate::domain::reminders::{self, Reminder, ReminderId, SNOOZE_MINUTES};
-use crate::domain::tasks::{self, TaskStatus};
 use crate::overlay::{self, BubbleAction, BubbleOrigin, FollowMode, OrbState, OverlayStore};
 use itqan_core::db::Database;
 use itqan_core::error::AppError;
+use itqan_core::overlay::action;
+use itqan_core::ports::Ports;
+use itqan_core::reminders::{self, Reminder, ReminderId, SNOOZE_MINUTES};
+use itqan_core::scheduler::Scheduler;
 
 pub const DONE: &str = "done";
 pub const SNOOZE: &str = "snooze";
 
 fn actions() -> Vec<BubbleAction> {
     vec![
-        BubbleAction {
-            id: DONE.into(),
-            label: "Done".into(),
-        },
-        BubbleAction {
-            id: SNOOZE.into(),
-            label: format!("In {SNOOZE_MINUTES} min"),
-        },
+        action(DONE, "Done"),
+        action(SNOOZE, &format!("In {SNOOZE_MINUTES} min")),
     ]
 }
 
@@ -73,17 +65,17 @@ pub fn resolve_reminder(
     let now = Utc::now();
     match action {
         Some(SNOOZE) => {
-            database.with(|connection| reminders::snooze(connection, id, now))?;
+            let ports = app.state::<Ports>();
+            database.with(|connection| reminders::snooze(connection, &ports, id, now))?;
             app.state::<Scheduler>().wake();
         }
         Some(DONE) => {
-            let reminder = database.with(|connection| reminders::get(connection, id))?;
-            if let Some(task_id) = reminder.task_id {
-                database.with(|connection| {
-                    tasks::set_status(connection, task_id, TaskStatus::Done, now)
-                })?;
-                TasksChanged.emit(app)?;
-                agents::publish(app, AppEvent::TaskCompleted { task_id })?;
+            if let Some((kind, target)) =
+                database.with(|connection| reminders::target_of(connection, id))?
+            {
+                if let Some(owner) = app.state::<Ports>().reminder_target(kind)? {
+                    owner.complete(app, target)?;
+                }
             }
         }
         _ => {}

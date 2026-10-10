@@ -1,5 +1,6 @@
 mod delivery;
 pub mod modes;
+pub mod targets;
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -9,29 +10,21 @@ use tauri::{AppHandle, Manager};
 use tokio::sync::Notify;
 
 use crate::agents::{self, coach, AppEvent};
-use crate::domain::reminders;
 use crate::tray;
 use itqan_core::db::Database;
 use itqan_core::error::AppError;
+use itqan_core::ports::Ports;
+use itqan_core::reminders;
+use itqan_core::scheduler::Scheduler;
 
 pub use delivery::resolve_reminder;
 pub use modes::{ModeChanged, ModeEngine, ModeStatus};
 
 const MAX_SLEEP: Duration = Duration::from_secs(60);
 
-pub struct Scheduler {
-    wake: Arc<Notify>,
-}
-
-impl Scheduler {
-    pub fn wake(&self) {
-        self.wake.notify_one();
-    }
-}
-
 pub fn start(app: &AppHandle) {
     let wake = Arc::new(Notify::new());
-    app.manage(Scheduler { wake: wake.clone() });
+    app.manage(Scheduler::new(wake.clone()));
     app.manage(ModeEngine::default());
     let app = app.clone();
     tauri::async_runtime::spawn(async move {
@@ -68,7 +61,8 @@ pub fn start(app: &AppHandle) {
 fn run_due(app: &AppHandle) -> Result<Duration, AppError> {
     let database = app.state::<Database>();
     let now = Utc::now();
-    let due = database.with(|connection| reminders::due(connection, now))?;
+    let ports = app.state::<Ports>();
+    let due = database.with(|connection| reminders::due(connection, &ports, now))?;
     let hold = modes::current(app)?.and_then(|status| {
         status
             .active_prayer
@@ -84,7 +78,7 @@ fn run_due(app: &AppHandle) -> Result<Duration, AppError> {
         database.with(|connection| reminders::mark_fired(connection, reminder, now))?;
         delivery::deliver(app, reminder)?;
     }
-    let next = database.with(reminders::next_due_at)?;
+    let next = database.with(|connection| reminders::next_due_at(connection, &ports))?;
     Ok(next
         .and_then(|next| (next - Utc::now()).to_std().ok())
         .map_or(MAX_SLEEP, |until| until.min(MAX_SLEEP)))

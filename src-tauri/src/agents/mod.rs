@@ -12,8 +12,6 @@ pub use itqan_core::bus::{publish, Signal, Subscriber};
 use itqan_core::bus::{Bus, SignalSink};
 use itqan_core::error::AppError;
 
-use crate::overlay::BubbleAction;
-
 struct CoachSink;
 
 impl SignalSink for CoachSink {
@@ -37,9 +35,4 @@ pub fn setup(app: &App) {
     app.manage(coach::Coach::default());
 }
 
-pub fn action(id: &str, label: &str) -> BubbleAction {
-    BubbleAction {
-        id: id.into(),
-        label: label.into(),
-    }
-}
+pub use itqan_core::overlay::action;

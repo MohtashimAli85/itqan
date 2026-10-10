@@ -1,9 +1,9 @@
 use tauri::State;
 
 use crate::agents::coach;
-use crate::domain::nudges::{self, Nudge};
 use itqan_core::db::Database;
 use itqan_core::error::CommandError;
+use itqan_core::nudges::{self, Nudge};
 
 #[tauri::command]
 #[specta::specta]
