@@ -641,7 +641,7 @@ Each step is one PR unless split further during the work. Every step that introd
 **2.0 Module architecture (no behaviour change)**
 - [x] 2.0.1 ADR 0003: module contract, contracts crate, event bus, migrations per module, frontend manifest (see `docs/decisions/0003-module-architecture.md`)
 - [x] 2.0.2 Cargo workspace with `itqan-contracts` and `itqan-core`; move the event dispatch (today's `agents::publish`), db and settings framework; app still behaves the same
-- [ ] 2.0.3 Frontend `core` / `shared` / `modules` layout, module registry, boundary lint in CI
+- [x] 2.0.3 Frontend `core` / `shared` / `modules` layout, module registry, boundary lint in CI
 - [ ] 2.0.4 Move Salah into `itqan-salah` and `src/modules/salah`
 - [ ] 2.0.5 Move reminders and recurrence into core (shared by tasks and health, ADR 0003), then move Health
 - [ ] 2.0.6 Move Tasks (with categories and quick add; `categories` is renamed `tasks_categories` with the same meaning, and becomes `tasks_areas` in 2.3)
@@ -798,7 +798,7 @@ src/
 ```
 
 - The shell renders whatever the enabled modules contribute. No module is hard-coded into the shell.
-- Modules import only from `src/core` and `src/shared`. To be enforced with dependency-cruiser in CI from step 2.0.3.
+- Modules import only from `src/core` and `src/shared`. Enforced by dependency-cruiser (`pnpm lint:boundaries`, part of `pnpm lint` in CI).
 - Settings are validated with Zod in the UI and again in Rust.
 
 ### C.5 Module levels (roadmap)

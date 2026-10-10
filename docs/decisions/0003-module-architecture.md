@@ -126,15 +126,15 @@ src/
 ```ts
 export type ModuleManifest = {
   id: ModuleId;
-  routes?: ModuleRoute[];
-  sidebarItems?: SidebarItem[];
   panelTabs?: PanelTab[];
-  settingsSections?: SettingsSection[];
-  onboardingSteps?: OnboardingStep[];
+  settingsSections?: Contribution[];
+  sidebarWidgets?: Contribution[];
+  // added by the step that first needs them: routes, sidebarItems, onboardingSteps, orbHooks
 };
 ```
-- The shell renders what the enabled manifests contribute, in manifest order.
-- **Boundary lint:** dependency-cruiser in CI. A module imports only `src/core` (types and hooks) and `src/shared`. `src/core` imports `src/modules/index.ts` and nothing else under `src/modules`. `src/shared` imports neither. The rule runs as part of `pnpm lint`.
+- Every contribution has an `id` and an `order`. The shell merges core items and enabled modules' items by `order`. Ties keep core first, then manifest order. Duplicate ids are a programming error and throw.
+- Contributions are read at render time (`useContributions`), never at import time, so the registry can't hit an import cycle during initialisation, and 2.0.9 can filter by the enabled set in one place.
+- **Boundary lint:** dependency-cruiser, as part of `pnpm lint`. A module imports only `src/core/registry`, `src/core/ui` (shell building blocks such as the settings `Section`) and `src/shared`. `src/core` imports `src/modules/index.ts` and nothing else under `src/modules`. The registry imports only module manifests. `src/shared` imports neither. Import cycles are errors.
 
 ## Order of the moves
 | Step | Moves |
