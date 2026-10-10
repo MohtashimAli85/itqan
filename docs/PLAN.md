@@ -611,11 +611,11 @@ After the app skeleton exists (step 0.5), run `codegraph init -i` so later sessi
 
 - [x] **0.1 Project docs.** Add `docs/PLAN.md` (this file), `CLAUDE.md`, `README.md` (short vision and status), `.gitignore`, `.editorconfig`, `LICENSE` (after the owner chooses, see section 14).
 - [x] **0.2 Scaffold.** Tauri 2 + React + TS + Vite with pnpm (`pnpm create tauri-app`). If the CLI refuses a non-empty folder, scaffold in a temp folder and move the files in. App name Itqan, identifier agreed with the owner. App runs with `pnpm tauri dev`.
-- [x] **0.3 Tooling.** TS strict settings, ESLint, Prettier, rustfmt, clippy config, lefthook, commitlint, `.nvmrc`, `packageManager`, `rust-toolchain.toml`, package scripts.
+- [x] **0.3 Tooling.** TS strict settings, ESLint (replaced by oxlint on 2026-10-10), Prettier, rustfmt, clippy config, lefthook, commitlint, `.nvmrc`, `packageManager`, `rust-toolchain.toml`, package scripts.
 - [x] **0.4 Design system.** Tailwind v4, then shadcn with `pnpm dlx shadcn@latest apply --preset b1FSRLMOG` exactly as given (if the CLI reports an unknown command, stop and ask). Add brand tokens from section 5, bundle the three fonts, light and dark themes, a small token preview page in the main window.
 - [x] **0.5 Window structure.** Separate Vite entries for overlay and main; Tauri window config for both; capabilities with least privilege; tray icon with Quit; single-instance plugin. Then run `codegraph init -i`.
 - [x] **0.6 Rust core skeleton.** Module layout from section 10, error type, tracing, SQLite connection with first migration (settings table), tauri-specta bindings generated, one example command used by the main window through TanStack Query. Record the rusqlite vs sqlx choice.
-- [x] **0.7 Tests and CI.** Vitest + Testing Library with one example test, `cargo test` example, `.gitlab-ci.yml` running every check.
+- [x] **0.7 Tests and CI.** Vitest + Testing Library with one example test, `cargo test` example, CI running every check (first `.gitlab-ci.yml`, now GitHub Actions only).
 - [x] **0.8 Contributor docs and skills.** `CONTRIBUTING.md`, `PRIVACY.md`, MR template, skills shortlist approved and installed.
 
 ### Phase 1 order (after Phase 0)
@@ -798,7 +798,7 @@ src/
 ```
 
 - The shell renders whatever the enabled modules contribute. No module is hard-coded into the shell.
-- Modules import only from `src/core` and `src/shared`. Enforced with dependency-cruiser in CI.
+- Modules import only from `src/core` and `src/shared`. To be enforced with dependency-cruiser in CI from step 2.0.3.
 - Settings are validated with Zod in the UI and again in Rust.
 
 ### C.5 Module levels (roadmap)
