@@ -1,10 +1,11 @@
-use chrono::{NaiveTime, TimeZone, Utc};
+use chrono::{NaiveTime, Utc};
 use tauri::{AppHandle, State};
 use tauri_specta::Event;
 
-use super::events::HealthChanged;
-use crate::agents::{self, AppEvent};
-use crate::domain::health::{self, HabitId, HabitKind, HealthOverview, Medicine};
+use crate::habits::{self, HabitId, HabitKind, HealthOverview, Medicine};
+use crate::HealthChanged;
+use itqan_contracts::AppEvent;
+use itqan_core::bus;
 use itqan_core::db::Database;
 use itqan_core::error::{AppError, CommandError};
 use itqan_core::scheduler::Scheduler;
@@ -21,11 +22,8 @@ pub fn get_health_overview(database: State<Database>) -> Result<HealthOverview, 
     Ok(database.with(|connection| {
         let timezone = settings::timezone(connection)?;
         let today = Utc::now().with_timezone(&timezone).date_naive();
-        let start = timezone
-            .from_local_datetime(&today.and_time(NaiveTime::MIN))
-            .earliest()
-            .map_or_else(Utc::now, |start| start.with_timezone(&Utc));
-        health::overview(connection, start)
+        let (start, _) = settings::day_bounds(timezone, today);
+        habits::overview(connection, start)
     })?)
 }
 
@@ -36,7 +34,7 @@ pub fn set_health_enabled(
     database: State<Database>,
     enabled: bool,
 ) -> Result<(), CommandError> {
-    database.with(|connection| health::set_enabled(connection, enabled))?;
+    database.with(|connection| habits::set_enabled(connection, enabled))?;
     changed(&app, ())
 }
 
@@ -47,8 +45,8 @@ pub fn log_habit(
     database: State<Database>,
     kind: HabitKind,
 ) -> Result<(), CommandError> {
-    database.with(|connection| health::log(connection, kind, Utc::now()))?;
-    agents::publish(&app, AppEvent::HabitLogged { kind })?;
+    database.with(|connection| habits::log(connection, kind, Utc::now()))?;
+    bus::publish(&app, AppEvent::HabitLogged { kind })?;
     changed(&app, ())
 }
 
@@ -59,7 +57,7 @@ pub fn set_water_target(
     database: State<Database>,
     target: u16,
 ) -> Result<(), CommandError> {
-    database.with(|connection| health::set_water_target(connection, target))?;
+    database.with(|connection| habits::set_water_target(connection, target))?;
     changed(&app, ())
 }
 
@@ -81,7 +79,7 @@ pub fn add_medicine(
         .collect::<Result<Vec<_>, _>>()?;
     let medicine = database.with(|connection| {
         let timezone = settings::timezone(connection)?;
-        health::add_medicine(connection, &name, &parsed, timezone, Utc::now())
+        habits::add_medicine(connection, &name, &parsed, timezone, Utc::now())
     })?;
     scheduler.wake();
     changed(&app, medicine)
@@ -95,7 +93,7 @@ pub fn delete_medicine(
     scheduler: State<Scheduler>,
     id: HabitId,
 ) -> Result<(), CommandError> {
-    database.with(|connection| health::delete_medicine(connection, id))?;
+    database.with(|connection| habits::delete_medicine(connection, id))?;
     scheduler.wake();
     changed(&app, ())
 }

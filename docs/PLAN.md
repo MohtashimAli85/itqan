@@ -287,8 +287,8 @@ Rules:
 | milestones | goal, title, week, status |
 | tasks | title, notes, category, kind, priority, due (UTC), top-3 flag, status, completed at, parent task, goal or skill link |
 | reminders | task or habit, fire time (UTC), rrule, critical flag, snoozed until |
-| habits | type, target, schedule rule, enabled |
-| habit_logs | habit, logged at, amount |
+| health_habits (health module; `habits` before 2.0.5) | type, target, schedule rule, enabled |
+| health_habit_logs (health module; `habit_logs` before 2.0.5) | habit, logged at, amount |
 | focus_sessions | start, end, planned length, task link, completed |
 | xp_events | source, amount, at |
 | streaks | current, best, freezes left, last active day |
@@ -643,7 +643,7 @@ Each step is one PR unless split further during the work. Every step that introd
 - [x] 2.0.2 Cargo workspace with `itqan-contracts` and `itqan-core`; move the event dispatch (today's `agents::publish`), db and settings framework; app still behaves the same
 - [x] 2.0.3 Frontend `core` / `shared` / `modules` layout, module registry, boundary lint in CI
 - [x] 2.0.4 Move Salah into `itqan-salah` and `src/modules/salah`
-- [ ] 2.0.5 Move reminders and recurrence into core (shared by tasks and health, ADR 0003), then move Health
+- [x] 2.0.5 Move reminders and recurrence into core (shared by tasks and health, ADR 0003), then move Health
 - [ ] 2.0.6 Move Tasks (with categories and quick add; `categories` is renamed `tasks_categories` with the same meaning, and becomes `tasks_areas` in 2.3)
 - [ ] 2.0.7 Move Progress (XP, levels, streaks, badges), then move the remaining shell (Coach, mode engine, scheduler, overlay, tray) into core
 - [ ] 2.0.8 Quality gates: cargo-deny, coverage thresholds, clippy pedantic on core and contracts, contract tests, PR checklist update

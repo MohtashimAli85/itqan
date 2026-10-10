@@ -1,7 +1,6 @@
 pub mod categories;
 pub mod focus;
 pub mod goals;
-pub mod health;
 pub mod rewards;
 pub mod skills;
 pub mod tasks;

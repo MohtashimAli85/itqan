@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { commands, events } from "@/shared/bindings/bindings";
 import { unwrap } from "@/shared/lib/result";
-import { useTauriEvent } from "./useTauriEvent";
+import { useTauriEvent } from "@/shared/hooks/useTauriEvent";
 
 const healthKey = ["health"] as const;
 

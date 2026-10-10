@@ -17,7 +17,7 @@ use itqan_core::module::Module;
 use itqan_core::ports::Ports;
 use itqan_core::scheduler::Refresher;
 
-const MODULES: &[&dyn Module] = &[&itqan_salah::SalahModule];
+const MODULES: &[&dyn Module] = &[&itqan_salah::SalahModule, &itqan_health::HealthModule];
 
 #[cfg(any(debug_assertions, test))]
 const BINDINGS_PATH: &str = "../src/shared/bindings/bindings.ts";
@@ -77,12 +77,12 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::coach::get_nudge_budget,
             commands::coach::set_nudge_budget,
             commands::coach::list_recent_nudges,
-            commands::health::get_health_overview,
-            commands::health::set_health_enabled,
-            commands::health::log_habit,
-            commands::health::set_water_target,
-            commands::health::add_medicine,
-            commands::health::delete_medicine,
+            itqan_health::commands::get_health_overview,
+            itqan_health::commands::set_health_enabled,
+            itqan_health::commands::log_habit,
+            itqan_health::commands::set_water_target,
+            itqan_health::commands::add_medicine,
+            itqan_health::commands::delete_medicine,
             commands::rewards::get_progress,
             commands::rewards::get_reward_sound,
             commands::rewards::set_reward_sound,
@@ -104,7 +104,7 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::events::TasksChanged,
             scheduler::ModeChanged,
             commands::goals::GoalsChanged,
-            commands::events::HealthChanged,
+            itqan_health::HealthChanged,
             agents::rewards::RewardEarned,
             commands::events::Navigate,
         ])
@@ -156,9 +156,7 @@ pub fn run() {
             let ports = Ports::default();
             scheduler::targets::register(&ports)?;
             app.manage(ports);
-            let actions = ActionRouter::default();
-            actions.register(agents::health::HABIT_ACTIONS, agents::health::HabitActions)?;
-            app.manage(actions);
+            app.manage(ActionRouter::default());
             app.manage(Refresher::new(|app| scheduler::refresh(app).map(|_| ())));
             for module in MODULES {
                 module.setup(app.handle())?;
@@ -166,7 +164,7 @@ pub fn run() {
             tray::setup(app)?;
             overlay::setup(app)?;
             overlay::restore_follow_mode(app.handle())?;
-            agents::setup(app);
+            agents::setup(app, MODULES);
             scheduler::start(app.handle());
             shortcuts::register(app);
             Ok(())

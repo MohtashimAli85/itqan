@@ -4,7 +4,7 @@ import { Label } from "@/shared/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 import { unwrap } from "@/shared/lib/result";
 import { OrbPreview } from "../components/OrbPreview";
-import { Section } from "./Section";
+import { Section } from "@/core/ui/Section";
 
 const modes: { id: FollowMode; label: string }[] = [
   { id: "follow", label: "Follow my cursor" },

@@ -6,7 +6,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Switch } from "@/shared/components/ui/switch";
-import { useHealthOverview } from "@/shared/hooks/useHealth";
+import { useHealthOverview } from "../hooks/useHealth";
 import { dayjs } from "@/shared/lib/dayjs";
 import { unwrap } from "@/shared/lib/result";
 

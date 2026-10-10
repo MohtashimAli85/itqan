@@ -1,16 +1,18 @@
-use chrono::{DateTime, Duration, NaiveTime, TimeZone, Utc};
+use chrono::{DateTime, Duration, Utc};
 use tauri::{AppHandle, Manager};
 
 use itqan_core::actions::{ActionHandler, LATER};
 use tauri_specta::Event;
 
-use super::{action, AppEvent, Signal, Subscriber};
-use crate::commands::events::HealthChanged;
-use crate::domain::health::{self, AgeBand, HabitKind};
+use crate::habits::{self, AgeBand, HabitKind};
+use crate::HealthChanged;
+use itqan_contracts::AppEvent;
 use itqan_core::activity::Activity;
+use itqan_core::bus::{self, Signal, Subscriber};
 use itqan_core::db::Database;
 use itqan_core::error::AppError;
 use itqan_core::nudges::{self, AgentKind, Priority};
+use itqan_core::overlay::{action, BubbleAction};
 use itqan_core::profile;
 use itqan_core::settings;
 
@@ -51,12 +53,12 @@ impl ActionHandler for HabitActions {
             return Ok(());
         };
         app.state::<Database>()
-            .with(|connection| health::log(connection, kind, Utc::now()))?;
+            .with(|connection| habits::log(connection, kind, Utc::now()))?;
         if kind == HabitKind::Stretch {
             app.state::<Activity>().reset_streak();
         }
         HealthChanged.emit(app)?;
-        super::publish(app, AppEvent::HabitLogged { kind })
+        bus::publish(app, AppEvent::HabitLogged { kind })
     }
 }
 
@@ -64,12 +66,7 @@ fn due(last: Option<DateTime<Utc>>, now: DateTime<Utc>, every: Duration) -> bool
     last.is_none_or(|last| now - last >= every)
 }
 
-fn suggestion(
-    kind: &str,
-    text: String,
-    actions: Vec<crate::overlay::BubbleAction>,
-    now: DateTime<Utc>,
-) -> Signal {
+fn suggestion(kind: &str, text: String, actions: Vec<BubbleAction>, now: DateTime<Utc>) -> Signal {
     Signal {
         agent: AgentKind::Health,
         kind: kind.into(),
@@ -93,7 +90,7 @@ impl Subscriber for HealthAgent {
         }
         let sitting = app.state::<Activity>().sitting_for(now);
         app.state::<Database>().with(|connection| {
-            if !health::is_enabled(connection)? {
+            if !habits::is_enabled(connection)? {
                 return Ok(Vec::new());
             }
             let band = AgeBand::from_age(profile::get(connection)?.age);
@@ -124,7 +121,7 @@ impl Subscriber for HealthAgent {
             {
                 found.push(suggestion(
                     EYE_REST,
-                    health::eye_rest_text(),
+                    habits::eye_rest_text(),
                     vec![action(&habit_action(HabitKind::EyeRest), "Done")],
                     now,
                 ));
@@ -132,14 +129,11 @@ impl Subscriber for HealthAgent {
 
             let timezone = settings::timezone(connection)?;
             let local = now.with_timezone(&timezone);
-            let start_of_day = timezone
-                .from_local_datetime(&local.date_naive().and_time(NaiveTime::MIN))
-                .earliest()
-                .map_or(now, |start| start.with_timezone(&Utc));
-            let water = health::habit(connection, HabitKind::Water)?;
+            let (start_of_day, _) = settings::day_bounds(timezone, local.date_naive());
+            let water = habits::habit(connection, HabitKind::Water)?;
             let target = water.target.unwrap_or(8);
-            let today = health::logged_since(connection, HabitKind::Water, start_of_day)?;
-            let behind = today + 1 < health::water_expected(target, local.time());
+            let today = habits::logged_since(connection, HabitKind::Water, start_of_day)?;
+            let behind = today + 1 < habits::water_expected(target, local.time());
             if water.enabled
                 && behind
                 && sitting > Duration::zero()
@@ -147,7 +141,7 @@ impl Subscriber for HealthAgent {
             {
                 found.push(suggestion(
                     WATER,
-                    health::water_text(today, target),
+                    habits::water_text(today, target),
                     vec![
                         action(&habit_action(HabitKind::Water), "Drank a glass"),
                         action(LATER, "Later"),

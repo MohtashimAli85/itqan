@@ -1,10 +1,9 @@
 import { useContributions } from "@/core/registry/contributions";
 import type { Contribution } from "@/core/registry/types";
 import { AiSettingsForm } from "../settings/AiSettingsForm";
-import { HealthSettings } from "../settings/HealthSettings";
 import { NudgeSettings } from "../settings/NudgeSettings";
 import { OrbSettings } from "../settings/OrbSettings";
-import { Section } from "../settings/Section";
+import { Section } from "@/core/ui/Section";
 import { SystemSettings } from "../settings/SystemSettings";
 
 function AiSection() {
@@ -22,7 +21,6 @@ function AiSection() {
 const coreSections: Contribution[] = [
   { id: "orb", order: 10, Component: OrbSettings },
   { id: "nudges", order: 20, Component: NudgeSettings },
-  { id: "health", order: 30, Component: HealthSettings },
   { id: "ai", order: 40, Component: AiSection },
   { id: "system", order: 50, Component: SystemSettings },
 ];

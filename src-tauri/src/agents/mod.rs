@@ -1,5 +1,4 @@
 pub mod coach;
-pub mod health;
 pub mod planner;
 pub mod rewards;
 pub mod rhythm;
@@ -11,6 +10,7 @@ pub use itqan_contracts::AppEvent;
 pub use itqan_core::bus::{publish, Signal, Subscriber};
 use itqan_core::bus::{Bus, SignalSink};
 use itqan_core::error::AppError;
+use itqan_core::module::Module;
 
 struct CoachSink;
 
@@ -25,13 +25,15 @@ impl SignalSink for CoachSink {
     }
 }
 
-pub fn setup(app: &App) {
-    app.manage(
-        Bus::new(CoachSink)
-            .register("rhythm", rhythm::RhythmAgent)
-            .register("health", health::HealthAgent)
-            .register("rewards", rewards::RewardsAgent),
-    );
+pub fn setup(app: &App, modules: &[&dyn Module]) {
+    let mut bus = Bus::new(CoachSink).register("rhythm", rhythm::RhythmAgent);
+    for module in modules {
+        for subscriber in module.subscribers() {
+            bus = bus.register(module.id(), subscriber);
+        }
+    }
+    let bus = bus.register("rewards", rewards::RewardsAgent);
+    app.manage(bus);
     app.manage(coach::Coach::default());
 }
 

@@ -2185,6 +2185,7 @@ dependencies = [
  "chrono-tz",
  "itqan-contracts",
  "itqan-core",
+ "itqan-health",
  "itqan-salah",
  "rusqlite",
  "serde",
@@ -2234,6 +2235,21 @@ dependencies = [
  "thiserror 2.0.21",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "itqan-health"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "chrono-tz",
+ "itqan-contracts",
+ "itqan-core",
+ "rusqlite",
+ "serde",
+ "specta",
+ "tauri",
+ "tauri-specta",
 ]
 
 [[package]]

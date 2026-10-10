@@ -44,32 +44,8 @@ impl ReminderTarget for TaskReminders {
     }
 }
 
-pub struct HabitReminders;
-
-impl ReminderTarget for HabitReminders {
-    fn describe(&self, _: &Connection, ids: &[i32]) -> Result<HashMap<i32, TargetInfo>, AppError> {
-        Ok(ids
-            .iter()
-            .map(|id| {
-                (
-                    *id,
-                    TargetInfo {
-                        title: None,
-                        active: true,
-                    },
-                )
-            })
-            .collect())
-    }
-
-    fn complete(&self, _: &AppHandle, _: i32) -> Result<(), AppError> {
-        Ok(())
-    }
-}
-
 pub fn register(ports: &Ports) -> Result<(), AppError> {
-    ports.set_reminder_target(ReminderTargetKind::Task, TaskReminders)?;
-    ports.set_reminder_target(ReminderTargetKind::Habit, HabitReminders)
+    ports.set_reminder_target(ReminderTargetKind::Task, TaskReminders)
 }
 
 #[cfg(test)]
@@ -83,7 +59,7 @@ mod tests {
     use crate::domain::tasks::TaskInput;
 
     #[test]
-    fn task_reminders_follow_their_task_and_every_kind_has_a_target() {
+    fn task_reminders_follow_their_task() {
         let connection = test_connection();
         let ports = Ports::default();
         register(&ports).unwrap();
@@ -113,8 +89,9 @@ mod tests {
 
         tasks::set_status(&connection, task.id, TaskStatus::Done, now).unwrap();
         assert!(reminders::due(&connection, &ports, at).unwrap().is_empty());
-        for kind in [ReminderTargetKind::Task, ReminderTargetKind::Habit] {
-            assert!(ports.reminder_target(kind).unwrap().is_some());
-        }
+        assert!(ports
+            .reminder_target(ReminderTargetKind::Task)
+            .unwrap()
+            .is_some());
     }
 }
