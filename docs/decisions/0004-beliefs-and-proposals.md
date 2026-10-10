@@ -43,9 +43,11 @@ Beliefs are core data (`beliefs` table, core migration).
 ### 2. Migrating the sliders
 A core migration copies the current profile into beliefs, once:
 - each motivator weight > 0 becomes `kind = motivator`, `subject = motivator.<name>`, `value = {"weight": w}`, `strength` high for w ≥ 30, medium for w ≥ 15, otherwise low, `source = said`, `confidence = 0.8`, `status = active`, `statement` "<Motivator> matters to me";
-- the coach style becomes `kind = preference`, `subject = coach.style`, `value = {"style": "<style>"}`, `source = said`, `confidence = 0.8`, **only if the user finished onboarding** (`onboarding_completed`). A fresh install's default `mentor` was never said by anyone, so it isn't recorded as if it had been.
+- the coach style becomes `kind = preference`, `subject = coach.style`, `value = {"style": "<style>"}`, `source = said`, `confidence = 0.8`, **only if the user saved a profile or finished onboarding** (`profile.updated_at` set, or `onboarding_completed`). A fresh install's default `mentor` was never said by anyone, so it isn't recorded as if it had been.
 
-The `profile.motivators` and `profile.coach_style` columns stay (no destructive change) but are no longer read. The migration test checks that `profile::get` returns the same motivators and coach style before and after.
+After the migration, `profile.motivators` and `profile.coach_style` are neither read nor written.
+
+The `profile.motivators` and `profile.coach_style` columns stay (no destructive change). The migration test checks that `profile::get` returns the same motivators and coach style before and after.
 
 ### 3. Confidence
 - Said by the user: 0.8. Confirmed through a proposal: at least 0.9.

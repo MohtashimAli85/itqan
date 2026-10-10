@@ -2,6 +2,7 @@ pub mod actions;
 pub mod activity;
 pub mod ai;
 pub mod app_info;
+pub mod beliefs;
 pub mod bus;
 pub mod coach;
 pub mod db;

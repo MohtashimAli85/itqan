@@ -6,13 +6,16 @@ use specta::Type;
 pub mod commands;
 mod repo;
 
+use crate::beliefs;
 use crate::db::settings as settings_repo;
 use crate::error::AppError;
 
 const ONBOARDED: &str = "onboarding_completed";
 const MAX_NAME_LENGTH: usize = 60;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Type)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Type,
+)]
 #[serde(rename_all = "camelCase")]
 pub enum Motivator {
     Learning,
@@ -93,7 +96,12 @@ pub fn normalize(weights: &[MotivatorWeight]) -> Result<Vec<MotivatorWeight>, Ap
 }
 
 pub fn get(connection: &Connection) -> Result<Profile, AppError> {
-    repo::get(connection)
+    let (motivators, coach_style) = beliefs::profile_parts(connection)?;
+    Ok(Profile {
+        motivators,
+        coach_style,
+        ..repo::get(connection)?
+    })
 }
 
 pub fn save(
@@ -140,7 +148,11 @@ pub fn save(
         updated_at: Some(now),
         ..profile
     };
-    repo::save(connection, &profile)?;
+    let transaction = connection.unchecked_transaction()?;
+    beliefs::say_motivators(&transaction, &profile.motivators, now)?;
+    beliefs::say_coach_style(&transaction, profile.coach_style, now)?;
+    repo::save(&transaction, &profile)?;
+    transaction.commit()?;
     get(connection)
 }
 
