@@ -17,12 +17,23 @@ fn json_column<T: serde::de::DeserializeOwned>(row: &Row, index: usize) -> rusql
 
 fn from_row(row: &Row) -> rusqlite::Result<Belief> {
     let value: Option<String> = row.get(4)?;
+    let value = value
+        .map(|text| {
+            serde_json::from_str(&text).map_err(|error| {
+                rusqlite::Error::FromSqlConversionFailure(
+                    4,
+                    rusqlite::types::Type::Text,
+                    error.into(),
+                )
+            })
+        })
+        .transpose()?;
     Ok(Belief {
         id: row.get(0)?,
         statement: row.get(1)?,
         kind: column(row, 2)?,
         subject: row.get(3)?,
-        value: value.and_then(|text| serde_json::from_str(&text).ok()),
+        value,
         strength: column(row, 5)?,
         confidence: row.get(6)?,
         source: column(row, 7)?,

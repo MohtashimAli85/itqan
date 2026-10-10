@@ -52,4 +52,7 @@ SELECT
     coalesce(profile.updated_at, strftime('%Y-%m-%d %H:%M:%f+00:00', 'now'))
 FROM profile
 WHERE profile.id = 1
-    AND EXISTS (SELECT 1 FROM settings WHERE key = 'onboarding_completed' AND value = 'true');
+    AND (
+        profile.updated_at IS NOT NULL
+        OR EXISTS (SELECT 1 FROM settings WHERE key = 'onboarding_completed' AND value = 'true')
+    );

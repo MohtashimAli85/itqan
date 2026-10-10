@@ -13,7 +13,9 @@ use crate::error::AppError;
 const ONBOARDED: &str = "onboarding_completed";
 const MAX_NAME_LENGTH: usize = 60;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Type)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Type,
+)]
 #[serde(rename_all = "camelCase")]
 pub enum Motivator {
     Learning,
@@ -94,9 +96,10 @@ pub fn normalize(weights: &[MotivatorWeight]) -> Result<Vec<MotivatorWeight>, Ap
 }
 
 pub fn get(connection: &Connection) -> Result<Profile, AppError> {
+    let (motivators, coach_style) = beliefs::profile_parts(connection)?;
     Ok(Profile {
-        motivators: beliefs::motivator_weights(connection)?,
-        coach_style: beliefs::coach_style(connection)?,
+        motivators,
+        coach_style,
         ..repo::get(connection)?
     })
 }

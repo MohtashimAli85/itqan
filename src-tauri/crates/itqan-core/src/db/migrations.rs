@@ -25,10 +25,16 @@ pub fn schema_version(connection: &Connection) -> Result<u32, AppError> {
 }
 
 pub fn run(connection: &mut Connection) -> Result<(), AppError> {
-    run_until(connection, MIGRATIONS.len())
+    apply(connection, MIGRATIONS.len())
 }
 
-pub fn run_until(connection: &mut Connection, target: usize) -> Result<(), AppError> {
+#[cfg(test)]
+pub(crate) fn run_until(connection: &mut Connection, target: usize) -> Result<(), AppError> {
+    assert!(target <= MIGRATIONS.len() && schema_version(connection)? as usize <= target);
+    apply(connection, target)
+}
+
+fn apply(connection: &mut Connection, target: usize) -> Result<(), AppError> {
     let applied = schema_version(connection)? as usize;
     if applied > MIGRATIONS.len() {
         return Err(AppError::NewerSchema {

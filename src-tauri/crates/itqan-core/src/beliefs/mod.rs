@@ -105,31 +105,68 @@ pub fn active(connection: &Connection) -> Result<Vec<Belief>, AppError> {
     repo::with_status(connection, BeliefStatus::Active)
 }
 
+fn relative_weight(value: Option<&serde_json::Value>) -> Option<u8> {
+    let weight = value?.get("weight")?.as_f64()?;
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    let weight = weight.round().clamp(0.0, 100.0) as u8;
+    (weight > 0).then_some(weight)
+}
+
+fn motivator_weight(belief: &Belief) -> Option<MotivatorWeight> {
+    let name = belief.subject.strip_prefix(MOTIVATOR_PREFIX)?;
+    let motivator = serde_json::from_value(serde_json::Value::String(name.into())).ok()?;
+    Some(MotivatorWeight {
+        motivator,
+        weight: relative_weight(belief.value.as_ref())?,
+    })
+}
+
+fn style_of(belief: &Belief) -> Option<CoachStyle> {
+    serde_json::from_value(belief.value.as_ref()?.get("style")?.clone()).ok()
+}
+
+pub fn profile_parts(
+    connection: &Connection,
+) -> Result<(Vec<MotivatorWeight>, CoachStyle), AppError> {
+    let beliefs = active(connection)?;
+    let mut weights: Vec<MotivatorWeight> = beliefs.iter().filter_map(motivator_weight).collect();
+    weights.sort_by_key(|weight| weight.motivator);
+    let style = beliefs
+        .iter()
+        .find(|belief| belief.subject == COACH_STYLE)
+        .and_then(style_of)
+        .unwrap_or_default();
+    let weights = if weights.is_empty() {
+        weights
+    } else {
+        normalize(&weights)?
+    };
+    Ok((weights, style))
+}
+
 pub fn motivator_weights(connection: &Connection) -> Result<Vec<MotivatorWeight>, AppError> {
-    let weights: Vec<MotivatorWeight> = active(connection)?
-        .into_iter()
-        .filter_map(|belief| {
-            let name = belief.subject.strip_prefix(MOTIVATOR_PREFIX)?;
-            let motivator = serde_json::from_value(serde_json::Value::String(name.into())).ok()?;
-            let weight = belief.value?.get("weight")?.as_u64()?;
-            Some(MotivatorWeight {
-                motivator,
-                weight: u8::try_from(weight).unwrap_or(u8::MAX),
-            })
-        })
-        .filter(|weight| weight.weight > 0)
-        .collect();
-    if weights.is_empty() {
-        return Ok(weights);
-    }
-    normalize(&weights)
+    Ok(profile_parts(connection)?.0)
 }
 
 pub fn coach_style(connection: &Connection) -> Result<CoachStyle, AppError> {
     Ok(repo::active_for(connection, COACH_STYLE)?
-        .and_then(|belief| belief.value?.get("style").cloned())
-        .and_then(|style| serde_json::from_value(style).ok())
+        .as_ref()
+        .and_then(style_of)
         .unwrap_or_default())
+}
+
+pub fn motivator_statement(motivator: Motivator) -> Result<String, AppError> {
+    Ok(format!(
+        "{} matters to me",
+        capitalised(&motivator_name(motivator)?)
+    ))
+}
+
+pub fn coach_style_statement(style: CoachStyle) -> Result<String, AppError> {
+    Ok(format!(
+        "Coach me like a {}",
+        crate::db::enums::to_text(&style)?
+    ))
 }
 
 pub fn say_motivators(
@@ -145,15 +182,10 @@ pub fn say_motivators(
         if !belief.subject.starts_with(MOTIVATOR_PREFIX) {
             continue;
         }
-        let unchanged = wanted.iter().any(|(subject, weight)| {
-            *subject == belief.subject
-                && belief
-                    .value
-                    .as_ref()
-                    .and_then(|value| value.get("weight"))
-                    .and_then(serde_json::Value::as_u64)
-                    == Some(u64::from(weight.weight))
-        });
+        let current = relative_weight(belief.value.as_ref());
+        let unchanged = wanted
+            .iter()
+            .any(|(subject, weight)| *subject == belief.subject && current == Some(weight.weight));
         if unchanged {
             wanted.retain(|(subject, _)| *subject != belief.subject);
         } else {
@@ -164,10 +196,7 @@ pub fn say_motivators(
         repo::insert(
             connection,
             &NewBelief {
-                statement: format!(
-                    "{} matters to me",
-                    capitalised(&motivator_name(weight.motivator)?)
-                ),
+                statement: motivator_statement(weight.motivator)?,
                 kind: BeliefKind::Motivator,
                 subject,
                 value: Some(serde_json::json!({ "weight": weight.weight })),
@@ -203,7 +232,7 @@ pub fn say_coach_style(
     repo::insert(
         connection,
         &NewBelief {
-            statement: format!("Coach me like a {name}"),
+            statement: coach_style_statement(style)?,
             kind: BeliefKind::Preference,
             subject: COACH_STYLE.into(),
             value: Some(serde_json::json!({ "style": name })),
@@ -280,7 +309,83 @@ mod tests {
             .collect();
         assert!(strengths.contains(&("motivator.learning".into(), Strength::High)));
         assert!(strengths.contains(&("motivator.health".into(), Strength::Medium)));
-        assert_eq!(beliefs[0].statement, "Learning matters to me");
+        for belief in &beliefs {
+            if let Some(weight) = motivator_weight(belief) {
+                assert_eq!(
+                    belief.statement,
+                    motivator_statement(weight.motivator).unwrap()
+                );
+                assert_eq!(belief.strength, strength_for_weight(weight.weight));
+            } else {
+                assert_eq!(
+                    belief.statement,
+                    coach_style_statement(CoachStyle::Trainer).unwrap()
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn a_style_saved_before_onboarding_finished_is_kept() {
+        let mut connection = before_beliefs();
+        connection
+            .execute(
+                "UPDATE profile SET coach_style = 'manager', updated_at = ?1 WHERE id = 1",
+                [now()],
+            )
+            .unwrap();
+
+        crate::db::migrations::run(&mut connection).unwrap();
+
+        assert_eq!(coach_style(&connection).unwrap(), CoachStyle::Manager);
+    }
+
+    #[test]
+    fn odd_weights_are_rounded_or_dropped() {
+        assert_eq!(
+            relative_weight(Some(&serde_json::json!({ "weight": 40.4 }))),
+            Some(40)
+        );
+        assert_eq!(
+            relative_weight(Some(&serde_json::json!({ "weight": 300 }))),
+            Some(100)
+        );
+        assert_eq!(
+            relative_weight(Some(&serde_json::json!({ "weight": 0 }))),
+            None
+        );
+        assert_eq!(
+            relative_weight(Some(&serde_json::json!({ "weight": "high" }))),
+            None
+        );
+    }
+
+    #[test]
+    fn weights_come_back_in_motivator_order() {
+        let connection = test_connection();
+        say_motivators(
+            &connection,
+            &[weight(Motivator::Health, 50), weight(Motivator::Family, 50)],
+            now(),
+        )
+        .unwrap();
+        say_motivators(
+            &connection,
+            &[
+                weight(Motivator::Learning, 50),
+                weight(Motivator::Health, 50),
+            ],
+            now(),
+        )
+        .unwrap();
+
+        assert_eq!(
+            motivator_weights(&connection).unwrap(),
+            vec![
+                weight(Motivator::Learning, 50),
+                weight(Motivator::Health, 50)
+            ]
+        );
     }
 
     #[test]
