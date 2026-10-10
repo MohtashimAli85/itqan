@@ -26,19 +26,13 @@ impl SignalSink for CoachSink {
 }
 
 pub fn setup(app: &App, modules: &[&dyn Module]) {
-    let bus = modules
-        .iter()
-        .flat_map(|module| {
-            module
-                .subscribers()
-                .into_iter()
-                .map(|subscriber| (module.id(), subscriber))
-        })
-        .fold(
-            Bus::new(CoachSink).register("rhythm", rhythm::RhythmAgent),
-            |bus, (owner, subscriber)| bus.register(owner, subscriber),
-        )
-        .register("rewards", rewards::RewardsAgent);
+    let mut bus = Bus::new(CoachSink).register("rhythm", rhythm::RhythmAgent);
+    for module in modules {
+        for subscriber in module.subscribers() {
+            bus = bus.register(module.id(), subscriber);
+        }
+    }
+    let bus = bus.register("rewards", rewards::RewardsAgent);
     app.manage(bus);
     app.manage(coach::Coach::default());
 }

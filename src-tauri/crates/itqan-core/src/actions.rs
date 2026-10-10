@@ -40,6 +40,14 @@ impl ActionRouter {
         Ok(())
     }
 
+    pub fn handles(&self, namespace: &str) -> Result<bool, AppError> {
+        Ok(self
+            .handlers
+            .read()
+            .map_err(|_| AppError::LockPoisoned)?
+            .contains_key(namespace))
+    }
+
     pub fn route(&self, app: &AppHandle, action: &str) -> Result<(), AppError> {
         match self.handler_for(action)? {
             Some(handler) => handler.handle(app, action),

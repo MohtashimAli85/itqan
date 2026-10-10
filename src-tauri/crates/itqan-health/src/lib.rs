@@ -18,11 +18,18 @@ use tauri::{AppHandle, Manager};
 #[derive(Debug, Clone, Serialize, Deserialize, Type, tauri_specta::Event)]
 pub struct HealthChanged;
 
-const MIGRATIONS: &[Migration] = &[Migration {
-    version: 1,
-    name: "health_tables",
-    sql: include_str!("../migrations/0001_health_tables.sql"),
-}];
+const MIGRATIONS: &[Migration] = &[
+    Migration {
+        version: 1,
+        name: "health_tables",
+        sql: include_str!("../migrations/0001_health_tables.sql"),
+    },
+    Migration {
+        version: 2,
+        name: "health_index_names",
+        sql: include_str!("../migrations/0002_health_index_names.sql"),
+    },
+];
 
 pub struct HealthModule;
 
@@ -36,15 +43,17 @@ impl Module for HealthModule {
     }
 
     fn setup(&self, app: &AppHandle) -> Result<(), AppError> {
-        app.state::<Ports>()
-            .set_reminder_target(ReminderTargetKind::Habit, HabitReminders)?;
-        app.state::<ActionRouter>()
-            .register(agent::HABIT_ACTIONS, agent::HabitActions)
+        register(&app.state::<Ports>(), &app.state::<ActionRouter>())
     }
 
     fn subscribers(&self) -> Vec<Box<dyn Subscriber>> {
         vec![Box::new(agent::HealthAgent)]
     }
+}
+
+fn register(ports: &Ports, actions: &ActionRouter) -> Result<(), AppError> {
+    ports.set_reminder_target(ReminderTargetKind::Habit, HabitReminders)?;
+    actions.register(agent::HABIT_ACTIONS, agent::HabitActions)
 }
 
 struct HabitReminders;
@@ -118,12 +127,33 @@ mod tests {
         let reminders =
             itqan_core::reminders::list_for_habit(&connection, medicine as i32).unwrap();
         assert_eq!(reminders.len(), 1);
+        let count = |sql: &str| -> i64 { connection.query_row(sql, [], |row| row.get(0)).unwrap() };
+        assert_eq!(
+            count("SELECT COUNT(*) FROM sqlite_master WHERE name IN ('habits', 'habit_logs', 'habit_logs_habit_time')"),
+            0
+        );
+        assert_eq!(
+            count("SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = 'health_habit_logs_habit_time'"),
+            1
+        );
         connection
             .execute("DELETE FROM health_habits WHERE id = ?1", [medicine])
             .unwrap();
-        let left: i64 = connection
-            .query_row("SELECT COUNT(*) FROM reminders", [], |row| row.get(0))
-            .unwrap();
-        assert_eq!(left, 0);
+        assert_eq!(count("SELECT COUNT(*) FROM reminders"), 0);
+        assert_eq!(count("SELECT COUNT(*) FROM health_habit_logs"), 0);
+    }
+
+    #[test]
+    fn setup_registers_the_habit_target_and_actions() {
+        let ports = Ports::default();
+        let actions = ActionRouter::default();
+
+        register(&ports, &actions).unwrap();
+
+        assert!(ports
+            .reminder_target(ReminderTargetKind::Habit)
+            .unwrap()
+            .is_some());
+        assert!(actions.handles(agent::HABIT_ACTIONS).unwrap());
     }
 }
