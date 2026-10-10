@@ -43,12 +43,12 @@ export function PlanProposalView({
   });
 
   return (
-    <div className="bg-muted flex flex-col gap-3 rounded-xl p-4">
+    <div className="flex flex-col gap-3 rounded-xl bg-muted p-4">
       <p className="text-sm font-medium">
         {proposal.source === "ai" ? "Suggested plan (AI)" : "Suggested plan"}
       </p>
       {proposal.notice && (
-        <p role="status" className="text-caption text-xs">
+        <p role="status" className="text-xs text-caption">
           {proposal.notice}
         </p>
       )}
@@ -58,19 +58,19 @@ export function PlanProposalView({
             key={`${milestone.weekStart}-${milestone.title}`}
             className="flex gap-3 text-sm"
           >
-            <span className="text-caption w-20 shrink-0 font-mono text-xs">
+            <span className="w-20 shrink-0 font-mono text-xs text-caption">
               {dayjs(milestone.weekStart).format("D MMM")}
             </span>
             {milestone.title}
           </li>
         ))}
       </ol>
-      <p className="text-caption text-xs">
+      <p className="text-xs text-caption">
         About {proposal.sessionsPerWeek} sessions of {proposal.sessionMinutes}{" "}
         minutes a week fit your free time.
       </p>
       {save.error && (
-        <p role="alert" className="text-critical text-sm">
+        <p role="alert" className="text-sm text-critical">
           {save.error.message}
         </p>
       )}

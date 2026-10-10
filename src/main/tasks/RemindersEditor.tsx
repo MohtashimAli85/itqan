@@ -24,7 +24,7 @@ export function RemindersEditor({ taskId }: { taskId: number }) {
     queryKey: key,
     queryFn: async () => unwrap(await commands.listTaskReminders(taskId)),
   });
-  const [at, setAt] = useState(
+  const [at, setAt] = useState(() =>
     dayjs().add(1, "hour").format("YYYY-MM-DDTHH:mm"),
   );
   const [repeat, setRepeat] = useState<(typeof repeats)[number]["id"]>("none");
@@ -55,7 +55,7 @@ export function RemindersEditor({ taskId }: { taskId: number }) {
 
   return (
     <section aria-labelledby="reminders" className="flex flex-col gap-2">
-      <h3 id="reminders" className="text-caption text-xs font-medium">
+      <h3 id="reminders" className="text-xs font-medium text-caption">
         Reminders
       </h3>
       <ul className="flex flex-col gap-1">
@@ -65,8 +65,8 @@ export function RemindersEditor({ taskId }: { taskId: number }) {
               aria-hidden
               className={
                 reminder.critical
-                  ? "text-critical size-3.5"
-                  : "text-caption size-3.5"
+                  ? "size-3.5 text-critical"
+                  : "size-3.5 text-caption"
               }
             />
             <span className="flex-1">

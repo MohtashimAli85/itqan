@@ -30,7 +30,7 @@ function NavLink({
       <Icon aria-hidden className="size-4" />
       <span className="flex-1">{label}</span>
       {count !== undefined && count > 0 && (
-        <span className="text-caption font-mono text-xs">{count}</span>
+        <span className="font-mono text-xs text-caption">{count}</span>
       )}
     </Link>
   );
@@ -45,15 +45,15 @@ export function Sidebar() {
   return (
     <nav
       aria-label="Main"
-      className="border-sidebar-border bg-sidebar flex w-56 shrink-0 flex-col gap-6 border-r p-4"
+      className="flex w-56 shrink-0 flex-col gap-6 border-r border-sidebar-border bg-sidebar p-4"
     >
-      <p className="font-heading px-3 text-lg font-bold">Itqan</p>
+      <p className="px-3 font-heading text-lg font-bold">Itqan</p>
       <div className="flex flex-col gap-0.5">
         <NavLink to="/" icon={Sun} label="Today" count={todayCount} />
         <NavLink to="/upcoming" icon={CalendarDays} label="Upcoming" />
       </div>
       <div className="flex flex-col gap-0.5">
-        <p className="text-caption px-3 pb-1 text-xs font-medium">Areas</p>
+        <p className="px-3 pb-1 text-xs font-medium text-caption">Areas</p>
         {categories.map((category) => (
           <Link
             key={category.id}

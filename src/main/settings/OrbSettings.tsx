@@ -50,7 +50,7 @@ export function OrbSettings() {
         </RadioGroup>
       )}
       <details>
-        <summary className="text-text-secondary cursor-pointer text-sm">
+        <summary className="cursor-pointer text-sm text-text-secondary">
           Try orb states
         </summary>
         <div className="pt-4">

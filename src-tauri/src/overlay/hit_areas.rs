@@ -1,3 +1,4 @@
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
 
 use serde::Deserialize;
@@ -20,16 +21,24 @@ impl Rect {
 }
 
 #[derive(Debug, Default)]
-pub struct HitAreas(Mutex<Vec<Rect>>);
+pub struct HitAreas {
+    rects: Mutex<Vec<Rect>>,
+    version: AtomicU64,
+}
 
 impl HitAreas {
+    pub fn version(&self) -> u64 {
+        self.version.load(Ordering::Relaxed)
+    }
+
     pub fn replace(&self, rects: Vec<Rect>) -> Result<(), AppError> {
-        *self.0.lock().map_err(|_| AppError::LockPoisoned)? = rects;
+        *self.rects.lock().map_err(|_| AppError::LockPoisoned)? = rects;
+        self.version.fetch_add(1, Ordering::Relaxed);
         Ok(())
     }
 
     pub fn contains(&self, x: f64, y: f64) -> Result<bool, AppError> {
-        let rects = self.0.lock().map_err(|_| AppError::LockPoisoned)?;
+        let rects = self.rects.lock().map_err(|_| AppError::LockPoisoned)?;
         Ok(rects.iter().any(|rect| rect.contains(x, y)))
     }
 }

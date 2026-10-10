@@ -87,6 +87,8 @@ struct Inner {
     next_bubble_id: u32,
     queue: VecDeque<Queued>,
     base: OrbState,
+    focus_docked: bool,
+    typing: bool,
 }
 
 impl Inner {
@@ -118,7 +120,8 @@ impl OverlayStore {
     ) -> Result<OverlaySnapshot, AppError> {
         let mut inner = self.lock()?;
         inner.base = base;
-        inner.snapshot.docked = docked;
+        inner.focus_docked = docked;
+        inner.snapshot.docked = docked || inner.typing;
         if !matches!(
             inner.snapshot.orb_state,
             OrbState::Critical | OrbState::Happy
@@ -126,6 +129,16 @@ impl OverlayStore {
             inner.snapshot.orb_state = base;
         }
         Ok(inner.snapshot.clone())
+    }
+
+    pub fn set_typing(&self, typing: bool) -> Result<Option<OverlaySnapshot>, AppError> {
+        let mut inner = self.lock()?;
+        if inner.typing == typing {
+            return Ok(None);
+        }
+        inner.typing = typing;
+        inner.snapshot.docked = inner.focus_docked || typing;
+        Ok(Some(inner.snapshot.clone()))
     }
 
     pub fn restore_base(&self) -> Result<OverlaySnapshot, AppError> {
@@ -294,6 +307,16 @@ mod tests {
         assert!(snapshot.docked);
 
         assert_eq!(store.restore_base().unwrap().orb_state, OrbState::Focus);
+    }
+
+    #[test]
+    fn typing_docks_without_losing_the_focus_dock() {
+        let store = OverlayStore::default();
+        assert!(store.set_typing(true).unwrap().unwrap().docked);
+        assert!(store.set_typing(true).unwrap().is_none());
+        store.set_appearance(OrbState::Focus, true).unwrap();
+        assert!(store.set_typing(false).unwrap().unwrap().docked);
+        assert!(!store.set_appearance(OrbState::Idle, false).unwrap().docked);
     }
 
     #[test]

@@ -25,16 +25,16 @@ export function Eyes({ state, pupilRef }: EyesProps) {
             key={index}
             className={
               wide
-                ? "bg-orb-eye flex h-5 w-4 items-center justify-center rounded-full"
-                : "bg-orb-eye flex h-4 w-3.5 items-center justify-center rounded-full"
+                ? "flex h-5 w-4 items-center justify-center rounded-full bg-orb-eye"
+                : "flex h-4 w-3.5 items-center justify-center rounded-full bg-orb-eye"
             }
           >
             <span
               ref={pupilRef(index)}
               className={
                 wide
-                  ? "bg-orb-pupil size-1.5 rounded-full"
-                  : "bg-orb-pupil size-2 rounded-full"
+                  ? "size-1.5 rounded-full bg-orb-pupil"
+                  : "size-2 rounded-full bg-orb-pupil"
               }
             />
           </span>

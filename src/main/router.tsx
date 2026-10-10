@@ -3,15 +3,16 @@ import {
   createRootRouteWithContext,
   createRoute,
   createRouter,
+  lazyRouteComponent,
   Outlet,
   redirect,
+  type RouteComponent,
 } from "@tanstack/react-router";
 import { AppShell } from "./layout/AppShell";
 import { Onboarding } from "./onboarding/Onboarding";
 import { ensureOnboarded } from "./onboardingStatus";
 import { CategoryView } from "./screens/CategoryView";
 import { Goals } from "./screens/Goals";
-import { Progress } from "./screens/Progress";
 import { Settings } from "./screens/Settings";
 import { Today } from "./screens/Today";
 import { Upcoming } from "./screens/Upcoming";
@@ -33,10 +34,8 @@ const appRoute = createRoute({
   component: AppShell,
 });
 
-const page = <Path extends string>(
-  path: Path,
-  component: () => React.ReactNode,
-) => createRoute({ getParentRoute: () => appRoute, path, component });
+const page = <Path extends string>(path: Path, component: RouteComponent) =>
+  createRoute({ getParentRoute: () => appRoute, path, component });
 
 const routeTree = rootRoute.addChildren([
   appRoute.addChildren([
@@ -44,7 +43,10 @@ const routeTree = rootRoute.addChildren([
     page("/upcoming", Upcoming),
     page("/category/$categoryId", CategoryView),
     page("/goals", Goals),
-    page("/progress", Progress),
+    page(
+      "/progress",
+      lazyRouteComponent(() => import("./screens/Progress"), "Progress"),
+    ),
     page("/settings", Settings),
   ]),
   createRoute({

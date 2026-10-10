@@ -43,7 +43,7 @@ export function SystemSettings() {
       >
         <Link
           to="/onboarding"
-          className="text-text-secondary text-sm underline"
+          className="text-sm text-text-secondary underline"
         >
           Edit profile and schedule
         </Link>
@@ -67,14 +67,14 @@ export function SystemSettings() {
         </div>
       </Section>
       <Section id="privacy" title="Privacy">
-        <p className="text-text-secondary text-sm">
+        <p className="text-sm text-text-secondary">
           Everything stays on this computer in a local database. There are no
           accounts and no telemetry. Only the minimum text, with phone numbers,
           emails, card numbers, codes and keys removed, goes to the AI provider
           you choose. Keys live in your system keychain.
         </p>
         {info && (
-          <p className="text-caption font-mono text-xs">
+          <p className="font-mono text-xs text-caption">
             {info.name} {info.version} · data schema {info.schemaVersion}
           </p>
         )}

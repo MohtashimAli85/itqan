@@ -17,12 +17,12 @@ export function TaskSection({ title, tasks, empty }: TaskSectionProps) {
     <section aria-labelledby={id} className="flex flex-col gap-1">
       <h2
         id={id}
-        className="text-caption px-3 text-xs font-medium tracking-wide uppercase"
+        className="px-3 text-xs font-medium tracking-wide text-caption uppercase"
       >
         {title}
       </h2>
       {tasks.length === 0 ? (
-        <p className="text-caption px-3 py-2 text-sm">{empty}</p>
+        <p className="px-3 py-2 text-sm text-caption">{empty}</p>
       ) : (
         <ul>
           {tasks.map((task) => (

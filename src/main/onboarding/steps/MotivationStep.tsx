@@ -23,7 +23,7 @@ export function MotivationStep() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <h2 className="font-heading text-2xl font-bold">What drives you?</h2>
-        <p className="text-text-secondary text-sm">
+        <p className="text-sm text-text-secondary">
           This decides what I reward most and how I word nudges. You can change
           it any time.
         </p>
@@ -36,7 +36,7 @@ export function MotivationStep() {
             <li key={option.id} className="flex flex-col gap-2">
               <div className="flex justify-between text-sm">
                 <Label id={`motivator-${option.id}`}>{option.label}</Label>
-                <span className="text-caption font-mono">{share}%</span>
+                <span className="font-mono text-caption">{share}%</span>
               </div>
               <Controller
                 control={control}
@@ -57,7 +57,7 @@ export function MotivationStep() {
         })}
       </ul>
       {formState.errors.motivators && (
-        <p role="alert" className="text-critical text-sm">
+        <p role="alert" className="text-sm text-critical">
           {formState.errors.motivators.message}
         </p>
       )}
@@ -77,13 +77,13 @@ export function MotivationStep() {
                 <Label
                   key={style.id}
                   htmlFor={`coach-${style.id}`}
-                  className="has-data-[state=checked]:border-ink flex cursor-pointer flex-col items-start gap-1 rounded-lg border p-3"
+                  className="flex cursor-pointer flex-col items-start gap-1 rounded-lg border p-3 has-data-[state=checked]:border-ink"
                 >
                   <span className="flex items-center gap-2">
                     <RadioGroupItem id={`coach-${style.id}`} value={style.id} />
                     {style.label}
                   </span>
-                  <span className="text-caption text-xs font-normal">
+                  <span className="text-xs font-normal text-caption">
                     {style.hint}
                   </span>
                 </Label>

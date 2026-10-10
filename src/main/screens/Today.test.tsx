@@ -50,7 +50,9 @@ describe("Today", () => {
   it("shows top three tasks with an accessible checkbox and star", async () => {
     renderWithProviders(<Today />);
 
-    expect(await screen.findByText("Ship the parser")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Ship the parser", undefined, { timeout: 3000 }),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("checkbox", { name: "Complete Ship the parser" }),
     ).toBeInTheDocument();

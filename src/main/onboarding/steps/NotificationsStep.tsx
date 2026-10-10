@@ -20,7 +20,7 @@ export function NotificationsStep() {
         <h2 className="font-heading text-2xl font-bold">
           A backup for reminders
         </h2>
-        <p className="text-text-secondary text-sm">
+        <p className="text-sm text-text-secondary">
           Reminders come through me. When I'm hidden, I use system notifications
           so you never miss your medicine or a promise.
         </p>
@@ -35,7 +35,7 @@ export function NotificationsStep() {
           {granted ? "Notifications allowed" : "Allow notifications"}
         </Button>
         {permission.data === "denied" && (
-          <p className="text-caption text-sm">
+          <p className="text-sm text-caption">
             No problem. You can allow them later in System Settings.
           </p>
         )}

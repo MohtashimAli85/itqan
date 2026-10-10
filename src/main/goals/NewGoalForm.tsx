@@ -53,7 +53,7 @@ export function NewGoalForm() {
         Add goal
       </Button>
       {(form.formState.errors.title ?? create.error) && (
-        <p role="alert" className="text-critical w-full text-sm">
+        <p role="alert" className="w-full text-sm text-critical">
           {form.formState.errors.title?.message ?? create.error?.message}
         </p>
       )}

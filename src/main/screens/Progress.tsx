@@ -16,9 +16,9 @@ export function Progress() {
       <div className="grid gap-4 md:grid-cols-2">
         <section
           aria-label="Level"
-          className="bg-card ring-border flex flex-col gap-3 rounded-2xl p-5 ring-1"
+          className="flex flex-col gap-3 rounded-2xl bg-card p-5 ring-1 ring-border"
         >
-          <span className="text-caption text-sm">Level</span>
+          <span className="text-sm text-caption">Level</span>
           <span className="font-heading text-5xl font-bold">{level.level}</span>
           <div
             role="progressbar"
@@ -26,33 +26,33 @@ export function Progress() {
             aria-valuemin={0}
             aria-valuemax={level.xpForNext}
             aria-valuenow={level.xpIntoLevel}
-            className="bg-muted h-2 overflow-hidden rounded-full"
+            className="h-2 overflow-hidden rounded-full bg-muted"
           >
             <div
-              className="bg-brand h-full origin-left rounded-full"
+              className="h-full origin-left rounded-full bg-brand"
               style={{
                 transform: `scaleX(${level.xpIntoLevel / level.xpForNext})`,
               }}
             />
           </div>
-          <span className="text-caption font-mono text-xs">
+          <span className="font-mono text-xs text-caption">
             {level.xpIntoLevel} / {level.xpForNext} XP · {progress.totalXp}{" "}
             total · {progress.todayXp} today
           </span>
         </section>
         <section
           aria-label="Streak"
-          className="bg-card ring-border flex flex-col gap-3 rounded-2xl p-5 ring-1"
+          className="flex flex-col gap-3 rounded-2xl bg-card p-5 ring-1 ring-border"
         >
-          <span className="text-caption text-sm">Streak</span>
-          <span className="font-heading flex items-center gap-2 text-5xl font-bold">
-            <Flame aria-hidden className="text-amber size-9" />
+          <span className="text-sm text-caption">Streak</span>
+          <span className="flex items-center gap-2 font-heading text-5xl font-bold">
+            <Flame aria-hidden className="size-9 text-amber" />
             {streak.current}
           </span>
-          <span className="text-caption flex items-center gap-3 text-xs">
+          <span className="flex items-center gap-3 text-xs text-caption">
             <span>Best {streak.best}</span>
             <span className="flex items-center gap-1">
-              <Snowflake aria-hidden className="text-work size-3.5" />
+              <Snowflake aria-hidden className="size-3.5 text-work" />
               {streak.freezes} freeze{streak.freezes === 1 ? "" : "s"}
             </span>
           </span>

@@ -64,7 +64,7 @@ function DetailPanel({ task, subtasks }: { task: Task; subtasks: Task[] }) {
   return (
     <aside
       aria-label="Task details"
-      className="border-border bg-card flex w-96 shrink-0 flex-col gap-5 overflow-y-auto border-l p-5"
+      className="flex w-96 shrink-0 flex-col gap-5 overflow-y-auto border-l border-border bg-card p-5"
     >
       <div className="flex items-center justify-between">
         <Button
@@ -95,7 +95,7 @@ function DetailPanel({ task, subtasks }: { task: Task; subtasks: Task[] }) {
           <Label htmlFor="detail-title">Title</Label>
           <Input id="detail-title" {...form.register("title")} />
           {form.formState.errors.title && (
-            <p role="alert" className="text-critical text-xs">
+            <p role="alert" className="text-xs text-critical">
               {form.formState.errors.title.message}
             </p>
           )}
@@ -105,7 +105,7 @@ function DetailPanel({ task, subtasks }: { task: Task; subtasks: Task[] }) {
           <textarea
             id="detail-notes"
             rows={4}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus-visible:ring-3"
+            className="rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             {...form.register("notes")}
           />
         </div>

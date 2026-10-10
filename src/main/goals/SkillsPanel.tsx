@@ -30,7 +30,7 @@ export function SkillsPanel() {
           <li key={skill.id} className="flex flex-col gap-1.5">
             <div className="flex justify-between text-sm">
               <span>{skill.name}</span>
-              <span className="text-caption font-mono text-xs">
+              <span className="font-mono text-xs text-caption">
                 Level {skill.level.level}
               </span>
             </div>
@@ -40,10 +40,10 @@ export function SkillsPanel() {
               aria-valuemin={0}
               aria-valuemax={skill.level.xpForNext}
               aria-valuenow={skill.level.xpIntoLevel}
-              className="bg-muted h-1.5 overflow-hidden rounded-full"
+              className="h-1.5 overflow-hidden rounded-full bg-muted"
             >
               <div
-                className="bg-brand h-full origin-left rounded-full"
+                className="h-full origin-left rounded-full bg-brand"
                 style={{
                   transform: `scaleX(${skill.level.xpIntoLevel / skill.level.xpForNext})`,
                 }}
@@ -64,7 +64,7 @@ export function SkillsPanel() {
         </Button>
       </form>
       {create.error && (
-        <p role="alert" className="text-critical text-sm">
+        <p role="alert" className="text-sm text-critical">
           {create.error.message}
         </p>
       )}

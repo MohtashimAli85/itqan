@@ -49,7 +49,7 @@ export function Onboarding() {
   const { data, error } = useOnboardingData();
   if (error) {
     return (
-      <p role="alert" className="text-critical p-10">
+      <p role="alert" className="p-10 text-critical">
         {error.message}
       </p>
     );
@@ -102,21 +102,21 @@ function OnboardingForm({ defaults, prayer }: OnboardingFormProps) {
   }
 
   return (
-    <main className="bg-background flex min-h-screen items-center justify-center p-6">
+    <main className="flex min-h-screen items-center justify-center bg-background p-6">
       <FormProvider {...form}>
         <form
-          className="bg-card ring-border flex w-full max-w-2xl flex-col gap-8 rounded-3xl p-10 shadow-sm ring-1"
+          className="flex w-full max-w-2xl flex-col gap-8 rounded-3xl bg-card p-10 shadow-sm ring-1 ring-border"
           onSubmit={(event) => {
             event.preventDefault();
             void next();
           }}
         >
-          <p className="text-caption font-mono text-xs">
+          <p className="font-mono text-xs text-caption">
             Step {index + 1} of {steps.length}
           </p>
           <step.Component />
           {save.error && (
-            <p role="alert" className="text-critical text-sm">
+            <p role="alert" className="text-sm text-critical">
               {save.error.message}
             </p>
           )}

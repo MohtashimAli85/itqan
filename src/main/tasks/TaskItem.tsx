@@ -24,8 +24,8 @@ export function TaskItem({ task, category }: TaskItemProps) {
     <li
       className={
         selected
-          ? "group bg-muted flex items-center gap-3 rounded-lg px-3 py-2"
-          : "group hover:bg-muted flex items-center gap-3 rounded-lg px-3 py-2"
+          ? "group flex items-center gap-3 rounded-lg bg-muted px-3 py-2"
+          : "group flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-muted"
       }
     >
       <Checkbox
@@ -47,8 +47,8 @@ export function TaskItem({ task, category }: TaskItemProps) {
         <span
           className={
             done
-              ? "text-caption truncate text-sm line-through"
-              : "text-foreground truncate text-sm"
+              ? "truncate text-sm text-caption line-through"
+              : "truncate text-sm text-foreground"
           }
         >
           {task.title}
@@ -58,8 +58,8 @@ export function TaskItem({ task, category }: TaskItemProps) {
         <span
           className={
             overdue
-              ? "text-critical font-mono text-xs"
-              : "text-caption font-mono text-xs"
+              ? "font-mono text-xs text-critical"
+              : "font-mono text-xs text-caption"
           }
         >
           {due.isSame(dayjs(), "day")
@@ -77,8 +77,8 @@ export function TaskItem({ task, category }: TaskItemProps) {
           }
           className={
             task.isTopThree
-              ? "text-amber rounded-md p-1"
-              : "text-caption rounded-md p-1 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+              ? "rounded-md p-1 text-amber"
+              : "rounded-md p-1 text-caption opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
           }
         >
           <Star

@@ -58,7 +58,7 @@ export function HealthSettings() {
           Save
         </Button>
       </div>
-      <p className="text-caption text-sm">
+      <p className="text-sm text-caption">
         Manage medicines from the Health tab in the panel.
       </p>
     </Section>

@@ -25,7 +25,7 @@ export function FocusChart({ days }: { days: DaySummary[] }) {
         <span className="font-heading text-lg font-semibold">
           Focus this week
         </span>
-        <span className="text-caption font-mono text-sm">
+        <span className="font-mono text-sm text-caption">
           {total.toFixed(1)} h
         </span>
       </figcaption>

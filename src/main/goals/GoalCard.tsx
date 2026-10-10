@@ -23,11 +23,11 @@ export function GoalCard({ goal }: { goal: Goal }) {
   const finished = milestones.filter((m) => m.status === "done").length;
 
   return (
-    <article className="bg-card ring-border flex flex-col gap-4 rounded-2xl p-5 ring-1">
+    <article className="flex flex-col gap-4 rounded-2xl bg-card p-5 ring-1 ring-border">
       <header className="flex items-start justify-between gap-4">
         <div>
           <h3 className="font-heading text-lg font-semibold">{goal.title}</h3>
-          <p className="text-caption text-xs">
+          <p className="text-xs text-caption">
             {goal.targetDate
               ? `By ${dayjs(goal.targetDate).format("D MMMM YYYY")}`
               : "No target date"}
@@ -62,7 +62,7 @@ export function GoalCard({ goal }: { goal: Goal }) {
               >
                 {milestone.title}
               </label>
-              <span className="text-caption font-mono text-xs">
+              <span className="font-mono text-xs text-caption">
                 {dayjs(milestone.weekStart).format("D MMM")}
               </span>
             </li>

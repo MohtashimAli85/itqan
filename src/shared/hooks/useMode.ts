@@ -1,19 +1,16 @@
-import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { commands, events } from "@/shared/bindings/bindings";
 import { unwrap } from "@/shared/lib/result";
+import { useTauriEvent } from "./useTauriEvent";
 
 const modeKey = ["mode"] as const;
 
 export function useModeStatus() {
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const unlisten = events.modeChanged.listen((event) => {
-      queryClient.setQueryData(modeKey, event.payload);
-    });
-    return () => void unlisten.then((stop) => stop());
-  }, [queryClient]);
+  useTauriEvent(events.modeChanged, (status) => {
+    queryClient.setQueryData(modeKey, status);
+  });
 
   return useQuery({
     queryKey: modeKey,

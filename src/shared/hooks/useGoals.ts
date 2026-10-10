@@ -1,18 +1,15 @@
-import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { commands, events } from "@/shared/bindings/bindings";
 import { unwrap } from "@/shared/lib/result";
+import { useTauriEvent } from "./useTauriEvent";
 
 export const goalsKey = ["goals"] as const;
 
 export function useGoalsSync() {
   const queryClient = useQueryClient();
-  useEffect(() => {
-    const unlisten = events.goalsChanged.listen(() => {
-      void queryClient.invalidateQueries({ queryKey: goalsKey });
-    });
-    return () => void unlisten.then((stop) => stop());
-  }, [queryClient]);
+  useTauriEvent(events.goalsChanged, () => {
+    void queryClient.invalidateQueries({ queryKey: goalsKey });
+  });
 }
 
 export function useGoals() {

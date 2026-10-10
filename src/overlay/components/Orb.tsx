@@ -22,7 +22,7 @@ export function Orb({ state, progress, bodyRef, pupilRef, onClick }: OrbProps) {
   return (
     <div
       ref={bodyRef}
-      className="orb relative will-change-transform"
+      className="orb relative"
       data-state={state}
       style={{ width: ORB_SIZE, height: ORB_SIZE }}
     >
@@ -39,7 +39,7 @@ export function Orb({ state, progress, bodyRef, pupilRef, onClick }: OrbProps) {
         data-hit-area
         aria-label={`Itqan, ${state}`}
         onClick={onClick}
-        className="orb-surface focus-visible:ring-ring relative flex size-full items-center justify-center rounded-full focus-visible:ring-2 focus-visible:outline-none"
+        className="orb-surface relative flex size-full items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
       >
         <span ref={eyes} className="flex items-center gap-2">
           <Eyes state={state} pupilRef={pupilRef} />
@@ -49,7 +49,7 @@ export function Orb({ state, progress, bodyRef, pupilRef, onClick }: OrbProps) {
         <span
           ref={z}
           aria-hidden
-          className="font-heading text-orb-resting pointer-events-none absolute -top-2 right-0 text-sm font-bold opacity-0"
+          className="text-orb-resting pointer-events-none absolute -top-2 right-0 font-heading text-sm font-bold opacity-0"
         >
           z
         </span>
