@@ -11,11 +11,9 @@ import {
 import { AppShell } from "./layout/AppShell";
 import { Onboarding } from "./onboarding/Onboarding";
 import { ensureOnboarded } from "./onboardingStatus";
-import { CategoryView } from "./screens/CategoryView";
+import { modules } from "@/modules";
 import { Goals } from "./screens/Goals";
 import { Settings } from "./screens/Settings";
-import { Today } from "./screens/Today";
-import { Upcoming } from "./screens/Upcoming";
 
 type RouterContext = { queryClient: QueryClient };
 
@@ -39,9 +37,9 @@ const page = <Path extends string>(path: Path, component: RouteComponent) =>
 
 const routeTree = rootRoute.addChildren([
   appRoute.addChildren([
-    page("/", Today),
-    page("/upcoming", Upcoming),
-    page("/category/$categoryId", CategoryView),
+    ...modules.flatMap((manifest) =>
+      (manifest.routes ?? []).map((route) => page(route.path, route.Component)),
+    ),
     page("/goals", Goals),
     page(
       "/progress",

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Task } from "@/shared/bindings/bindings";
-import { dayjs } from "./dayjs";
+import { dayjs } from "@/shared/lib/dayjs";
 import {
   categoryDot,
   doneToday,

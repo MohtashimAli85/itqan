@@ -1,10 +1,13 @@
 import { Star } from "lucide-react";
 import type { Category, Task } from "@/shared/bindings/bindings";
 import { Checkbox } from "@/shared/components/ui/checkbox";
-import { useSetTaskStatus, useSetTopThree } from "@/shared/hooks/useTasks";
+import {
+  useSetTaskStatus,
+  useSetTopThree,
+} from "@/modules/tasks/hooks/useTasks";
 import { dayjs } from "@/shared/lib/dayjs";
-import { categoryDot } from "@/shared/lib/taskGroups";
-import { useMainUi } from "../uiStore";
+import { categoryDot } from "@/modules/tasks/lib/taskGroups";
+import { useMainUi } from "@/modules/tasks/uiStore";
 
 type TaskItemProps = {
   task: Task;

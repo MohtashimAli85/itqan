@@ -1,5 +1,5 @@
 import type { Task } from "@/shared/bindings/bindings";
-import { useCategories } from "@/shared/hooks/useTasks";
+import { useCategories } from "@/modules/tasks/hooks/useTasks";
 import { TaskItem } from "./TaskItem";
 
 type TaskSectionProps = {

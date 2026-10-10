@@ -1,5 +1,5 @@
 import type { Task } from "@/shared/bindings/bindings";
-import { dayjs, type Dayjs } from "./dayjs";
+import { dayjs, type Dayjs } from "@/shared/lib/dayjs";
 
 export type TodaySections = {
   topThree: Task[];

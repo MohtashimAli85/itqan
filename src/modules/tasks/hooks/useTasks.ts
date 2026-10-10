@@ -8,7 +8,7 @@ import {
 } from "@/shared/bindings/bindings";
 import { unwrap } from "@/shared/lib/result";
 import { todayTasks } from "@/shared/lib/today";
-import { useTauriEvent } from "./useTauriEvent";
+import { useTauriEvent } from "@/shared/hooks/useTauriEvent";
 
 const tasksKey = ["tasks"] as const;
 
