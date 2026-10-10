@@ -20,7 +20,7 @@ const coachStyles = [
 ] as const;
 
 export function MotivationStep() {
-  const { control, register, formState, getValues, setValue } =
+  const { control, register, formState, getValues, setValue, getFieldState } =
     useFormContext<OnboardingValues>();
   const { data: ai } = useAiStatus();
   const aiReady = Boolean(ai?.settings.enabled && (ai.hasKey || !ai.needsKey));
@@ -30,8 +30,17 @@ export function MotivationStep() {
     setValue("chat", next, { shouldValidate: next !== "open" });
 
   useEffect(() => {
-    if (aiReady && getValues("chat") === "idle") setValue("chat", "open");
-  }, [aiReady, getValues, setValue]);
+    const current = getValues("chat");
+    if (!aiReady && current === "open") {
+      setValue("chat", "idle", { shouldValidate: true });
+    } else if (
+      aiReady &&
+      current === "idle" &&
+      !getFieldState("motivators").isDirty
+    ) {
+      setValue("chat", "open");
+    }
+  }, [aiReady, getValues, setValue, getFieldState]);
   const notes = useWatch({ control, name: "beliefNotes" });
   const motivators = useWatch({ control, name: "motivators" });
   const total = Object.values(motivators).reduce(

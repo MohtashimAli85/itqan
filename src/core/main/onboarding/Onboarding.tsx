@@ -108,6 +108,7 @@ function OnboardingForm({ defaults, prayer }: OnboardingFormProps) {
           className="flex w-full max-w-2xl flex-col gap-8 rounded-3xl bg-card p-10 shadow-sm ring-1 ring-border"
           onSubmit={(event) => {
             event.preventDefault();
+            if (event.target !== event.currentTarget) return;
             void next();
           }}
         >
