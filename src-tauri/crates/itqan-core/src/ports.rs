@@ -123,7 +123,7 @@ impl Ports {
             .clone())
     }
 
-    pub fn today_counts(
+    pub fn today_task_counts(
         &self,
         connection: &Connection,
         start: DateTime<Utc>,
@@ -276,7 +276,7 @@ mod tests {
         let now = window(Prayer::Asr).at;
 
         assert_eq!(
-            ports.today_counts(&connection, now, now).unwrap(),
+            ports.today_task_counts(&connection, now, now).unwrap(),
             TodayCounts::default()
         );
         assert_eq!(ports.next_task_for_today(&connection, now).unwrap(), None);

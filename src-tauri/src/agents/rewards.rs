@@ -157,8 +157,9 @@ impl Subscriber for RewardsAgent {
                     != Some(&today.to_string())
             {
                 let (start, end) = itqan_core::settings::day_bounds(timezone, today);
-                let TodayCounts { done, open } =
-                    app.state::<Ports>().today_counts(connection, start, end)?;
+                let TodayCounts { done, open } = app
+                    .state::<Ports>()
+                    .today_task_counts(connection, start, end)?;
                 all_done = done > 0 && open == 0;
                 if all_done {
                     settings_repo::set(connection, LAST_ALL_DONE, &today.to_string())?;

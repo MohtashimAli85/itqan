@@ -8,7 +8,7 @@ pub mod tasks;
 use chrono::{DateTime, Utc};
 use itqan_core::error::AppError;
 use itqan_core::module::{Migration, Module};
-use itqan_core::ports::{Ports, ReminderTargetKind, TaskStats, TodayCounts};
+use itqan_core::ports::{Ports, TaskStats, TodayCounts};
 use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use specta::Type;
@@ -40,7 +40,7 @@ impl Module for TasksModule {
 }
 
 fn register(ports: &Ports) -> Result<(), AppError> {
-    ports.set_reminder_target(ReminderTargetKind::Task, targets::TaskReminders)?;
+    targets::register(ports)?;
     ports.set_task_stats(Stats)
 }
 
@@ -84,6 +84,7 @@ fn test_connection() -> Connection {
 mod tests {
     use chrono::TimeZone;
     use itqan_core::db::migrations;
+    use itqan_core::ports::ReminderTargetKind;
 
     use super::*;
 
@@ -110,7 +111,24 @@ mod tests {
             .unwrap();
         let task = connection.last_insert_rowid();
 
+        let snapshot = |connection: &Connection, table: &str| -> Vec<(String, bool, i64)> {
+            let mut statement = connection
+                .prepare(&format!(
+                    "SELECT name, builtin, sort_order FROM {table} ORDER BY id"
+                ))
+                .unwrap();
+            statement
+                .query_map([], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)))
+                .unwrap()
+                .collect::<Result<_, _>>()
+                .unwrap()
+        };
+        let before = snapshot(&connection, "categories");
+
         migrations::run_modules(&mut connection, &[&TasksModule]).unwrap();
+
+        assert_eq!(snapshot(&connection, "tasks_categories"), before);
+        assert_eq!(before.iter().filter(|(_, builtin, _)| *builtin).count(), 5);
 
         let names: Vec<String> = categories::list(&connection)
             .unwrap()

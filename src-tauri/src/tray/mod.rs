@@ -80,7 +80,7 @@ fn load(app: &AppHandle) -> Result<TrayView, AppError> {
         let today = now.with_timezone(&timezone).date_naive();
         let (_, end) = itqan_core::settings::day_bounds(timezone, today);
         let ports = app.state::<Ports>();
-        let tasks_left = ports.today_counts(connection, now, end)?.open;
+        let tasks_left = ports.today_task_counts(connection, now, end)?.open;
         let next_task = ports.next_task_for_today(connection, end)?;
         Ok(view::view(TrayInputs {
             focus_minutes_left: status
