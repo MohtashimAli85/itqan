@@ -5,11 +5,11 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 
 use crate::db::rewards as repo;
-use crate::domain::levels::{self, LevelProgress};
-use crate::domain::skills::SkillId;
 use itqan_contracts::TaskId;
 use itqan_core::error::AppError;
+use itqan_core::levels::{self, LevelProgress};
 use itqan_core::profile::{Motivator, Profile};
+use itqan_core::skills::SkillId;
 use itqan_tasks::tasks::TaskKind;
 
 const MAX_FREEZES: u8 = 2;
@@ -413,7 +413,7 @@ mod tests {
     fn awards_count_once_feed_skills_and_level_up() {
         let connection = test_connection();
         let now = Utc.with_ymd_and_hms(2026, 10, 10, 9, 0, 0).unwrap();
-        let skill = crate::domain::skills::create(&connection, "Rust", now).unwrap();
+        let skill = itqan_core::skills::create(&connection, "Rust", now).unwrap();
         let first = Award {
             source: XpSource::Goal,
             amount: GOAL_XP,
@@ -432,7 +432,7 @@ mod tests {
             .unwrap()
             .is_none());
 
-        let skills = crate::domain::skills::list(&connection).unwrap();
+        let skills = itqan_core::skills::list(&connection).unwrap();
         assert_eq!(skills[0].xp, 100);
 
         let water = Award {

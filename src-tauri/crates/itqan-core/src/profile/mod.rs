@@ -3,6 +3,7 @@ use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
+pub mod commands;
 mod repo;
 
 use crate::db::settings as settings_repo;

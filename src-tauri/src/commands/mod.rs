@@ -1,11 +1,1 @@
-pub mod ai;
-pub mod app_info;
-pub mod coach;
-pub mod events;
-pub mod goals;
-pub mod modes;
-pub mod overlay;
-pub mod profile;
 pub mod rewards;
-pub mod settings;
-pub mod system;

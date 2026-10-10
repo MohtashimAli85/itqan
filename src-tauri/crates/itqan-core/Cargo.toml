@@ -9,7 +9,9 @@ test-support = []
 
 [dependencies]
 itqan-contracts = { path = "../itqan-contracts" }
-tauri.workspace = true
+tauri = { workspace = true, features = ["tray-icon", "macos-private-api"] }
+tauri-specta.workspace = true
+tauri-plugin-notification = "2"
 serde.workspace = true
 serde_json.workspace = true
 rusqlite.workspace = true
@@ -24,6 +26,13 @@ keyring.workspace = true
 reqwest.workspace = true
 regex.workspace = true
 rrule.workspace = true
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-autostart = "2"
+tauri-plugin-global-shortcut = "2"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+tauri-nspanel = "2.1.1"
 
 [lints]
 workspace = true

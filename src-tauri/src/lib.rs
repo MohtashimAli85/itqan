@@ -2,11 +2,6 @@ mod agents;
 mod commands;
 mod db;
 mod domain;
-mod overlay;
-mod platform;
-mod scheduler;
-mod shortcuts;
-mod tray;
 
 use tauri::Manager;
 use tauri_specta::{collect_commands, collect_events, Builder};
@@ -15,7 +10,7 @@ use itqan_core::actions::ActionRouter;
 use itqan_core::db::Database;
 use itqan_core::module::Module;
 use itqan_core::ports::Ports;
-use itqan_core::scheduler::Refresher;
+use itqan_core::{overlay, platform, scheduler, shortcuts, tray};
 
 const MODULES: &[&dyn Module] = &[
     &itqan_salah::SalahModule,
@@ -29,15 +24,15 @@ const BINDINGS_PATH: &str = "../src/shared/bindings/bindings.ts";
 fn specta_builder() -> Builder<tauri::Wry> {
     Builder::<tauri::Wry>::new()
         .commands(collect_commands![
-            commands::app_info::get_app_info,
-            commands::overlay::set_overlay_hit_areas,
-            commands::overlay::get_overlay_state,
-            commands::overlay::set_orb_state,
-            commands::overlay::set_follow_mode,
-            commands::overlay::set_orb_progress,
-            commands::overlay::show_bubble,
-            commands::overlay::resolve_bubble,
-            commands::overlay::set_panel_open,
+            itqan_core::app_info::commands::get_app_info,
+            itqan_core::overlay::commands::set_overlay_hit_areas,
+            itqan_core::overlay::commands::get_overlay_state,
+            itqan_core::overlay::commands::set_orb_state,
+            itqan_core::overlay::commands::set_follow_mode,
+            itqan_core::overlay::commands::set_orb_progress,
+            itqan_core::overlay::commands::show_bubble,
+            itqan_core::overlay::commands::resolve_bubble,
+            itqan_core::overlay::commands::set_panel_open,
             itqan_tasks::commands::list_tasks,
             itqan_tasks::commands::create_task,
             itqan_tasks::commands::update_task,
@@ -50,37 +45,37 @@ fn specta_builder() -> Builder<tauri::Wry> {
             itqan_core::reminders::commands::create_reminder,
             itqan_core::reminders::commands::list_task_reminders,
             itqan_core::reminders::commands::delete_reminder,
-            commands::settings::get_timezone,
-            commands::settings::set_timezone,
-            commands::modes::get_mode_status,
-            commands::modes::set_rest,
-            commands::modes::start_focus,
-            commands::modes::stop_focus,
-            commands::modes::get_work_hours,
-            commands::modes::set_work_hours,
+            itqan_core::settings::commands::get_timezone,
+            itqan_core::settings::commands::set_timezone,
+            itqan_core::modes::commands::get_mode_status,
+            itqan_core::modes::commands::set_rest,
+            itqan_core::modes::commands::start_focus,
+            itqan_core::modes::commands::stop_focus,
+            itqan_core::modes::commands::get_work_hours,
+            itqan_core::modes::commands::set_work_hours,
             itqan_salah::commands::get_prayer_settings,
             itqan_salah::commands::set_prayer_settings,
             itqan_salah::commands::get_prayer_day,
-            commands::profile::get_profile,
-            commands::profile::save_profile,
-            commands::profile::is_onboarded,
-            commands::profile::complete_onboarding,
-            commands::goals::list_goals,
-            commands::goals::create_goal,
-            commands::goals::update_goal,
-            commands::goals::set_goal_status,
-            commands::goals::delete_goal,
-            commands::goals::list_milestones,
-            commands::goals::add_milestones,
-            commands::goals::set_milestone_status,
-            commands::goals::delete_milestone,
-            commands::goals::propose_plan,
-            commands::goals::list_skills,
-            commands::goals::create_skill,
-            commands::goals::delete_skill,
-            commands::coach::get_nudge_budget,
-            commands::coach::set_nudge_budget,
-            commands::coach::list_recent_nudges,
+            itqan_core::profile::commands::get_profile,
+            itqan_core::profile::commands::save_profile,
+            itqan_core::profile::commands::is_onboarded,
+            itqan_core::profile::commands::complete_onboarding,
+            itqan_core::goals::commands::list_goals,
+            itqan_core::goals::commands::create_goal,
+            itqan_core::goals::commands::update_goal,
+            itqan_core::goals::commands::set_goal_status,
+            itqan_core::goals::commands::delete_goal,
+            itqan_core::goals::commands::list_milestones,
+            itqan_core::goals::commands::add_milestones,
+            itqan_core::goals::commands::set_milestone_status,
+            itqan_core::goals::commands::delete_milestone,
+            itqan_core::goals::commands::propose_plan,
+            itqan_core::goals::commands::list_skills,
+            itqan_core::goals::commands::create_skill,
+            itqan_core::goals::commands::delete_skill,
+            itqan_core::coach::commands::get_nudge_budget,
+            itqan_core::coach::commands::set_nudge_budget,
+            itqan_core::coach::commands::list_recent_nudges,
             itqan_health::commands::get_health_overview,
             itqan_health::commands::set_health_enabled,
             itqan_health::commands::log_habit,
@@ -90,27 +85,27 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::rewards::get_progress,
             commands::rewards::get_reward_sound,
             commands::rewards::set_reward_sound,
-            commands::ai::get_ai_status,
-            commands::ai::get_ai_preset_defaults,
-            commands::ai::save_ai_settings,
-            commands::ai::set_ai_key,
-            commands::ai::delete_ai_key,
-            commands::ai::test_ai_connection,
-            commands::ai::ask_itqan,
-            commands::system::get_autostart,
-            commands::system::set_autostart,
-            commands::system::get_coach_settings,
-            commands::system::set_nudges_paused,
+            itqan_core::ai::commands::get_ai_status,
+            itqan_core::ai::commands::get_ai_preset_defaults,
+            itqan_core::ai::commands::save_ai_settings,
+            itqan_core::ai::commands::set_ai_key,
+            itqan_core::ai::commands::delete_ai_key,
+            itqan_core::ai::commands::test_ai_connection,
+            itqan_core::ai::commands::ask_itqan,
+            itqan_core::system::get_autostart,
+            itqan_core::system::set_autostart,
+            itqan_core::system::get_coach_settings,
+            itqan_core::system::set_nudges_paused,
         ])
         .events(collect_events![
             overlay::OverlayCursor,
             overlay::OverlayChanged,
             itqan_tasks::TasksChanged,
             scheduler::ModeChanged,
-            commands::goals::GoalsChanged,
+            itqan_core::goals::commands::GoalsChanged,
             itqan_health::HealthChanged,
             agents::rewards::RewardEarned,
-            commands::events::Navigate,
+            itqan_core::events::Navigate,
         ])
 }
 
@@ -159,7 +154,6 @@ pub fn run() {
             tracing::info!("database ready");
             app.manage(Ports::default());
             app.manage(ActionRouter::default());
-            app.manage(Refresher::new(|app| scheduler::refresh(app).map(|_| ())));
             for module in MODULES {
                 module.setup(app.handle())?;
             }
