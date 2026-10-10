@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { openTasks, useCategories, useTasks } from "@/shared/hooks/useTasks";
 import { categoryDot, todaySections } from "@/shared/lib/taskGroups";
+import { contributions } from "@/core/registry/contributions";
+import type { SidebarWidget } from "@/core/registry/types";
 import { NextPrayerCard } from "./NextPrayerCard";
 
 const linkClass =
@@ -35,6 +37,10 @@ function NavLink({
     </Link>
   );
 }
+
+const widgets = contributions((manifest) => manifest.sidebarWidgets, [
+  { id: "next-prayer", order: 10, Component: NextPrayerCard },
+] satisfies SidebarWidget[]);
 
 export function Sidebar() {
   const { data: tasks = [] } = useTasks(openTasks);
@@ -74,8 +80,10 @@ export function Sidebar() {
         <NavLink to="/progress" icon={TrendingUp} label="Progress" />
         <NavLink to="/settings" icon={Settings} label="Settings" />
       </div>
-      <div className="mt-auto">
-        <NextPrayerCard />
+      <div className="mt-auto flex flex-col gap-3">
+        {widgets.map(({ id, Component }) => (
+          <Component key={id} />
+        ))}
       </div>
     </nav>
   );

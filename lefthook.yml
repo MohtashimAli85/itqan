@@ -8,7 +8,10 @@ pre-commit:
   commands:
     lint:
       glob: "*.{ts,tsx,js}"
-      run: pnpm lint --no-error-on-unmatched-pattern {staged_files}
+      run: pnpm lint:js --no-error-on-unmatched-pattern {staged_files}
+    boundaries:
+      glob: "*.{ts,tsx}"
+      run: pnpm lint:boundaries
     format:
       glob: "*.{ts,tsx,js,json,css,md,html}"
       run: pnpm exec prettier --check {staged_files}

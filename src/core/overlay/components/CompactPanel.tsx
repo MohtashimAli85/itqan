@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
-import type { Task } from "@/shared/bindings/bindings";
-import { openTasks, useSetTaskStatus, useTasks } from "@/shared/hooks/useTasks";
+import { contributions } from "@/core/registry/contributions";
+import type { PanelTab } from "@/core/registry/types";
+import { openTasks, useTasks } from "@/shared/hooks/useTasks";
 import { greeting, todayTasks } from "@/shared/lib/today";
 import {
   Tabs,
@@ -8,11 +9,14 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/shared/components/ui/tabs";
-import { FocusRow } from "./FocusRow";
 import { HealthTab } from "./HealthTab";
 import { ProgressRow } from "./ProgressRow";
-import { QuickAdd } from "./QuickAdd";
-import { TaskRow } from "./TaskRow";
+import { TodayTab } from "./TodayTab";
+
+const tabs = contributions((manifest) => manifest.panelTabs, [
+  { id: "today", label: "Today", order: 10, Component: TodayTab },
+  { id: "health", label: "Health", order: 20, Component: HealthTab },
+] satisfies PanelTab[]);
 
 type CompactPanelProps = {
   onClose: () => void;
@@ -22,7 +26,6 @@ type CompactPanelProps = {
 export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
   const panel = useRef<HTMLDivElement>(null);
   const { data: tasks = [] } = useTasks(openTasks);
-  const setStatus = useSetTaskStatus();
   const { topThree, due } = todayTasks(tasks);
 
   useEffect(() => {
@@ -32,9 +35,6 @@ export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
     observer.observe(element);
     return () => observer.disconnect();
   }, [onResize]);
-
-  const complete = (task: Task) =>
-    setStatus.mutate({ id: task.id, status: "done" });
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -65,49 +65,17 @@ export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
 
       <Tabs defaultValue="today">
         <TabsList className="w-full">
-          <TabsTrigger value="today">Today</TabsTrigger>
-          <TabsTrigger value="health">Health</TabsTrigger>
+          {tabs.map(({ id, label }) => (
+            <TabsTrigger key={id} value={id}>
+              {label}
+            </TabsTrigger>
+          ))}
         </TabsList>
-        <TabsContent value="today" className="flex flex-col gap-3 pt-2">
-          <QuickAdd />
-
-          <FocusRow />
-
-          {topThree.length > 0 && (
-            <section aria-labelledby="panel-top-three">
-              <h3
-                id="panel-top-three"
-                className="mb-1 px-2 text-xs font-medium text-caption"
-              >
-                Top 3
-              </h3>
-              <ul>
-                {topThree.map((task) => (
-                  <TaskRow key={task.id} task={task} onComplete={complete} />
-                ))}
-              </ul>
-            </section>
-          )}
-
-          {due.length > 0 && (
-            <section aria-labelledby="panel-due">
-              <h3
-                id="panel-due"
-                className="mb-1 px-2 text-xs font-medium text-caption"
-              >
-                Due today
-              </h3>
-              <ul className="max-h-48 overflow-y-auto">
-                {due.map((task) => (
-                  <TaskRow key={task.id} task={task} onComplete={complete} />
-                ))}
-              </ul>
-            </section>
-          )}
-        </TabsContent>
-        <TabsContent value="health" className="pt-2">
-          <HealthTab />
-        </TabsContent>
+        {tabs.map(({ id, Component }) => (
+          <TabsContent key={id} value={id} className="pt-2">
+            <Component />
+          </TabsContent>
+        ))}
       </Tabs>
     </div>
   );
