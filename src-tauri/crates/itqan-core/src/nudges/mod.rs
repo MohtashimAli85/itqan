@@ -3,10 +3,11 @@ use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
-use crate::db::nudges as repo;
-use itqan_core::error::AppError;
+mod repo;
 
-pub use itqan_core::bus::{AgentKind, Priority};
+use crate::error::AppError;
+
+pub use crate::bus::{AgentKind, Priority};
 
 pub type NudgeId = i32;
 
@@ -87,7 +88,7 @@ mod tests {
     use chrono::TimeZone;
 
     use super::*;
-    use itqan_core::db::test_connection;
+    use crate::db::test_connection;
 
     fn at(minute: u32) -> DateTime<Utc> {
         Utc.with_ymd_and_hms(2026, 10, 10, 9, minute, 0).unwrap()

@@ -4,9 +4,9 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 
 use crate::domain::categories;
-use crate::domain::reminders::{self, ReminderInput};
 use crate::domain::tasks::{self, Task, TaskInput};
 use itqan_core::error::AppError;
+use itqan_core::reminders::{self, ReminderInput};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
@@ -43,7 +43,7 @@ pub fn create<Tz: TimeZone>(
         now,
     )?;
     if let (true, Some(at)) = (parsed.has_time, task.due_at) {
-        reminders::create(
+        reminders::insert(
             connection,
             ReminderInput {
                 task_id: Some(task.id),
@@ -384,12 +384,13 @@ mod tests {
         let zone = chrono_tz::Tz::Asia__Karachi;
 
         let timed = create(&connection, "buy dahi at 7pm", now(), zone).unwrap();
-        let reminders = reminders::list_for_task(&connection, timed.task.id).unwrap();
+        let ports = itqan_core::ports::Ports::default();
+        let reminders = reminders::list_for_task(&connection, &ports, timed.task.id).unwrap();
         assert_eq!(reminders.len(), 1);
         assert_eq!(reminders[0].next_at, Some(local(10, 19, 0)));
 
         let dated = create(&connection, "submit invoice tomorrow", now(), zone).unwrap();
-        assert!(reminders::list_for_task(&connection, dated.task.id)
+        assert!(reminders::list_for_task(&connection, &ports, dated.task.id)
             .unwrap()
             .is_empty());
     }

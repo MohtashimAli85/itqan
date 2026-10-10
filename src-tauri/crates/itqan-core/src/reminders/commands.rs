@@ -1,23 +1,25 @@
 use chrono::Utc;
+use itqan_contracts::TaskId;
 use tauri::State;
 
-use crate::domain::reminders::{self, Reminder, ReminderId, ReminderInput};
-use crate::domain::tasks::TaskId;
+use super::{Reminder, ReminderId, ReminderInput};
+use crate::db::Database;
+use crate::error::CommandError;
+use crate::ports::Ports;
 use crate::scheduler::Scheduler;
-use itqan_core::db::Database;
-use itqan_core::error::CommandError;
-use itqan_core::settings;
+use crate::settings;
 
 #[tauri::command]
 #[specta::specta]
 pub fn create_reminder(
     database: State<Database>,
+    ports: State<Ports>,
     scheduler: State<Scheduler>,
     input: ReminderInput,
 ) -> Result<Reminder, CommandError> {
     let reminder = database.with(|connection| {
         let timezone = settings::timezone(connection)?;
-        reminders::create(connection, input, timezone, Utc::now())
+        super::create(connection, &ports, input, timezone, Utc::now())
     })?;
     scheduler.wake();
     Ok(reminder)
@@ -27,9 +29,10 @@ pub fn create_reminder(
 #[specta::specta]
 pub fn list_task_reminders(
     database: State<Database>,
+    ports: State<Ports>,
     task_id: TaskId,
 ) -> Result<Vec<Reminder>, CommandError> {
-    Ok(database.with(|connection| reminders::list_for_task(connection, task_id))?)
+    Ok(database.with(|connection| super::list_for_task(connection, &ports, task_id))?)
 }
 
 #[tauri::command]
@@ -39,7 +42,7 @@ pub fn delete_reminder(
     scheduler: State<Scheduler>,
     id: ReminderId,
 ) -> Result<(), CommandError> {
-    database.with(|connection| reminders::delete(connection, id))?;
+    database.with(|connection| super::delete(connection, id))?;
     scheduler.wake();
     Ok(())
 }

@@ -1,4 +1,3 @@
-mod activity;
 mod hit_areas;
 mod state;
 mod tracker;
@@ -10,8 +9,8 @@ use crate::platform;
 use itqan_core::db::{settings as settings_repo, Database};
 use itqan_core::error::AppError;
 
-pub use activity::Activity;
 pub use hit_areas::{HitAreas, Rect};
+pub use itqan_core::activity::Activity;
 pub use state::{
     BubbleAction, BubbleOrigin, FollowMode, OrbState, OverlayChanged, OverlaySnapshot, OverlayStore,
 };

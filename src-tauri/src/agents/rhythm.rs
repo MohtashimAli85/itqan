@@ -4,11 +4,12 @@ use tauri::{AppHandle, Manager};
 use super::coach::{LATER, OPEN_MAIN, OPEN_PANEL};
 use super::{action, AppEvent, Signal, Subscriber};
 use crate::domain::modes;
-use crate::domain::nudges::{AgentKind, Priority};
-use crate::domain::profile::{CoachStyle, Motivator, Profile};
-use crate::domain::{profile, tasks};
+use crate::domain::tasks;
 use itqan_core::db::{settings as settings_repo, Database};
 use itqan_core::error::AppError;
+use itqan_core::nudges::{AgentKind, Priority};
+use itqan_core::profile;
+use itqan_core::profile::{CoachStyle, Motivator, Profile};
 use itqan_core::settings;
 
 const STANDUP_WINDOW_MINUTES: i64 = 180;
@@ -148,7 +149,7 @@ impl Subscriber for RhythmAgent {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::profile::MotivatorWeight;
+    use itqan_core::profile::MotivatorWeight;
 
     fn profile(style: CoachStyle, top: Motivator) -> Profile {
         Profile {

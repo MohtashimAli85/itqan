@@ -1,3 +1,4 @@
+use chrono::{DateTime, Duration, NaiveDate, NaiveTime, TimeZone, Utc};
 use chrono_tz::Tz;
 use rusqlite::Connection;
 
@@ -27,6 +28,16 @@ pub fn system_timezone() -> Tz {
         .ok()
         .and_then(|name| name.parse().ok())
         .unwrap_or(Tz::UTC)
+}
+
+pub fn day_bounds(timezone: Tz, date: NaiveDate) -> (DateTime<Utc>, DateTime<Utc>) {
+    let at = |date: NaiveDate| {
+        timezone
+            .from_local_datetime(&date.and_time(NaiveTime::MIN))
+            .earliest()
+            .map_or_else(Utc::now, |start| start.with_timezone(&Utc))
+    };
+    (at(date), at(date + Duration::days(1)))
 }
 
 #[cfg(test)]

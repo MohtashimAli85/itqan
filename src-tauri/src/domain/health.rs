@@ -6,9 +6,9 @@ use specta::Type;
 
 use crate::db::health as repo;
 
-use crate::domain::reminders::{self, Reminder, ReminderInput};
 use itqan_core::db::settings as settings_repo;
 use itqan_core::error::AppError;
+use itqan_core::reminders::{self, Reminder, ReminderInput};
 
 pub use itqan_contracts::HabitKind;
 
@@ -195,7 +195,7 @@ pub fn add_medicine(
             .earliest()
             .ok_or_else(|| AppError::InvalidInput("that time does not exist today".into()))?
             .with_timezone(&Utc);
-        let reminder = reminders::create(
+        let reminder = reminders::insert(
             &transaction,
             ReminderInput {
                 task_id: None,
@@ -207,7 +207,7 @@ pub fn add_medicine(
             timezone,
             now,
         )?;
-        reminders::attach_habit(&transaction, reminder.id, habit_id)?;
+        reminders::attach_habit(&transaction, reminder, habit_id)?;
     }
     transaction.commit()?;
     let habit = repo::find(connection, habit_id)?

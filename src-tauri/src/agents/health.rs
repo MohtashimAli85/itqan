@@ -1,19 +1,23 @@
 use chrono::{DateTime, Duration, NaiveTime, TimeZone, Utc};
 use tauri::{AppHandle, Manager};
 
-use super::coach::LATER;
+use itqan_core::actions::{ActionHandler, LATER};
+use tauri_specta::Event;
+
 use super::{action, AppEvent, Signal, Subscriber};
+use crate::commands::events::HealthChanged;
 use crate::domain::health::{self, AgeBand, HabitKind};
-use crate::domain::nudges::{self, AgentKind, Priority};
-use crate::domain::profile;
-use crate::overlay::Activity;
+use itqan_core::activity::Activity;
 use itqan_core::db::Database;
 use itqan_core::error::AppError;
+use itqan_core::nudges::{self, AgentKind, Priority};
+use itqan_core::profile;
 use itqan_core::settings;
 
 const WATER_EVERY: Duration = Duration::hours(2);
 const EXPIRES_AFTER: Duration = Duration::minutes(15);
 
+pub const HABIT_ACTIONS: &str = "habit";
 pub const STRETCH: &str = "stretch";
 pub const EYE_REST: &str = "eye-rest";
 pub const WATER: &str = "water";
@@ -27,15 +31,32 @@ pub fn habit_action(kind: HabitKind) -> String {
         HabitKind::Water => "water",
         HabitKind::Medicine => "medicine",
     };
-    format!("habit:{name}")
+    format!("{HABIT_ACTIONS}:{name}")
 }
 
 pub fn parse_habit_action(action: &str) -> Option<HabitKind> {
-    match action.strip_prefix("habit:")? {
+    match action.strip_prefix(HABIT_ACTIONS)?.strip_prefix(':')? {
         "stretch" => Some(HabitKind::Stretch),
         "eyeRest" => Some(HabitKind::EyeRest),
         "water" => Some(HabitKind::Water),
         _ => None,
+    }
+}
+
+pub struct HabitActions;
+
+impl ActionHandler for HabitActions {
+    fn handle(&self, app: &AppHandle, action: &str) -> Result<(), AppError> {
+        let Some(kind) = parse_habit_action(action) else {
+            return Ok(());
+        };
+        app.state::<Database>()
+            .with(|connection| health::log(connection, kind, Utc::now()))?;
+        if kind == HabitKind::Stretch {
+            app.state::<Activity>().reset_streak();
+        }
+        HealthChanged.emit(app)?;
+        super::publish(app, AppEvent::HabitLogged { kind })
     }
 }
 

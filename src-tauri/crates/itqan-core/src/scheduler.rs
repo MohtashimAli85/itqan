@@ -1,6 +1,23 @@
+use std::sync::Arc;
+
 use tauri::{AppHandle, Manager};
+use tokio::sync::Notify;
 
 use crate::error::AppError;
+
+pub struct Scheduler {
+    wake: Arc<Notify>,
+}
+
+impl Scheduler {
+    pub fn new(wake: Arc<Notify>) -> Self {
+        Self { wake }
+    }
+
+    pub fn wake(&self) {
+        self.wake.notify_one();
+    }
+}
 
 type RefreshFn = dyn Fn(&AppHandle) -> Result<(), AppError> + Send + Sync;
 

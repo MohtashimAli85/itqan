@@ -1,9 +1,11 @@
+use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
 use chrono::{DateTime, Utc};
 use chrono_tz::Tz;
 use itqan_contracts::PrayerWindow;
 use rusqlite::Connection;
+use tauri::AppHandle;
 
 use crate::error::AppError;
 
@@ -23,9 +25,28 @@ pub trait PrayerSchedule: Send + Sync {
     ) -> Result<PrayerSnapshot, AppError>;
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ReminderTargetKind {
+    Task,
+    Habit,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TargetInfo {
+    pub title: Option<String>,
+    pub active: bool,
+}
+
+pub trait ReminderTarget: Send + Sync {
+    fn describe(&self, connection: &Connection, id: i32) -> Result<Option<TargetInfo>, AppError>;
+
+    fn complete(&self, app: &AppHandle, id: i32) -> Result<(), AppError>;
+}
+
 #[derive(Default)]
 pub struct Ports {
     prayer: RwLock<Option<Arc<dyn PrayerSchedule>>>,
+    reminder_targets: RwLock<HashMap<ReminderTargetKind, Arc<dyn ReminderTarget>>>,
 }
 
 impl Ports {
@@ -43,6 +64,44 @@ impl Ports {
     pub fn clear_prayer(&self) -> Result<(), AppError> {
         *self.prayer.write().map_err(|_| AppError::LockPoisoned)? = None;
         Ok(())
+    }
+
+    pub fn set_reminder_target(
+        &self,
+        kind: ReminderTargetKind,
+        target: impl ReminderTarget + 'static,
+    ) -> Result<(), AppError> {
+        let mut targets = self
+            .reminder_targets
+            .write()
+            .map_err(|_| AppError::LockPoisoned)?;
+        if targets.contains_key(&kind) {
+            return Err(AppError::InvalidInput(format!(
+                "a {kind:?} reminder target is already registered"
+            )));
+        }
+        targets.insert(kind, Arc::new(target));
+        Ok(())
+    }
+
+    pub fn clear_reminder_target(&self, kind: ReminderTargetKind) -> Result<(), AppError> {
+        self.reminder_targets
+            .write()
+            .map_err(|_| AppError::LockPoisoned)?
+            .remove(&kind);
+        Ok(())
+    }
+
+    pub fn reminder_target(
+        &self,
+        kind: ReminderTargetKind,
+    ) -> Result<Option<Arc<dyn ReminderTarget>>, AppError> {
+        Ok(self
+            .reminder_targets
+            .read()
+            .map_err(|_| AppError::LockPoisoned)?
+            .get(&kind)
+            .cloned())
     }
 
     pub fn prayer(

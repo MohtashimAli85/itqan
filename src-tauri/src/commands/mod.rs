@@ -7,7 +7,6 @@ pub mod health;
 pub mod modes;
 pub mod overlay;
 pub mod profile;
-pub mod reminders;
 pub mod rewards;
 pub mod settings;
 pub mod system;

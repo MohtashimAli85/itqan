@@ -1,18 +1,19 @@
 use std::time::Duration as StdDuration;
 
-use chrono::{DateTime, Datelike, Duration, NaiveDate, NaiveTime, TimeZone, Utc};
+use chrono::{DateTime, Datelike, Duration, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use tauri::{AppHandle, Manager};
 use tauri_specta::Event;
 
 use super::{AppEvent, Signal, Subscriber};
-use crate::domain::nudges::{AgentKind, Priority};
 use crate::domain::rewards::{self, Award, RewardOutcome, XpSource};
-use crate::domain::{modes, profile, tasks};
+use crate::domain::{modes, tasks};
 use crate::overlay::{self, OrbState, OverlayStore};
 use itqan_core::db::{settings as settings_repo, Database};
 use itqan_core::error::AppError;
+use itqan_core::nudges::{AgentKind, Priority};
+use itqan_core::profile;
 use itqan_core::settings;
 
 const SOUND: &str = "reward_sound";
@@ -42,16 +43,6 @@ pub fn sound_enabled(connection: &rusqlite::Connection) -> Result<bool, AppError
 
 pub fn set_sound(connection: &rusqlite::Connection, enabled: bool) -> Result<(), AppError> {
     settings_repo::set(connection, SOUND, if enabled { "true" } else { "false" })
-}
-
-pub fn day_bounds(timezone: chrono_tz::Tz, date: NaiveDate) -> (DateTime<Utc>, DateTime<Utc>) {
-    let at = |date: NaiveDate| {
-        timezone
-            .from_local_datetime(&date.and_time(NaiveTime::MIN))
-            .earliest()
-            .map_or_else(Utc::now, |start| start.with_timezone(&Utc))
-    };
-    (at(date), at(date + Duration::days(1)))
 }
 
 fn award_for(
@@ -163,7 +154,7 @@ impl Subscriber for RewardsAgent {
                 && settings_repo::get(connection, LAST_ALL_DONE)?.as_deref()
                     != Some(&today.to_string())
             {
-                let (start, end) = day_bounds(timezone, today);
+                let (start, end) = itqan_core::settings::day_bounds(timezone, today);
                 let (done, open) = tasks::today_counts(connection, start, end)?;
                 all_done = done > 0 && open == 0;
                 if all_done {

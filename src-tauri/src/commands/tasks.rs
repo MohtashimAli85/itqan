@@ -7,9 +7,10 @@ use crate::agents::{self, AppEvent};
 use crate::domain::categories::{self, Category, CategoryInput};
 use crate::domain::quick_add::{self, QuickAddOutcome};
 use crate::domain::tasks::{self, Task, TaskFilter, TaskId, TaskInput, TaskStatus};
-use crate::scheduler::{self, Scheduler};
+use crate::scheduler;
 use itqan_core::db::Database;
 use itqan_core::error::{AppError, CommandError};
+use itqan_core::scheduler::Scheduler;
 use itqan_core::settings;
 
 fn changed(app: &AppHandle, task: Task) -> Result<Task, CommandError> {

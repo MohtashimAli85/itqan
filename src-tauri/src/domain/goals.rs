@@ -4,8 +4,8 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 
 use crate::db::goals as repo;
-use crate::domain::profile::Motivator;
 use itqan_core::error::AppError;
+use itqan_core::profile::Motivator;
 
 pub use itqan_contracts::{GoalId, MilestoneId};
 

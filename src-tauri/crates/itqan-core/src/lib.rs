@@ -1,9 +1,15 @@
+pub mod actions;
+pub mod activity;
 pub mod ai;
 pub mod bus;
 pub mod db;
 pub mod error;
 pub mod module;
+pub mod nudges;
 pub mod overlay;
 pub mod ports;
+pub mod profile;
+pub mod recurrence;
+pub mod reminders;
 pub mod scheduler;
 pub mod settings;
