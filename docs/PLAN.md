@@ -11,10 +11,10 @@ This document is the source of truth for the project. Every decision below was m
 These rules apply to every Claude session in this repo.
 
 1. **Go slow and do it properly.** Quality over speed. One small, reviewable step at a time.
-2. **One MR per step.** Each step in section 13 is one branch and one MR. Do not combine steps.
-3. **Never push to `main`.** Work on a branch, commit, and stop. The owner reviews every MR.
-4. **Create the MR with `glab` only when the owner asks.**
-5. **Ask before adding any dependency** not listed in section 9.
+2. **One PR per step.** Each step in section 13 is one branch and one pull request. Do not combine steps.
+3. **Never push to `main`.** Work on a branch, commit, and open a PR. `main` is protected: PR and CI required.
+4. **The agent never merges.** It opens the PR with `gh`, runs an independent review pass (for example `/code-review`), fixes or explains every finding, reports, and stops. The owner merges. (The owner may grant a one-off exception, as for the Phase 2 overnight run on 2026-10-10.)
+5. **Ask before adding any dependency** not listed in section 9. Retroactively approved: `regex`, `iana-time-zone`.
 6. **Ask before any decision this plan does not cover.** Do not guess on architecture.
 7. **Follow the code rules in section 11** and `CLAUDE.md`.
 8. **Keep this plan current.** When a step is done, tick it in section 13 in the same MR. If a decision changes, update this file in the same MR and say so in the MR description.
@@ -57,12 +57,17 @@ First, the owner: a full-time developer whose main motivators are **learning, bu
 8. **Faith-aware, never faith-scored.** Prayer times pause nudges and focus. Worship is never tracked for XP, streaks or leaderboards.
 9. **Light on the machine.** It runs all day, so idle CPU must be near zero.
 10. **Islamic identity lives in behaviour, not decoration.** The visual design is modern. No classical Islamic patterns, lanterns or mosaics.
+11. **Modules never import each other.** They depend only on the core and the contracts crate, and talk through events.
+12. **Everything about the user is learned, not hard-coded:** motivators, life areas, coach tone, rewards, daily rhythm.
+13. **Itqan proposes, the owner approves.** No learned change to the profile, shifts, areas, rewards or rhythm applies without the user accepting it. An optional "auto-approve small timing tweaks" setting may come later.
+14. **Every module works without an AI key**, with a simpler rule-based fallback.
+15. **Code quality is never traded for speed.** The architecture must let modules be added, rewritten or disabled without touching each other.
 
 ---
 
 ## 3. The motivation profile
 
-Built during onboarding, visible and editable at any time, refined by weekly reviews.
+Built during onboarding, visible and editable at any time, refined by weekly reviews. Phase 2 replaces the fixed motivator sliders with learned **beliefs** (section 17, D.1); the existing slider values migrate to beliefs so nobody loses their setup.
 
 | Field | Example (the owner) |
 |---|---|
@@ -152,7 +157,10 @@ Repo, tooling, rules, design system, app skeleton, CI. See section 13.
 - Coach nudge budget and priority rules
 - Outcome logging for every nudge
 
-### Phase 2: Accountability
+### Phase 2: Modules, dynamic profile, shifts and accountability
+Itqan becomes a **platform of modules** connected by one coach (section 16). Each module should eventually be as good as a dedicated app (a salah app, a health app, a to-do app), and all of them feed the same coach, shifts and rewards. Every module starts basic and grows in levels. The profile, areas, rewards and rhythm become learned and change only through proposals the user approves (section 17). Phase 1 code is restructured into modules **before** any new feature work.
+
+The original accountability features are built as modules on top:
 - Focus guardian: front app and window title tracking, user blocklist, time thresholds, then AI judgment of "is this on-task for my goal?"
 - Drift nudges tied to the user's current goal and next task
 - Learning agent: skill roadmaps, project ideas, small quizzes, "watched but did not build" checks
@@ -292,6 +300,23 @@ Rules:
 
 Migrations are versioned and run at startup.
 
+### Data model changes in Phase 2
+New core tables:
+| Table | Holds |
+|---|---|
+| beliefs | see section 17, D.1 |
+| proposals | kind, target, payload, reason, evidence, status, created, decided |
+| signals | module, kind, priority, payload, expires, consumed |
+| shifts | id, name, persona, anchor rules, orb colour, enabled |
+| shift_instances | shift, date, started, ended |
+| day_ledger | date, from shift, to shift, note, source |
+| modules | id, enabled, version |
+
+Changes:
+- `profile` slider weights migrate to `beliefs`.
+- `categories` becomes `tasks_areas` (owned by the tasks module).
+- Existing module tables are renamed with their module prefix during the 2.0 moves, with migrations that keep all user data. Every migration has a test proving existing rows survive.
+
 ---
 
 ## 7. AI layer
@@ -409,7 +434,10 @@ Not used: date-fns (Day.js chosen instead), GSAP, Magic UI, Aceternity, Three.js
 | Commits | Conventional Commits, checked with commitlint |
 | Unit tests | Vitest + Testing Library; `cargo test` |
 | E2E (later) | WebdriverIO + tauri-driver (works on Windows and Linux; macOS WebDriver is not supported) |
-| CI | GitLab CI: install, lint, typecheck, test, fmt, clippy, build check |
+| CI | GitHub Actions (GitLab CI kept in sync): install, lint, typecheck, test, fmt, clippy, build check |
+| Licences and advisories | `cargo-deny` (CI tool, Phase 2) |
+| Coverage | `cargo-llvm-cov` (CI tool, Phase 2), 80% lines on core and module domain code |
+| Frontend import boundaries | `eslint-plugin-boundaries` or dependency-cruiser (Phase 2) |
 | Node | Pinned in `.nvmrc` and `packageManager` field |
 | Rust | Pinned in `rust-toolchain.toml` |
 
@@ -463,6 +491,8 @@ itqan/
 
 Platform-specific Rust lives behind small traits in `platform/` so Windows support can be added without touching domain code.
 
+Phase 2 moves this layout into a Cargo workspace and a module-based frontend. See section 16 (C.2 and C.4).
+
 ---
 
 ## 11. Code rules (also summarised in CLAUDE.md)
@@ -505,15 +535,25 @@ Platform-specific Rust lives behind small traits in `platform/` so Windows suppo
 - AI suggestions always need user confirmation.
 - No telemetry.
 
+### Quality gates (Phase 2, see section 16 C.6)
+- `cargo clippy -- -D warnings` everywhere, plus `clippy::pedantic` in `itqan-core` and `itqan-contracts`.
+- `cargo-deny` for licences, advisories and duplicate dependencies.
+- Coverage of at least 80% lines for core and module domain code; UI excluded.
+- Contract tests: every published event round-trips through serde.
+- Golden tests for algorithms (prayer times, recurrence, streak rules).
+- Import-boundary lint in the frontend fails CI on cross-module imports.
+- Refactor PRs change no behaviour; existing tests pass unchanged, and any test change is explained in the PR.
+- PRs stay small: target under about 400 changed lines, excluding generated files and moves.
+
 ### Git
 - Branches: `feat/…`, `fix/…`, `chore/…`, `docs/…`, `refactor/…`.
 - Conventional Commits, small and focused.
-- One MR per plan step, with the template filled in.
-- Never push to `main`.
+- One PR per plan step, with the template filled in.
+- Never push to `main`, never force-push, never rewrite history.
 
 ---
 
-## 12. CLAUDE.md, skills and MR template
+## 12. CLAUDE.md, skills and PR template
 
 ### CLAUDE.md (draft, keep it short)
 ```
@@ -554,7 +594,7 @@ See docs/PLAN.md sections 11 (code rules) and 6 (architecture).
 ### CodeGraph
 After the app skeleton exists (step 0.5), run `codegraph init -i` so later sessions can explore the code efficiently.
 
-### MR template (`.gitlab/merge_request_templates/Default.md`)
+### PR template (`.github/pull_request_template.md`, mirrored in `.gitlab/merge_request_templates/Default.md`)
 - What and why (link to the plan step)
 - How to test it locally
 - Screenshots or a short recording for UI changes
@@ -562,7 +602,7 @@ After the app skeleton exists (step 0.5), run `codegraph init -i` so later sessi
 
 ---
 
-## 13. Phase 0 steps (each is one MR)
+## 13. Steps (each is one PR)
 
 - [x] **0.1 Project docs.** Add `docs/PLAN.md` (this file), `CLAUDE.md`, `README.md` (short vision and status), `.gitignore`, `.editorconfig`, `LICENSE` (after the owner chooses, see section 14).
 - [x] **0.2 Scaffold.** Tauri 2 + React + TS + Vite with pnpm (`pnpm create tauri-app`). If the CLI refuses a non-empty folder, scaffold in a temp folder and move the files in. App name Itqan, identifier agreed with the owner. App runs with `pnpm tauri dev`.
@@ -588,6 +628,45 @@ After the app skeleton exists (step 0.5), run `codegraph init -i` so later sessi
 - [x] 1.11 AI provider settings, keychain, routing
 - [x] 1.12 Tray, main window screens, settings, autostart, hotkey (sidebar vibrancy moved to 1.13)
 - [x] 1.13 Performance and polish (idle CPU 0.1% in release; orb docks while typing; overlay excluded from screen capture)
+- [ ] 1.14 Fixes from the owner's on-screen testing (the owner fills in the list)
+
+### Phase 2 order
+Each step is one PR unless split further during the work. Every step that introduces a design starts with its ADR.
+
+**2.0 Module architecture (no behaviour change)**
+- [ ] 2.0.1 ADR 0003: module contract, contracts crate, event bus, migrations per module, frontend manifest
+- [ ] 2.0.2 Cargo workspace with `itqan-contracts` and `itqan-core`; move bus, db and settings framework; app still behaves the same
+- [ ] 2.0.3 Frontend `core` / `shared` / `modules` layout, module registry, boundary lint in CI
+- [ ] 2.0.4 Move Salah into `itqan-salah` and `src/modules/salah`
+- [ ] 2.0.5 Move Health
+- [ ] 2.0.6 Move Tasks (with reminders and categories)
+- [ ] 2.0.7 Move Progress (XP, levels, streaks, badges)
+- [ ] 2.0.8 Quality gates: cargo-deny, coverage thresholds, clippy pedantic on core and contracts, contract tests, PR checklist update
+- [ ] 2.0.9 Module enable and disable in Settings
+
+**2.1 Beliefs and proposals**
+- [ ] 2.1.1 ADR 0004: beliefs and proposals
+- [ ] 2.1.2 Beliefs tables and migration from sliders
+- [ ] 2.1.3 Proposals engine and approval UI (panel and main window)
+- [ ] 2.1.4 Conversational onboarding with no-key fallback
+- [ ] 2.1.5 Signal collection and rule-based proposals
+
+**2.2 Shifts**
+- [ ] 2.2.1 ADR 0005: shifts, anchors, day ledger (owner confirmed the five default shifts, see section 14)
+- [ ] 2.2.2 Shift engine and shift events
+- [ ] 2.2.3 Shift personas in the Coach: tone and orb colour per shift
+- [ ] 2.2.4 Day ledger and handoffs
+- [ ] 2.2.5 Panel content by shift
+
+**2.3 to 2.5 Dynamic areas, rewards, rhythm**
+- [ ] 2.3 Dynamic life areas (migration from categories, AI area suggestion)
+- [ ] 2.4 Dynamic rewards (weights from beliefs, diminishing returns)
+- [ ] 2.5 Dynamic rhythm (learned times and lengths as proposals)
+
+**2.6 to 2.8 Original Phase 2 features, built as modules**
+- [ ] 2.6 `focus` module: front-app tracking, blocklist, then AI drift judgment
+- [ ] 2.7 `learning` module: skills, roadmaps, project ideas
+- [ ] 2.8 Weekly review (Reviewer): uses signals, produces proposals
 
 ---
 
@@ -597,8 +676,15 @@ After the app skeleton exists (step 0.5), run `codegraph init -i` so later sessi
 2. ~~**Licence.**~~ **Decided:** MIT. The repo is public.
 3. **Apple Developer account** for signing and notarisation (affects permissions and Gatekeeper warnings for other users).
 4. ~~**App identifier**~~ **Decided:** `dev.itqan.desktop`.
-5. **Repo host for the public release:** GitLab (current) or a GitHub mirror for discoverability.
+5. ~~**Repo host for the public release.**~~ **Decided:** GitHub with `gh` and pull requests.
 6. **Default coach style** for new users.
+
+### Phase 2 decisions (section G of the Phase 2 plan), decided by the owner on 2026-10-10
+1. **Shifts:** use the five defaults (Morning, Work, Break / salah, Evening, Night). Work hours come from the existing work-hours settings.
+2. **Coverage threshold:** 80% lines for core and module logic.
+3. **Health Level 3** (phone data): not in Phase 2; decide later.
+4. **Private Salah prayer log** (Level 3): not in Phase 2; decide later.
+5. **Auto-approve small timing tweaks:** never, for now.
 
 ---
 
@@ -614,3 +700,215 @@ After the app skeleton exists (step 0.5), run `codegraph init -i` so later sessi
 - **Motivation profile:** each user's weighted motivators and context.
 - **Memory:** opt-in local capture of screen text (Phase 3).
 - **BYOK:** bring your own key.
+- **Module:** a feature area (tasks, salah, health, progress, focus, learning, memory) that can be turned off without touching the others.
+- **Signal:** a module's suggestion to the Coach, with priority and expiry.
+- **Belief:** one learned fact about the user, with strength, confidence and evidence.
+- **Proposal:** a learned change that applies only after the user accepts it.
+- **Shift:** a part of the day (Morning, Work, Break / salah, Evening, Night) with its own agent, tone and orb colour.
+- **Day ledger:** short handoff notes one shift leaves for the next.
+
+---
+
+## 16. Module architecture (Phase 2)
+
+### C.1 Core and modules
+
+**Core** (always on):
+- event bus
+- database connection and the migration runner
+- scheduler primitives
+- settings framework
+- profile and beliefs
+- proposals
+- shifts and the Coach (the only voice)
+- AI providers and routing
+- the UI shell (overlay, panel, main window, tray)
+
+**Modules** (each can be turned off):
+| Module | Owns |
+|---|---|
+| `tasks` | tasks, subtasks, reminders, Top 3, life areas |
+| `salah` | prayer times, pause windows, Jumu'ah, Ramadan timings |
+| `health` | habits, health reminders, later weight, steps, sleep |
+| `progress` | XP, levels, streaks, badges, celebrations |
+| `focus` (2.6) | focus sessions, front-app tracking, drift detection |
+| `learning` (2.7) | skills, roadmaps, project ideas |
+| `memory` (Phase 3) | screen text capture and retrieval |
+
+Module-specific agents (for example the health agent) live inside their module and send **signals** to the core. Only the Coach in the core turns signals into words for the user.
+
+### C.2 Rust layout: Cargo workspace
+```
+src-tauri/
+  Cargo.toml                workspace
+  crates/
+    itqan-contracts/        event payloads and shared value types only, no logic
+    itqan-core/             bus, db, migrations runner, settings, profile, beliefs,
+                            proposals, shifts, coach, ai
+    itqan-tasks/
+    itqan-salah/
+    itqan-health/
+    itqan-progress/
+  src/                      the Tauri app crate: wires core and modules, registers commands
+```
+
+Dependency rules, enforced by the compiler:
+- `itqan-contracts` depends on nothing internal.
+- `itqan-core` depends on `itqan-contracts`.
+- Every module depends on `itqan-core` and `itqan-contracts` only. **Never on another module.**
+- The app crate depends on everything and only does wiring.
+
+Adding or changing an event means a PR to `itqan-contracts`, reviewed on its own.
+
+### C.3 The module contract
+Every module implements one `Module` trait in the core. A module provides:
+
+| Part | Rule |
+|---|---|
+| `id` | stable, lowercase, e.g. `salah` |
+| Migrations | its own folder, tables prefixed with the module id (`salah_settings`, `salah_log`); run by the core runner in order |
+| Commands | registered through a `commands()` function so tauri-specta collects them |
+| Published events | types from `itqan-contracts` only |
+| Subscriptions | declared up front; handlers must be fast or spawn work |
+| Signals | suggestions for the Coach, with priority and expiry |
+| Settings | its own typed, validated settings struct with defaults |
+| UI contributions | declared in the frontend manifest (C.4) |
+| Enabled flag | when disabled: no subscriptions, no UI, no signals; data is kept |
+
+The exact trait signature is decided in ADR 0003 (step 2.0.1).
+
+### C.4 Frontend layout
+```
+src/
+  core/                     shell, routing, registry, overlay, panel frame
+  shared/                   ui components, lib (dayjs), hooks, bindings
+  modules/
+    tasks/
+      index.ts              manifest: id, panelTabs, routes, settingsSections,
+                            onboardingSteps, orbHooks
+      api/  components/  pages/  settings/
+    salah/
+    health/
+    progress/
+```
+
+- The shell renders whatever the enabled modules contribute. No module is hard-coded into the shell.
+- Modules import only from `src/core` and `src/shared`. Enforce with `eslint-plugin-boundaries` or dependency-cruiser in CI.
+- Settings are validated with Zod in the UI and again in Rust.
+
+### C.5 Module levels (roadmap)
+| Module | Level 1 (basic) | Level 2 | Level 3 |
+|---|---|---|---|
+| Salah | Times, pauses, Jumu'ah (done) | Adhan sound, Hijri date, Ramadan sehri and iftar | Private prayer log, Quran reading goal |
+| Health | Water, stretch, eye rest, medicine (done) | Manual weight, steps and sleep logs with trend charts | Import from the phone (companion app or Apple Health export) |
+| Tasks | Tasks, reminders, Top 3 (done) | Dynamic areas, avoidance detector | Todos suggested from Memory |
+| Progress | XP, levels, streaks, badges (done) | Weights from beliefs, diminishing returns | Seasonal goals and win definitions |
+| Learning | (none) | Skills, roadmaps, project ideas | Quizzes, "watched versus built" |
+| Focus | (none) | Front-app tracking, blocklist, AI judgment | Energy map, adaptive session length |
+
+Notes:
+- Apple Health does not run on macOS. Phone data needs a companion app, an export import, or a connected service. Decide when Health Level 3 starts.
+- A Salah prayer log is private, for reflection only, and never touches XP, streaks or leaderboards.
+- Every new module or level starts with an ADR before code.
+
+### C.6 Quality gates
+Listed in section 11 under "Quality gates".
+
+---
+
+## 17. Dynamic design (Phase 2)
+
+### D.1 Beliefs instead of sliders
+The profile is a set of **beliefs**. Each belief has:
+
+| Field | Meaning |
+|---|---|
+| statement | in the user's own words where possible, e.g. "Getting good at Rust matters a lot" |
+| kind | motivator, preference, pattern, constraint, goal |
+| strength | low, medium, high |
+| confidence | 0 to 1 |
+| source | said (onboarding or chat), observed (behaviour), confirmed (user accepted a proposal) |
+| evidence | short references to the signals behind it |
+| status | active, proposed, rejected, archived |
+| timestamps | created, last confirmed |
+
+The existing slider values migrate to beliefs with source "said" so nobody loses their setup.
+
+### D.2 Conversational onboarding
+The motivation step becomes a short chat of about five open questions:
+1. What are you trying to get better at this year?
+2. What does a great day look like for you?
+3. What usually pulls you off track?
+4. When do you have the most energy?
+5. How should I talk to you when you're slacking?
+
+- The smart model turns answers into beliefs with structured output. The user sees them as a list and can edit or remove each one before finishing.
+- **No AI key:** fall back to simple choices (pick what matters from a list, choose a coach style). Offer the conversation later once a key is added.
+- Answers can be in English or Roman Urdu. The coach replies in the language style the user writes in.
+
+### D.3 Learning signals
+Itqan observes, without AI where possible:
+- tasks finished, skipped or postponed per area
+- focus sessions completed or abandoned, and their length
+- drift patterns (Phase 2.6)
+- nudge outcomes: accepted, snoozed, dismissed, ignored, by shift and time
+- check-in and standup answers
+- health logs and sleep patterns once Health Level 2 exists
+
+### D.4 Proposals
+Every learned change is a **proposal**: what would change, why (evidence), and the effect. Examples:
+- "Health tasks keep slipping after late nights. Move workouts to the morning?"
+- "You finish 30-minute focus sessions but abandon 50-minute ones. Switch the default to 30?"
+- "You've worked on 'Itqan' every evening this month. Make it its own area?"
+
+Where proposals appear:
+- the weekly review
+- the Evening or Night shift for urgent ones
+- a Proposals list in the main window
+
+Accepting applies the change and marks the belief "confirmed". Rejecting lowers confidence and suppresses that proposal for a while.
+
+### D.5 Shifts: agents by time of day
+Default set of five (confirmed by the owner, see section 14):
+
+| Shift | Default anchor | Agent | Behaviour |
+|---|---|---|---|
+| Morning | After Fajr, or first computer use | Planner | Standup, Top 3, energy check |
+| Work | Work hours | Manager | Focus, drift, deadlines; direct and brief |
+| Break / salah | Prayer windows, lunch | Quiet | Silent except critical reminders; health nudges at most |
+| Evening | After work, or Maghrib | Builder coach | Learning block, side project, workout; energetic |
+| Night | After Isha, or wind-down time | Wind-down | Reflection, plan tomorrow, sleep nudges; soft |
+
+Rules:
+- Boundaries are **anchored to events**, not fixed clock times: salah events, the work schedule, first activity, and learned patterns. They change daily with prayer times.
+- The shift engine publishes `ShiftStarted` and `ShiftEnded` events. Modules and the Coach react.
+- **One voice:** only the current shift's agent speaks, within the Coach's nudge budget and silence rules.
+- Each shift has its own orb colour and tone, so the user can tell who is speaking.
+- **Day ledger:** each shift writes short handoff notes for the next one, e.g. "Committed to 1 hour of Rust tonight." The next shift follows up on real commitments.
+- Shift boundaries and personas can change through proposals.
+
+### D.6 Dynamic life areas
+- No fixed Work, Personal, Health categories. Areas come from onboarding and tasks ("Office", "Itqan", "Rust", "Gym", "Family").
+- The AI suggests an area for each new task. Without AI, use the last-used area or keyword rules.
+- Quiet areas are proposed for archiving.
+- Existing categories migrate to areas one to one.
+
+### D.7 Dynamic coach tone
+Tone = base style (from beliefs) + shift persona + context. Context includes energy, streak status, avoidance of a task, late night, Friday, Ramadan.
+
+### D.8 Dynamic rewards
+- XP weights come from active beliefs and current goals, not fixed numbers.
+- Win definitions can change per month or goal.
+- Diminishing returns for repeating easy tasks, so XP can't be farmed.
+- Faith is never scored.
+
+### D.9 Dynamic rhythm
+Standup and check-in times, focus length and nudge timing are learned from real days and changed through proposals.
+
+### D.10 Candidates for later (not committed)
+- **Energy map:** schedule hard tasks when focus is usually sharpest.
+- **Adaptive difficulty:** break skipped tasks into smaller ones; raise the bar when everything is easy.
+- **Avoidance detector:** a task postponed three times gets "What's actually blocking this?"
+- **Seasons:** Ramadan from the Hijri calendar, crunch weeks, sick days, travel. Itqan asks, then adjusts expectations.
+- **Panel by shift:** Morning shows the plan, Work the next task, Evening the build goal, Night the reflection.
+- **Celebration intensity** learned from reactions.
