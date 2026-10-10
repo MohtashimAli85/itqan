@@ -87,7 +87,7 @@ mod tests {
     use chrono::NaiveDateTime;
 
     use super::*;
-    use crate::prayer::method::{HighLatitudeRule, Madhab, Method};
+    use crate::method::{HighLatitudeRule, Madhab, Method};
 
     fn parse(value: &str) -> DateTime<Utc> {
         NaiveDateTime::parse_from_str(value, "%Y-%m-%dT%H:%M")
@@ -137,7 +137,7 @@ mod tests {
     #[test]
     fn matches_adhan_for_karachi_every_day_of_the_year() {
         check(
-            include_str!("../../tests/fixtures/prayer/karachi.csv"),
+            include_str!("../tests/fixtures/prayer/karachi.csv"),
             Method::Karachi,
             Madhab::Hanafi,
         );
@@ -146,7 +146,7 @@ mod tests {
     #[test]
     fn matches_adhan_for_london() {
         check(
-            include_str!("../../tests/fixtures/prayer/london.csv"),
+            include_str!("../tests/fixtures/prayer/london.csv"),
             Method::MuslimWorldLeague,
             Madhab::Shafi,
         );
@@ -155,7 +155,7 @@ mod tests {
     #[test]
     fn matches_adhan_for_new_york() {
         check(
-            include_str!("../../tests/fixtures/prayer/new-york.csv"),
+            include_str!("../tests/fixtures/prayer/new-york.csv"),
             Method::NorthAmerica,
             Madhab::Shafi,
         );
@@ -164,7 +164,7 @@ mod tests {
     #[test]
     fn matches_adhan_for_makkah() {
         check(
-            include_str!("../../tests/fixtures/prayer/makkah.csv"),
+            include_str!("../tests/fixtures/prayer/makkah.csv"),
             Method::UmmAlQura,
             Madhab::Shafi,
         );
@@ -173,7 +173,7 @@ mod tests {
     #[test]
     fn matches_adhan_for_cairo() {
         check(
-            include_str!("../../tests/fixtures/prayer/cairo.csv"),
+            include_str!("../tests/fixtures/prayer/cairo.csv"),
             Method::Egyptian,
             Madhab::Shafi,
         );
@@ -182,7 +182,7 @@ mod tests {
     #[test]
     fn matches_adhan_for_dubai() {
         check(
-            include_str!("../../tests/fixtures/prayer/dubai.csv"),
+            include_str!("../tests/fixtures/prayer/dubai.csv"),
             Method::Dubai,
             Madhab::Shafi,
         );

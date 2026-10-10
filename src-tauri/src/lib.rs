@@ -4,7 +4,6 @@ mod db;
 mod domain;
 mod overlay;
 mod platform;
-mod prayer;
 mod scheduler;
 mod shortcuts;
 mod tray;
@@ -13,6 +12,11 @@ use tauri::Manager;
 use tauri_specta::{collect_commands, collect_events, Builder};
 
 use itqan_core::db::Database;
+use itqan_core::module::Module;
+use itqan_core::ports::Ports;
+use itqan_core::scheduler::Refresher;
+
+const MODULES: &[&dyn Module] = &[&itqan_salah::SalahModule];
 
 #[cfg(any(debug_assertions, test))]
 const BINDINGS_PATH: &str = "../src/shared/bindings/bindings.ts";
@@ -49,9 +53,9 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::modes::stop_focus,
             commands::modes::get_work_hours,
             commands::modes::set_work_hours,
-            commands::modes::get_prayer_settings,
-            commands::modes::set_prayer_settings,
-            commands::modes::get_prayer_day,
+            itqan_salah::commands::get_prayer_settings,
+            itqan_salah::commands::set_prayer_settings,
+            itqan_salah::commands::get_prayer_day,
             commands::profile::get_profile,
             commands::profile::save_profile,
             commands::profile::is_onboarded,
@@ -145,9 +149,14 @@ pub fn run() {
             builder.mount_events(app);
             let data_dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&data_dir)?;
-            let database = Database::open(&data_dir.join("itqan.db"))?;
+            let database = Database::open(&data_dir.join("itqan.db"), MODULES)?;
             app.manage(database);
             tracing::info!("database ready");
+            app.manage(Ports::default());
+            app.manage(Refresher::new(|app| scheduler::refresh(app).map(|_| ())));
+            for module in MODULES {
+                module.setup(app.handle())?;
+            }
             tray::setup(app)?;
             overlay::setup(app)?;
             overlay::restore_follow_mode(app.handle())?;

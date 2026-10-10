@@ -2,15 +2,15 @@ use rusqlite::{params, Connection};
 
 use itqan_core::db::enums::{column, to_text};
 
-use crate::prayer::method::{HighLatitudeRule, Madhab, Method};
-use crate::prayer::settings::PrayerSettings;
+use crate::method::{HighLatitudeRule, Madhab, Method};
+use crate::settings::PrayerSettings;
 use itqan_core::error::AppError;
 
 pub fn get(connection: &Connection) -> Result<PrayerSettings, AppError> {
     Ok(connection.query_row(
         "SELECT enabled, city, latitude, longitude, method, madhab, high_latitude_rule,
                 pause_before_minutes, pause_after_minutes, jumuah_break
-         FROM prayer_settings WHERE id = 1",
+         FROM salah_settings WHERE id = 1",
         [],
         |row| {
             Ok(PrayerSettings {
@@ -31,7 +31,7 @@ pub fn get(connection: &Connection) -> Result<PrayerSettings, AppError> {
 
 pub fn save(connection: &Connection, settings: &PrayerSettings) -> Result<(), AppError> {
     connection.execute(
-        "UPDATE prayer_settings SET enabled = ?1, city = ?2, latitude = ?3, longitude = ?4,
+        "UPDATE salah_settings SET enabled = ?1, city = ?2, latitude = ?3, longitude = ?4,
                 method = ?5, madhab = ?6, high_latitude_rule = ?7, pause_before_minutes = ?8,
                 pause_after_minutes = ?9, jumuah_break = ?10
          WHERE id = 1",

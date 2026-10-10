@@ -1,7 +1,6 @@
 use chrono::{DateTime, Datelike, Duration, NaiveDate, Utc, Weekday};
 use chrono_tz::Tz;
-use serde::{Deserialize, Serialize};
-use specta::Type;
+pub use itqan_contracts::{Prayer, PrayerWindow};
 
 use super::method::Parameters;
 use super::settings::PrayerSettings;
@@ -10,26 +9,6 @@ use super::times::{self, PrayerTimes};
 
 const JUMUAH_BEFORE_MINUTES: i64 = 30;
 const JUMUAH_AFTER_MINUTES: i64 = 60;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
-#[serde(rename_all = "camelCase")]
-pub enum Prayer {
-    Fajr,
-    Dhuhr,
-    Jumuah,
-    Asr,
-    Maghrib,
-    Isha,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
-#[serde(rename_all = "camelCase")]
-pub struct PrayerWindow {
-    pub prayer: Prayer,
-    pub at: DateTime<Utc>,
-    pub pause_from: DateTime<Utc>,
-    pub pause_until: DateTime<Utc>,
-}
 
 fn coordinates(settings: &PrayerSettings) -> Option<Coordinates> {
     Some(Coordinates {
@@ -124,21 +103,6 @@ pub fn next_prayer(
         .find(|window| window.at > now)
 }
 
-pub fn paused_overlap(
-    windows: &[PrayerWindow],
-    from: DateTime<Utc>,
-    to: DateTime<Utc>,
-) -> Duration {
-    windows
-        .iter()
-        .map(|window| {
-            let start = window.pause_from.max(from);
-            let end = window.pause_until.min(to);
-            (end - start).max(Duration::zero())
-        })
-        .fold(Duration::zero(), |total, overlap| total + overlap)
-}
-
 #[cfg(test)]
 mod tests {
     use chrono::TimeZone;
@@ -205,21 +169,5 @@ mod tests {
         let next = next_prayer(&karachi(), local(10, 23, 0), Tz::Asia__Karachi).unwrap();
         assert_eq!(next.prayer, Prayer::Fajr);
         assert_eq!(next.at.with_timezone(&Tz::Asia__Karachi).day(), 11);
-    }
-
-    #[test]
-    fn paused_overlap_only_counts_the_shared_part() {
-        let window = PrayerWindow {
-            prayer: Prayer::Asr,
-            at: local(10, 16, 5),
-            pause_from: local(10, 16, 0),
-            pause_until: local(10, 16, 25),
-        };
-        let overlap = paused_overlap(&[window], local(10, 15, 50), local(10, 16, 10));
-        assert_eq!(overlap, Duration::minutes(10));
-        assert_eq!(
-            paused_overlap(&[window], local(10, 17, 0), local(10, 18, 0)),
-            Duration::zero()
-        );
     }
 }

@@ -5,10 +5,10 @@ use specta::Type;
 
 use crate::db::focus as repo;
 use crate::domain::tasks::TaskId;
-use crate::prayer::schedule::{self, PrayerWindow};
 use itqan_core::error::AppError;
 
 pub use itqan_contracts::FocusSessionId;
+use itqan_contracts::PrayerWindow;
 
 pub const DEFAULT_MINUTES: u16 = 25;
 const MAX_MINUTES: u16 = 240;
@@ -74,7 +74,7 @@ pub fn finish(
 
 pub fn status(session: FocusSession, now: DateTime<Utc>, windows: &[PrayerWindow]) -> FocusStatus {
     let planned = Duration::minutes(i64::from(session.planned_minutes));
-    let paused = schedule::paused_overlap(windows, session.started_at, now);
+    let paused = paused_overlap(windows, session.started_at, now);
     let elapsed = (now - session.started_at - paused).max(Duration::zero());
     let remaining = (planned - elapsed).max(Duration::zero());
     let paused_for_prayer = windows
@@ -89,13 +89,36 @@ pub fn status(session: FocusSession, now: DateTime<Utc>, windows: &[PrayerWindow
     }
 }
 
+pub fn paused_overlap(
+    windows: &[PrayerWindow],
+    from: DateTime<Utc>,
+    to: DateTime<Utc>,
+) -> Duration {
+    windows
+        .iter()
+        .map(|window| {
+            let start = window.pause_from.max(from);
+            let end = window.pause_until.min(to);
+            (end - start).max(Duration::zero())
+        })
+        .fold(Duration::zero(), |total, overlap| total + overlap)
+}
+
 #[cfg(test)]
 mod tests {
     use chrono::TimeZone;
 
     use super::*;
-    use crate::prayer::schedule::Prayer;
+    use chrono_tz::Tz;
+    use itqan_contracts::Prayer;
     use itqan_core::db::test_connection;
+
+    fn local(day: u32, hour: u32, minute: u32) -> DateTime<Utc> {
+        Tz::Asia__Karachi
+            .with_ymd_and_hms(2026, 10, day, hour, minute, 0)
+            .unwrap()
+            .with_timezone(&Utc)
+    }
 
     fn at(hour: u32, minute: u32) -> DateTime<Utc> {
         Utc.with_ymd_and_hms(2026, 10, 10, hour, minute, 0).unwrap()
@@ -132,5 +155,21 @@ mod tests {
         assert_eq!(after.ends_at, at(10, 50));
 
         assert!(status(session, at(10, 50), &[asr]).is_finished());
+    }
+
+    #[test]
+    fn paused_overlap_only_counts_the_shared_part() {
+        let window = PrayerWindow {
+            prayer: Prayer::Asr,
+            at: local(10, 16, 5),
+            pause_from: local(10, 16, 0),
+            pause_until: local(10, 16, 25),
+        };
+        let overlap = paused_overlap(&[window], local(10, 15, 50), local(10, 16, 10));
+        assert_eq!(overlap, Duration::minutes(10));
+        assert_eq!(
+            paused_overlap(&[window], local(10, 17, 0), local(10, 18, 0)),
+            Duration::zero()
+        );
     }
 }

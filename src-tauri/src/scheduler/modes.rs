@@ -9,14 +9,14 @@ use tauri_specta::Event;
 
 use crate::agents::rewards as rewards_agent;
 use crate::agents::{self, AppEvent};
-use crate::db::prayer as prayer_repo;
 use crate::domain::focus::{self, FocusStatus, DEFAULT_MINUTES};
 use crate::domain::modes::{self, Mode};
 use crate::domain::tasks;
 use crate::overlay::{self, Activity, BubbleAction, BubbleOrigin, OrbState, OverlayStore};
-use crate::prayer::schedule::{self, PrayerWindow};
+use itqan_contracts::PrayerWindow;
 use itqan_core::db::Database;
 use itqan_core::error::AppError;
+use itqan_core::ports::Ports;
 use itqan_core::settings;
 
 const FOCUS_TICK: StdDuration = StdDuration::from_secs(15);
@@ -81,6 +81,7 @@ pub fn current(app: &AppHandle) -> Result<Option<ModeStatus>, AppError> {
 pub fn evaluate(app: &AppHandle) -> Result<(ModeStatus, StdDuration), AppError> {
     let now = Utc::now();
     let database = app.state::<Database>();
+    let ports = app.state::<Ports>();
     let (days, evening_end, rest_until, prayer, timezone, active_focus, today_progress) = database
         .with(|connection| {
             let timezone = settings::timezone(connection)?;
@@ -92,13 +93,17 @@ pub fn evaluate(app: &AppHandle) -> Result<(ModeStatus, StdDuration), AppError> 
                 modes::work_hours(connection)?,
                 modes::evening_end_minute(connection)?,
                 modes::rest_until(connection)?.filter(|until| *until > now),
-                prayer_repo::get(connection)?,
+                (
+                    ports.prayer_windows(connection, now, timezone)?,
+                    ports.next_prayer(connection, now, timezone)?,
+                    ports.active_prayer(connection, now, timezone)?,
+                ),
                 timezone,
                 focus::active(connection)?,
                 today_progress,
             ))
         })?;
-    let windows = schedule::windows_around(&prayer, now, timezone);
+    let (windows, next_prayer, active_prayer) = prayer;
     let mut focus_status = active_focus.map(|session| focus::status(session, now, &windows));
     if let Some(status) = focus_status.as_ref().filter(|status| status.is_finished()) {
         let id = status.session.id;
@@ -167,8 +172,8 @@ pub fn evaluate(app: &AppHandle) -> Result<(ModeStatus, StdDuration), AppError> 
         scheduled_mode,
         rest_until,
         focus: focus_status,
-        next_prayer: schedule::next_prayer(&prayer, now, timezone),
-        active_prayer: schedule::active_window(&prayer, now, timezone),
+        next_prayer,
+        active_prayer,
     };
 
     let previous = state.last.replace(status.clone());
