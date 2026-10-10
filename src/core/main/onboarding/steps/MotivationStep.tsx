@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { useAiStatus } from "@/shared/hooks/useAi";
 import { Button } from "@/shared/components/ui/button";
@@ -24,7 +24,14 @@ export function MotivationStep() {
     useFormContext<OnboardingValues>();
   const { data: ai } = useAiStatus();
   const aiReady = Boolean(ai?.settings.enabled && (ai.hasKey || !ai.needsKey));
-  const [chatting, setChatting] = useState(true);
+  const chat = useWatch({ control, name: "chat" });
+  const chatting = aiReady && chat === "open";
+  const setChat = (next: OnboardingValues["chat"]) =>
+    setValue("chat", next, { shouldValidate: next !== "open" });
+
+  useEffect(() => {
+    if (aiReady && getValues("chat") === "idle") setValue("chat", "open");
+  }, [aiReady, getValues, setValue]);
   const notes = useWatch({ control, name: "beliefNotes" });
   const motivators = useWatch({ control, name: "motivators" });
   const total = Object.values(motivators).reduce(
@@ -41,15 +48,15 @@ export function MotivationStep() {
           it any time.
         </p>
       </div>
-      {aiReady && chatting ? (
+      {chatting ? (
         <ProfileChat
-          onSkip={() => setChatting(false)}
+          onSkip={() => setChat("done")}
           onApply={(drafts) => {
             const next = applyDrafts(getValues(), drafts);
             setValue("motivators", next.motivators, { shouldDirty: true });
             setValue("coachStyle", next.coachStyle, { shouldDirty: true });
             setValue("beliefNotes", next.beliefNotes, { shouldDirty: true });
-            setChatting(false);
+            setChat("done");
           }}
         />
       ) : (
@@ -58,7 +65,7 @@ export function MotivationStep() {
             type="button"
             variant="ghost"
             className="self-start"
-            onClick={() => setChatting(true)}
+            onClick={() => setChat("open")}
           >
             Talk it through with me instead
           </Button>
@@ -70,7 +77,12 @@ export function MotivationStep() {
           {notes.length === 1 ? "thing" : "things"} you told me.
         </p>
       )}
-      {!(aiReady && chatting) && (
+      {formState.errors.motivators && (
+        <p role="alert" className="text-sm text-critical">
+          {formState.errors.motivators.message}
+        </p>
+      )}
+      {!chatting && (
         <>
           <ul className="grid grid-cols-2 gap-x-6 gap-y-4">
             {motivatorOptions.map((option) => {
@@ -100,11 +112,6 @@ export function MotivationStep() {
               );
             })}
           </ul>
-          {formState.errors.motivators && (
-            <p role="alert" className="text-sm text-critical">
-              {formState.errors.motivators.message}
-            </p>
-          )}
 
           <fieldset className="flex flex-col gap-2">
             <legend className="mb-2 text-sm font-medium">Coach style</legend>

@@ -133,3 +133,15 @@ describe("applyDrafts", () => {
     expect(next.coachStyle).toBe(values.coachStyle);
   });
 });
+
+describe("chat state", () => {
+  it("blocks Continue while the questions are open", () => {
+    const values = defaultValues(profile, workDays, prayer, "follow");
+    expect(
+      onboardingSchema.safeParse({ ...values, chat: "open" }).success,
+    ).toBe(false);
+    expect(
+      onboardingSchema.safeParse({ ...values, chat: "done" }).success,
+    ).toBe(true);
+  });
+});

@@ -58,6 +58,11 @@ export const onboardingSchema = z
     madhab: z.enum(["hanafi", "shafi"]),
     followMode: z.enum(["follow", "corner", "hidden"]),
     beliefNotes: z.array(z.custom<DraftBelief>()),
+    chat: z.enum(["idle", "open", "done"]),
+  })
+  .refine((values) => values.chat !== "open", {
+    path: ["motivators"],
+    message: "Finish the questions, or choose Set it myself",
   })
   .refine(
     (values) => Object.values(values.motivators).some((weight) => weight > 0),
@@ -119,6 +124,7 @@ export function defaultValues(
     madhab: prayer.madhab,
     followMode,
     beliefNotes: [],
+    chat: "idle",
   };
 }
 

@@ -63,19 +63,26 @@ export function ProfileChat({ onApply, onSkip }: ProfileChatProps) {
               <span className="w-28 shrink-0 text-xs text-caption">
                 {labels[item.subject.type]}
               </span>
-              <Input
-                aria-label={`Belief ${at + 1}`}
-                value={item.statement}
-                onChange={(event) =>
-                  setDrafts(
-                    drafts.map((other, position) =>
-                      position === at
-                        ? { ...other, statement: event.target.value }
-                        : other,
-                    ),
-                  )
-                }
-              />
+              {item.subject.type === "note" ? (
+                <Input
+                  aria-label={`Belief ${at + 1}`}
+                  value={item.statement}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") event.preventDefault();
+                  }}
+                  onChange={(event) =>
+                    setDrafts(
+                      drafts.map((other, position) =>
+                        position === at
+                          ? { ...other, statement: event.target.value }
+                          : other,
+                      ),
+                    )
+                  }
+                />
+              ) : (
+                <span className="flex-1 text-sm">{item.statement}</span>
+              )}
               <Button
                 type="button"
                 variant="ghost"

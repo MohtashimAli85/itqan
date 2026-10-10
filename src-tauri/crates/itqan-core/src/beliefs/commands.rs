@@ -4,7 +4,6 @@ use chrono::Utc;
 use tauri::{AppHandle, State};
 
 use super::drafts::{self, Answer, DraftBelief};
-use crate::ai::{self, Job};
 use crate::db::Database;
 use crate::error::CommandError;
 
@@ -14,12 +13,7 @@ pub async fn draft_beliefs(
     app: AppHandle,
     answers: Vec<Answer>,
 ) -> Result<Vec<DraftBelief>, CommandError> {
-    let user = drafts::prompt(&answers);
-    if user.is_empty() {
-        return Ok(Vec::new());
-    }
-    let reply = ai::complete(&app, Job::Profiling, drafts::SYSTEM, &user).await?;
-    Ok(drafts::parse(&reply))
+    Ok(drafts::draft(&app, &answers).await?)
 }
 
 #[tauri::command]
