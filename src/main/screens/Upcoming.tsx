@@ -10,7 +10,7 @@ export function Upcoming() {
   return (
     <TaskScreen title="Upcoming" subtitle="The next two weeks">
       {groups.length === 0 ? (
-        <p className="text-caption text-sm">Nothing scheduled yet.</p>
+        <p className="text-sm text-caption">Nothing scheduled yet.</p>
       ) : (
         groups.map((group) => (
           <TaskSection

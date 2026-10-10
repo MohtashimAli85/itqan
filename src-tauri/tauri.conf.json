@@ -33,7 +33,8 @@
         "shadow": false,
         "focus": false,
         "visible": false,
-        "acceptFirstMouse": true
+        "acceptFirstMouse": true,
+        "contentProtected": true
       }
     ],
     "security": {

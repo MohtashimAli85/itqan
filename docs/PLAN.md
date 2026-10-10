@@ -167,6 +167,8 @@ Repo, tooling, rules, design system, app skeleton, CI. See section 13.
 - Learning versus doing analysis
 
 ### Later
+- Hide the orb over full-screen video (needs window-list inspection; moved from Phase 1)
+- Sidebar vibrancy in the main window (`window-vibrancy`; needs on-screen tuning, moved from 1.12)
 - Voice input and spoken replies
 - Windows and Linux polish if Phase 1 was Mac-first
 - Rive character for the orb
@@ -585,7 +587,7 @@ After the app skeleton exists (step 0.5), run `codegraph init -i` so later sessi
 - [x] 1.10 Rewards: XP, levels, streaks, sound, confetti
 - [x] 1.11 AI provider settings, keychain, routing
 - [x] 1.12 Tray, main window screens, settings, autostart, hotkey (sidebar vibrancy moved to 1.13)
-- [ ] 1.13 Performance and polish
+- [x] 1.13 Performance and polish (idle CPU 0.1% in release; orb docks while typing; overlay excluded from screen capture)
 
 ---
 

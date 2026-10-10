@@ -9,15 +9,15 @@ export function NextPrayerCard() {
   const at = dayjs(next.at);
 
   return (
-    <div className="bg-background ring-border flex flex-col gap-0.5 rounded-xl p-3 ring-1">
-      <span className="text-caption text-xs">Next prayer</span>
+    <div className="flex flex-col gap-0.5 rounded-xl bg-background p-3 ring-1 ring-border">
+      <span className="text-xs text-caption">Next prayer</span>
       <span className="font-heading text-base font-semibold">
         {prayerName(next.prayer)}{" "}
         <span className="font-mono text-sm font-normal">
           {at.format("H:mm")}
         </span>
       </span>
-      <span className="text-caption text-xs">{at.fromNow()}</span>
+      <span className="text-xs text-caption">{at.fromNow()}</span>
     </div>
   );
 }

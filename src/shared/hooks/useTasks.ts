@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   commands,
@@ -8,6 +7,7 @@ import {
   type TaskStatus,
 } from "@/shared/bindings/bindings";
 import { unwrap } from "@/shared/lib/result";
+import { useTauriEvent } from "./useTauriEvent";
 
 const tasksKey = ["tasks"] as const;
 
@@ -19,12 +19,9 @@ export const openTasks: TaskFilter = {
 
 export function useTasksSync() {
   const queryClient = useQueryClient();
-  useEffect(() => {
-    const unlisten = events.tasksChanged.listen(() => {
-      void queryClient.invalidateQueries({ queryKey: tasksKey });
-    });
-    return () => void unlisten.then((stop) => stop());
-  }, [queryClient]);
+  useTauriEvent(events.tasksChanged, () => {
+    void queryClient.invalidateQueries({ queryKey: tasksKey });
+  });
 }
 
 export function useTasks(filter: TaskFilter) {

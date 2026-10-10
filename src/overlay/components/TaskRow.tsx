@@ -13,11 +13,11 @@ export function TaskRow({ task, onComplete }: TaskRowProps) {
   const overdue = due?.isBefore(dayjs()) ?? false;
 
   return (
-    <li className="hover:bg-muted flex items-center gap-2.5 rounded-lg px-2 py-1.5">
+    <li className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-muted">
       <Checkbox id={checkboxId} onCheckedChange={() => onComplete(task)} />
       <label
         htmlFor={checkboxId}
-        className="text-foreground min-w-0 flex-1 truncate text-sm"
+        className="min-w-0 flex-1 truncate text-sm text-foreground"
       >
         {task.title}
       </label>
@@ -25,8 +25,8 @@ export function TaskRow({ task, onComplete }: TaskRowProps) {
         <span
           className={
             overdue
-              ? "text-critical font-mono text-xs"
-              : "text-caption font-mono text-xs"
+              ? "font-mono text-xs text-critical"
+              : "font-mono text-xs text-caption"
           }
         >
           {due.format("H:mm")}

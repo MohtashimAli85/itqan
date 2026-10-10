@@ -27,7 +27,7 @@ export function OrbStep() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <h2 className="font-heading text-2xl font-bold">Where should I sit?</h2>
-        <p className="text-text-secondary text-sm">
+        <p className="text-sm text-text-secondary">
           You can switch any time from the menu bar.
         </p>
       </div>
@@ -44,7 +44,7 @@ export function OrbStep() {
               <Label
                 key={placement.id}
                 htmlFor={`orb-${placement.id}`}
-                className="has-data-[state=checked]:border-ink flex cursor-pointer items-center gap-3 rounded-lg border p-4"
+                className="flex cursor-pointer items-center gap-3 rounded-lg border p-4 has-data-[state=checked]:border-ink"
               >
                 <RadioGroupItem
                   id={`orb-${placement.id}`}
@@ -52,7 +52,7 @@ export function OrbStep() {
                 />
                 <span className="flex flex-col gap-0.5">
                   <span>{placement.label}</span>
-                  <span className="text-caption text-xs font-normal">
+                  <span className="text-xs font-normal text-caption">
                     {placement.hint}
                   </span>
                 </span>

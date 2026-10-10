@@ -126,13 +126,13 @@ function Form({ status }: { status: AiStatus }) {
             Save
           </Button>
           {save.isSuccess && (
-            <span role="status" className="text-caption text-sm">
+            <span role="status" className="text-sm text-caption">
               Saved
             </span>
           )}
         </div>
         {save.error && (
-          <p role="alert" className="text-critical text-sm">
+          <p role="alert" className="text-sm text-critical">
             {save.error.message}
           </p>
         )}
@@ -149,12 +149,12 @@ function Form({ status }: { status: AiStatus }) {
           {test.isPending ? "Testing" : "Test connection"}
         </Button>
         {test.isSuccess && (
-          <span role="status" className="text-personal text-sm">
+          <span role="status" className="text-sm text-personal">
             Connected
           </span>
         )}
         {test.error && (
-          <span role="alert" className="text-critical text-sm">
+          <span role="alert" className="text-sm text-critical">
             {test.error.message}
           </span>
         )}

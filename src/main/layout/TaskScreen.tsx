@@ -13,7 +13,7 @@ export function TaskScreen({ title, subtitle, children }: TaskScreenProps) {
       <main className="flex min-w-0 flex-1 flex-col gap-6 overflow-y-auto p-8">
         <header>
           <h1 className="font-heading text-3xl font-bold">{title}</h1>
-          {subtitle && <p className="text-caption text-sm">{subtitle}</p>}
+          {subtitle && <p className="text-sm text-caption">{subtitle}</p>}
         </header>
         {children}
       </main>

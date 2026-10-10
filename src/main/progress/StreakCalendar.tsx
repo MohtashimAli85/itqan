@@ -27,15 +27,15 @@ export function StreakCalendar({ days }: { days: DaySummary[] }) {
                 title={`${dayjs(day.date).format("ddd D MMM")} · ${day.xp} XP`}
                 className={
                   day.active
-                    ? "bg-brand size-7 rounded-md"
-                    : "bg-muted size-7 rounded-md"
+                    ? "size-7 rounded-md bg-brand"
+                    : "size-7 rounded-md bg-muted"
                 }
               />
             ))}
           </div>
         ))}
       </div>
-      <p className="text-caption text-xs">
+      <p className="text-xs text-caption">
         A missed day leaves a gap, never wipes your progress.
       </p>
     </figure>

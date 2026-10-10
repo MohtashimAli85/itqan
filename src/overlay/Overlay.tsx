@@ -8,6 +8,7 @@ import {
 } from "react";
 import { commands, events } from "@/shared/bindings/bindings";
 import { useRewardSync } from "@/shared/hooks/useProgress";
+import { useTauriEvent } from "@/shared/hooks/useTauriEvent";
 import { useTasksSync } from "@/shared/hooks/useTasks";
 import { Bubble } from "./components/Bubble";
 import { CompactPanel } from "./components/CompactPanel";
@@ -66,17 +67,15 @@ export function Overlay() {
       }),
     });
     setFollower(instance);
-    const unlisten = events.overlayCursor.listen((event) =>
-      instance.setCursor(event.payload),
-    );
     const onResize = () => instance.retarget();
     window.addEventListener("resize", onResize);
     return () => {
       instance.stop();
       window.removeEventListener("resize", onResize);
-      void unlisten.then((stop) => stop());
     };
   }, []);
+
+  useTauriEvent(events.overlayCursor, (cursor) => follower?.setCursor(cursor));
 
   const followMode = snapshot?.followMode ?? "follow";
   const mode =

@@ -4,6 +4,8 @@ use tauri_nspanel::{
     tauri_panel, CollectionBehavior, ManagerExt, PanelLevel, StyleMask, WebviewWindowExt,
 };
 
+use std::time::Duration;
+
 use crate::error::AppError;
 
 tauri_panel! {
@@ -51,4 +53,28 @@ pub fn focus_overlay(window: &WebviewWindow, focused: bool) -> Result<(), AppErr
         panel.order_front_regardless();
     }
     Ok(())
+}
+
+const HID_SYSTEM_STATE: i32 = 1;
+const KEY_DOWN: u32 = 10;
+const ANY_INPUT: u32 = u32::MAX;
+
+#[link(name = "CoreGraphics", kind = "framework")]
+extern "C" {
+    fn CGEventSourceSecondsSinceLastEventType(source_state: i32, event_type: u32) -> f64;
+}
+
+fn seconds_since(event_type: u32) -> Option<Duration> {
+    // SAFETY: a pure query of the window server's input clock; it takes plain integers,
+    // touches no memory we own, and needs no permission.
+    let seconds = unsafe { CGEventSourceSecondsSinceLastEventType(HID_SYSTEM_STATE, event_type) };
+    (seconds.is_finite() && seconds >= 0.0).then(|| Duration::from_secs_f64(seconds))
+}
+
+pub fn since_last_input() -> Option<Duration> {
+    seconds_since(ANY_INPUT)
+}
+
+pub fn since_last_key() -> Option<Duration> {
+    seconds_since(KEY_DOWN)
 }

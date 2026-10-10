@@ -16,6 +16,7 @@ use tauri_specta::{collect_commands, collect_events, Builder};
 
 use crate::db::Database;
 
+#[cfg(any(debug_assertions, test))]
 const BINDINGS_PATH: &str = "../src/shared/bindings/bindings.ts";
 
 fn specta_builder() -> Builder<tauri::Wry> {
@@ -106,6 +107,7 @@ fn specta_builder() -> Builder<tauri::Wry> {
         ])
 }
 
+#[cfg(any(debug_assertions, test))]
 fn export_bindings(builder: &Builder<tauri::Wry>) -> Result<(), String> {
     builder
         .export(specta_typescript::Typescript::default(), BINDINGS_PATH)

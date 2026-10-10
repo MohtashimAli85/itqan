@@ -24,7 +24,7 @@ export function ScheduleStep() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <h2 className="font-heading text-2xl font-bold">Your week</h2>
-        <p className="text-text-secondary text-sm">
+        <p className="text-sm text-text-secondary">
           I stay quiet outside these hours, around salah and during family time.
         </p>
       </div>
@@ -65,7 +65,7 @@ export function ScheduleStep() {
           </div>
         ))}
         {formState.errors.workDays && (
-          <p role="alert" className="text-critical text-sm">
+          <p role="alert" className="text-sm text-critical">
             {formState.errors.workDays.message}
           </p>
         )}
@@ -104,7 +104,7 @@ export function ScheduleStep() {
           </div>
         )}
         {formState.errors.familyEnd && (
-          <p role="alert" className="text-critical text-sm">
+          <p role="alert" className="text-sm text-critical">
             {formState.errors.familyEnd.message}
           </p>
         )}

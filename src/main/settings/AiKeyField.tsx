@@ -30,7 +30,7 @@ export function AiKeyField({ status }: { status: AiStatus }) {
 
   if (!status.needsKey) {
     return (
-      <p className="text-caption text-sm">
+      <p className="text-sm text-caption">
         This provider runs on your computer and needs no key.
       </p>
     );
@@ -64,11 +64,11 @@ export function AiKeyField({ status }: { status: AiStatus }) {
           </Button>
         )}
       </div>
-      <p className="text-caption text-xs">
+      <p className="text-xs text-caption">
         Stored only in your system keychain. Itqan never shows it again.
       </p>
       {(save.error ?? remove.error) && (
-        <p role="alert" className="text-critical text-sm">
+        <p role="alert" className="text-sm text-critical">
           {(save.error ?? remove.error)?.message}
         </p>
       )}

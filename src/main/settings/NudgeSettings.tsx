@@ -37,7 +37,7 @@ export function NudgeSettings() {
       <div className="flex flex-col gap-3">
         <div className="flex justify-between text-sm">
           <Label id="budget-label">Most nudges per hour</Label>
-          <span className="text-caption font-mono">{coach.budgetPerHour}</span>
+          <span className="font-mono text-caption">{coach.budgetPerHour}</span>
         </div>
         <Slider
           aria-labelledby="budget-label"

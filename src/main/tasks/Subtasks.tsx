@@ -35,7 +35,7 @@ export function Subtasks({ parent, subtasks }: SubtasksProps) {
 
   return (
     <section aria-labelledby="subtasks" className="flex flex-col gap-2">
-      <h3 id="subtasks" className="text-caption text-xs font-medium">
+      <h3 id="subtasks" className="text-xs font-medium text-caption">
         Subtasks
       </h3>
       <ul className="flex flex-col gap-1">
@@ -55,7 +55,7 @@ export function Subtasks({ parent, subtasks }: SubtasksProps) {
               htmlFor={`subtask-${subtask.id}`}
               className={
                 subtask.status === "done"
-                  ? "text-caption text-sm line-through"
+                  ? "text-sm text-caption line-through"
                   : "text-sm"
               }
             >

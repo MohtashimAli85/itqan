@@ -14,7 +14,7 @@ export function Goals() {
         </header>
         <NewGoalForm />
         {goals.length === 0 ? (
-          <p className="text-caption text-sm">
+          <p className="text-sm text-caption">
             Add a goal and I'll break it into weekly milestones that end in
             something you ship.
           </p>

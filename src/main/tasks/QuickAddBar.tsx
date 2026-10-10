@@ -18,7 +18,7 @@ export function QuickAddBar() {
       <div className="relative">
         <Plus
           aria-hidden
-          className="text-caption pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+          className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-caption"
         />
         <Input
           aria-label="Add a task"
@@ -29,7 +29,7 @@ export function QuickAddBar() {
         />
       </div>
       {quickAdd.data?.notice && (
-        <p role="status" className="text-caption px-1 text-xs">
+        <p role="status" className="px-1 text-xs text-caption">
           {quickAdd.data.notice}
         </p>
       )}

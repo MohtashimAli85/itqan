@@ -50,11 +50,11 @@ export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
       data-hit-area
       role="dialog"
       aria-label="Itqan"
-      className="orb-popover bg-card text-card-foreground ring-border absolute flex w-80 flex-col gap-3 rounded-2xl p-4 shadow-xl ring-1"
+      className="orb-popover absolute flex w-80 flex-col gap-3 rounded-2xl bg-card p-4 text-card-foreground shadow-xl ring-1 ring-border"
     >
       <header>
         <p className="font-heading text-lg font-semibold">{greeting()}</p>
-        <p className="text-caption text-xs">
+        <p className="text-xs text-caption">
           {topThree.length + due.length === 0
             ? "Nothing due today. Add your top 3."
             : `${topThree.length + due.length} left for today`}
@@ -77,7 +77,7 @@ export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
             <section aria-labelledby="panel-top-three">
               <h3
                 id="panel-top-three"
-                className="text-caption mb-1 px-2 text-xs font-medium"
+                className="mb-1 px-2 text-xs font-medium text-caption"
               >
                 Top 3
               </h3>
@@ -93,7 +93,7 @@ export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
             <section aria-labelledby="panel-due">
               <h3
                 id="panel-due"
-                className="text-caption mb-1 px-2 text-xs font-medium"
+                className="mb-1 px-2 text-xs font-medium text-caption"
               >
                 Due today
               </h3>

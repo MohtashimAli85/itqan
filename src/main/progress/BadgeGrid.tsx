@@ -13,14 +13,14 @@ export function BadgeGrid({ badges }: { badges: Badge[] }) {
             key={badge.id}
             className={
               badge.earned
-                ? "bg-card ring-border flex items-start gap-2 rounded-xl p-3 ring-1"
-                : "bg-muted text-caption flex items-start gap-2 rounded-xl p-3"
+                ? "flex items-start gap-2 rounded-xl bg-card p-3 ring-1 ring-border"
+                : "flex items-start gap-2 rounded-xl bg-muted p-3 text-caption"
             }
           >
             {badge.earned ? (
               <Award
                 aria-hidden
-                className="text-amber mt-0.5 size-4 shrink-0"
+                className="mt-0.5 size-4 shrink-0 text-amber"
               />
             ) : (
               <Lock aria-hidden className="mt-0.5 size-4 shrink-0" />
