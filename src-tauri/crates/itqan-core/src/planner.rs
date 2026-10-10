@@ -98,8 +98,9 @@ pub fn rule_plan(request: &PlanRequest) -> PlanProposal {
     let first_week = week_start(request.today);
     let weeks = request
         .target_date
-        .map(|target| (target - first_week).num_days() / 7 + 1)
-        .unwrap_or(DEFAULT_WEEKS)
+        .map_or(DEFAULT_WEEKS, |target| {
+            (target - first_week).num_days() / 7 + 1
+        })
         .clamp(1, MAX_WEEKS);
     let count = weeks.min(MAX_MILESTONES);
     let kind = classify(&request.goal_title);
@@ -210,8 +211,9 @@ pub async fn ai_plan(
     let first_week = week_start(request.today);
     let weeks = request
         .target_date
-        .map(|target| (target - first_week).num_days() / 7 + 1)
-        .unwrap_or(DEFAULT_WEEKS)
+        .map_or(DEFAULT_WEEKS, |target| {
+            (target - first_week).num_days() / 7 + 1
+        })
         .clamp(1, MAX_WEEKS);
     let count = weeks.min(MAX_MILESTONES);
     let redaction = redact::redact(&request.goal_title);

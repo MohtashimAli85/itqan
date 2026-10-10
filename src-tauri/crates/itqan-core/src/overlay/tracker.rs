@@ -129,11 +129,9 @@ impl Tracker {
             self.still_for = Duration::ZERO;
             self.last_cursor = Some(cursor);
             app.state::<Activity>().touch();
-            OverlayCursor {
-                x: x.round() as i32,
-                y: y.round() as i32,
-            }
-            .emit_to(app, OVERLAY_LABEL)?;
+            #[allow(clippy::cast_possible_truncation)]
+            let (x, y) = (x.round() as i32, y.round() as i32);
+            OverlayCursor { x, y }.emit_to(app, OVERLAY_LABEL)?;
         } else {
             self.still_for += elapsed;
         }

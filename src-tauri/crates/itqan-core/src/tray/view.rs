@@ -29,7 +29,7 @@ fn shorten(title: &str) -> String {
     format!("{}…", short.trim_end())
 }
 
-pub fn view(inputs: TrayInputs) -> TrayView {
+pub fn view(inputs: &TrayInputs) -> TrayView {
     let title = match inputs.focus_minutes_left {
         Some(minutes) => Some(format!("{}m", minutes.max(0))),
         None if inputs.tasks_left > 0 => Some(inputs.tasks_left.to_string()),
@@ -62,9 +62,9 @@ mod tests {
 
     #[test]
     fn title_shows_focus_time_then_tasks_left() {
-        assert_eq!(view(inputs()).title, None);
+        assert_eq!(view(&inputs()).title, None);
         assert_eq!(
-            view(TrayInputs {
+            view(&TrayInputs {
                 tasks_left: 3,
                 ..inputs()
             })
@@ -77,7 +77,7 @@ mod tests {
             tasks_left: 3,
             ..inputs()
         };
-        let shown = view(focusing);
+        let shown = view(&focusing);
         assert_eq!(shown.title.as_deref(), Some("12m"));
         assert!(shown.focus_active);
     }
@@ -88,7 +88,7 @@ mod tests {
             next_task: Some("Write the end of year report for the whole engineering team".into()),
             ..inputs()
         };
-        let next = view(long).next_task.unwrap();
+        let next = view(&long).next_task.unwrap();
         assert!(next.chars().count() <= MAX_TASK_LENGTH);
         assert!(next.ends_with('…'));
     }

@@ -27,7 +27,9 @@ pub fn run(connection: &mut Connection) -> Result<(), AppError> {
     for (index, sql) in MIGRATIONS.iter().enumerate().skip(applied) {
         let transaction = connection.transaction()?;
         transaction.execute_batch(sql)?;
-        transaction.pragma_update(None, "user_version", index as i64 + 1)?;
+        let version = i64::try_from(index + 1)
+            .map_err(|_| AppError::InvalidInput("too many migrations".into()))?;
+        transaction.pragma_update(None, "user_version", version)?;
         transaction.commit()?;
     }
     Ok(())

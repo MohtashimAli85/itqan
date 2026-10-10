@@ -54,7 +54,7 @@ pub fn start(app: &AppHandle) {
                 },
                 |(_, pause)| pause,
             );
-            if let Err(error) = bus::publish(&app, AppEvent::Tick) {
+            if let Err(error) = bus::publish(&app, &AppEvent::Tick) {
                 tracing::warn!(%error, "agent tick failed");
             }
             if let Err(error) = coach::tick(&app, Utc::now()) {

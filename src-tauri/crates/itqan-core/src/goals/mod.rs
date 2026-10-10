@@ -86,7 +86,7 @@ pub fn get(connection: &Connection, id: GoalId) -> Result<Goal, AppError> {
 
 pub fn create(
     connection: &Connection,
-    input: GoalInput,
+    input: &GoalInput,
     now: DateTime<Utc>,
 ) -> Result<Goal, AppError> {
     let title = clean_title(&input.title)?;
@@ -94,7 +94,7 @@ pub fn create(
     get(connection, id)
 }
 
-pub fn update(connection: &Connection, id: GoalId, input: GoalInput) -> Result<Goal, AppError> {
+pub fn update(connection: &Connection, id: GoalId, input: &GoalInput) -> Result<Goal, AppError> {
     get(connection, id)?;
     let title = clean_title(&input.title)?;
     repo::update(connection, id, &title, input.motivator, input.target_date)?;
@@ -129,7 +129,7 @@ pub fn milestones(connection: &Connection, goal_id: GoalId) -> Result<Vec<Milest
 pub fn add_milestones(
     connection: &Connection,
     goal_id: GoalId,
-    inputs: Vec<MilestoneInput>,
+    inputs: &[MilestoneInput],
 ) -> Result<Vec<Milestone>, AppError> {
     get(connection, goal_id)?;
     let titles = inputs
@@ -138,7 +138,7 @@ pub fn add_milestones(
         .collect::<Result<Vec<_>, _>>()?;
     let transaction = connection.unchecked_transaction()?;
     let start = repo::next_sort_order(&transaction, goal_id)?;
-    for (offset, (title, input)) in titles.iter().zip(&inputs).enumerate() {
+    for (offset, (title, input)) in titles.iter().zip(inputs).enumerate() {
         let order = start + i32::try_from(offset).unwrap_or(i32::MAX);
         repo::insert_milestone(&transaction, goal_id, title, input.week_start, order)?;
     }
@@ -186,7 +186,7 @@ mod tests {
         let connection = test_connection();
         let goal = create(
             &connection,
-            GoalInput {
+            &GoalInput {
                 title: " Ship Itqan v1 ".into(),
                 motivator: Some(Motivator::Building),
                 target_date: Some(date(12, 31)),
@@ -201,7 +201,7 @@ mod tests {
         assert_eq!(done.completed_at, Some(now()));
         assert!(create(
             &connection,
-            GoalInput {
+            &GoalInput {
                 title: "  ".into(),
                 motivator: None,
                 target_date: None
@@ -216,7 +216,7 @@ mod tests {
         let connection = test_connection();
         let goal = create(
             &connection,
-            GoalInput {
+            &GoalInput {
                 title: "Learn Rust".into(),
                 motivator: None,
                 target_date: None,
@@ -227,7 +227,7 @@ mod tests {
         add_milestones(
             &connection,
             goal.id,
-            vec![
+            &[
                 MilestoneInput {
                     title: "Basics".into(),
                     week_start: date(10, 12),
@@ -242,7 +242,7 @@ mod tests {
         let all = add_milestones(
             &connection,
             goal.id,
-            vec![MilestoneInput {
+            &[MilestoneInput {
                 title: "Ship".into(),
                 week_start: date(10, 26),
             }],

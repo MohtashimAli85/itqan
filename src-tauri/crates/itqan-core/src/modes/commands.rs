@@ -1,3 +1,5 @@
+#![allow(clippy::needless_pass_by_value)]
+
 use chrono::{Duration, Utc};
 use tauri::{AppHandle, State};
 
@@ -64,7 +66,7 @@ pub fn set_work_hours(
     database: State<Database>,
     days: Vec<WorkDay>,
 ) -> Result<Vec<WorkDay>, CommandError> {
-    let days = database.with(|connection| modes::set_work_hours(connection, days))?;
+    let days = database.with(|connection| modes::set_work_hours(connection, &days))?;
     scheduler::refresh(&app)?;
     Ok(days)
 }

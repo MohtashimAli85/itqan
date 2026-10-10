@@ -1,3 +1,5 @@
+#![allow(clippy::needless_pass_by_value)]
+
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 use specta::Type;

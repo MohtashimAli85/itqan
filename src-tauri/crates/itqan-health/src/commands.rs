@@ -46,7 +46,7 @@ pub fn log_habit(
     kind: HabitKind,
 ) -> Result<(), CommandError> {
     database.with(|connection| habits::log(connection, kind, Utc::now()))?;
-    bus::publish(&app, AppEvent::HabitLogged { kind })?;
+    bus::publish(&app, &AppEvent::HabitLogged { kind })?;
     changed(&app, ())
 }
 

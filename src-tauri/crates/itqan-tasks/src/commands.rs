@@ -63,7 +63,7 @@ pub fn set_task_status(
     if status == TaskStatus::Done {
         bus::publish(
             &app,
-            AppEvent::TaskCompleted {
+            &AppEvent::TaskCompleted {
                 task_id: id,
                 kind: task.kind,
                 skill_id: task.skill_id,
