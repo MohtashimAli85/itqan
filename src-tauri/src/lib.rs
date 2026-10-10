@@ -7,7 +7,7 @@ use itqan_core::module::Module;
 use itqan_core::ports::Ports;
 use itqan_core::{overlay, platform, scheduler, shortcuts, tray};
 
-const MODULES: &[&dyn Module] = &[
+static MODULES: &[&dyn Module] = &[
     &itqan_salah::SalahModule,
     &itqan_health::HealthModule,
     &itqan_tasks::TasksModule,
@@ -92,6 +92,8 @@ fn specta_builder() -> Builder<tauri::Wry> {
             itqan_core::system::set_autostart,
             itqan_core::system::get_coach_settings,
             itqan_core::system::set_nudges_paused,
+            itqan_core::module::commands::list_modules,
+            itqan_core::module::commands::set_module_enabled,
         ])
         .events(collect_events![
             overlay::OverlayCursor,
@@ -102,6 +104,7 @@ fn specta_builder() -> Builder<tauri::Wry> {
             itqan_health::HealthChanged,
             itqan_progress::RewardEarned,
             tray::Navigate,
+            itqan_core::module::commands::ModulesChanged,
         ])
 }
 
@@ -150,9 +153,7 @@ pub fn run() {
             tracing::info!("database ready");
             app.manage(Ports::default());
             app.manage(ActionRouter::default());
-            for module in MODULES {
-                module.setup(app.handle())?;
-            }
+            itqan_core::module::start(app.handle(), MODULES)?;
             tray::setup(app)?;
             overlay::setup(app)?;
             overlay::restore_follow_mode(app.handle())?;

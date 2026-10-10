@@ -23,6 +23,8 @@ export type ModuleRoute = {
 
 export type ModuleManifest = {
   id: ModuleId;
+  name: string;
+  description: string;
   routes?: ModuleRoute[];
   sidebarSections?: Contribution[];
   navItems?: Contribution[];

@@ -57,7 +57,7 @@ export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
         <Component key={id} />
       ))}
 
-      <Tabs defaultValue={tabs[0]?.id}>
+      <Tabs key={tabs.map(({ id }) => id).join()} defaultValue={tabs[0]?.id}>
         <TabsList className="w-full">
           {tabs.map(({ id, label }) => (
             <TabsTrigger key={id} value={id}>

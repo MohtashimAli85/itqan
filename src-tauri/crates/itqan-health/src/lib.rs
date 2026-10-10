@@ -46,6 +46,10 @@ impl Module for HealthModule {
         register(&app.state::<Ports>(), &app.state::<ActionRouter>())
     }
 
+    fn teardown(&self, app: &AppHandle) -> Result<(), AppError> {
+        unregister(&app.state::<Ports>(), &app.state::<ActionRouter>())
+    }
+
     fn subscribers(&self) -> Vec<Box<dyn Subscriber>> {
         vec![Box::new(agent::HealthAgent)]
     }
@@ -54,6 +58,11 @@ impl Module for HealthModule {
 fn register(ports: &Ports, actions: &ActionRouter) -> Result<(), AppError> {
     ports.set_reminder_target(ReminderTargetKind::Habit, HabitReminders)?;
     actions.register(agent::HABIT_ACTIONS, agent::HabitActions)
+}
+
+fn unregister(ports: &Ports, actions: &ActionRouter) -> Result<(), AppError> {
+    ports.clear_reminder_target(ReminderTargetKind::Habit)?;
+    actions.unregister(agent::HABIT_ACTIONS)
 }
 
 struct HabitReminders;
@@ -155,5 +164,13 @@ mod tests {
             .unwrap()
             .is_some());
         assert!(actions.handles(agent::HABIT_ACTIONS).unwrap());
+
+        unregister(&ports, &actions).unwrap();
+        assert!(ports
+            .reminder_target(ReminderTargetKind::Habit)
+            .unwrap()
+            .is_none());
+        assert!(!actions.handles(agent::HABIT_ACTIONS).unwrap());
+        register(&ports, &actions).unwrap();
     }
 }

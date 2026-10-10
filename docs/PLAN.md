@@ -647,7 +647,7 @@ Each step is one PR unless split further during the work. Every step that introd
 - [x] 2.0.6 Move Tasks (with categories and quick add; `categories` is renamed `tasks_categories` with the same meaning, and becomes `tasks_areas` in 2.3)
 - [x] 2.0.7 Move Progress (XP, levels, streaks, badges), then move the remaining shell (Coach, mode engine, scheduler, overlay, tray) into core
 - [x] 2.0.8 Quality gates: cargo-deny, coverage thresholds, clippy pedantic on core and contracts, contract tests, PR checklist update
-- [ ] 2.0.9 Module enable and disable in Settings
+- [x] 2.0.9 Module enable and disable in Settings
 
 **2.1 Beliefs and proposals**
 - [ ] 2.1.1 ADR 0004: beliefs and proposals

@@ -35,6 +35,10 @@ impl Module for SalahModule {
     fn setup(&self, app: &AppHandle) -> Result<(), AppError> {
         app.state::<Ports>().set_prayer(Schedule)
     }
+
+    fn teardown(&self, app: &AppHandle) -> Result<(), AppError> {
+        app.state::<Ports>().clear_prayer()
+    }
 }
 
 struct Schedule;
