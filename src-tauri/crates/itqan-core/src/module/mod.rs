@@ -106,6 +106,11 @@ impl Modules {
             .ok_or_else(|| AppError::NotFound(format!("module {id}")))
     }
 
+    pub fn change(&self, id: &str, enabled: bool) -> Result<Option<&'static dyn Module>, AppError> {
+        let module = self.find(id)?;
+        Ok((self.is_enabled(id)? != enabled).then_some(module))
+    }
+
     pub fn set(
         &self,
         connection: &Connection,
@@ -113,10 +118,9 @@ impl Modules {
         enabled: bool,
         now: DateTime<Utc>,
     ) -> Result<Option<&'static dyn Module>, AppError> {
-        let module = self.find(id)?;
-        if self.is_enabled(id)? == enabled {
+        let Some(module) = self.change(id, enabled)? else {
             return Ok(None);
-        }
+        };
         connection.execute(
             "INSERT INTO modules (id, enabled, updated_at) VALUES (?1, ?2, ?3)
              ON CONFLICT (id) DO UPDATE SET enabled = excluded.enabled, updated_at = excluded.updated_at",
@@ -134,28 +138,34 @@ pub fn start(app: &AppHandle, all: &'static [&'static dyn Module]) -> Result<(),
     let modules = app
         .state::<Database>()
         .with(|connection| Modules::load(connection, all))?;
+    app.manage(modules);
+    let modules = app.state::<Modules>();
     for module in all {
         if modules.is_enabled(module.id())? {
             module.setup(app)?;
         }
     }
-    app.manage(modules);
     Ok(())
 }
 
 pub fn set_enabled(app: &AppHandle, id: &str, enabled: bool) -> Result<(), AppError> {
     let modules = app.state::<Modules>();
-    let changed = app
-        .state::<Database>()
-        .with(|connection| modules.set(connection, id, enabled, Utc::now()))?;
-    let Some(module) = changed else {
+    let Some(module) = modules.change(id, enabled)? else {
         return Ok(());
     };
     if enabled {
-        module.setup(app)
+        if let Err(error) = module.setup(app) {
+            if let Err(cleanup) = module.teardown(app) {
+                tracing::warn!(%cleanup, id, "cleanup after a failed module setup failed");
+            }
+            return Err(error);
+        }
     } else {
-        module.teardown(app)
+        module.teardown(app)?;
     }
+    app.state::<Database>()
+        .with(|connection| modules.set(connection, id, enabled, Utc::now()))?;
+    Ok(())
 }
 
 #[cfg(test)]

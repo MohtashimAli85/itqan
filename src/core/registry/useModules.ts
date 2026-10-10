@@ -7,11 +7,13 @@ import type { ModuleId, ModuleManifest } from "./types";
 
 export const modulesKey = ["modules"] as const;
 
+export const modulesQuery = {
+  queryKey: modulesKey,
+  queryFn: async () => unwrap(await commands.listModules()),
+};
+
 export function useModuleStates() {
-  return useQuery({
-    queryKey: modulesKey,
-    queryFn: async () => unwrap(await commands.listModules()),
-  });
+  return useQuery(modulesQuery);
 }
 
 export function useModulesSync() {

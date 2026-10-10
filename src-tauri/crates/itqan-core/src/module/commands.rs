@@ -25,8 +25,11 @@ pub fn set_module_enabled(
     id: String,
     enabled: bool,
 ) -> Result<Vec<ModuleState>, CommandError> {
-    set_enabled(&app, &id, enabled)?;
-    scheduler::refresh(&app)?;
+    let result = set_enabled(&app, &id, enabled);
     ModulesChanged.emit(&app).map_err(AppError::from)?;
+    result?;
+    if let Err(error) = scheduler::refresh(&app) {
+        tracing::warn!(%error, "refresh after a module change failed");
+    }
     Ok(app.state::<Modules>().states()?)
 }

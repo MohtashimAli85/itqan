@@ -1,8 +1,10 @@
 use crate::overlay::FollowMode;
 
 #[derive(Debug, Clone, PartialEq)]
+#[allow(clippy::struct_excessive_bools)]
 pub struct TrayView {
     pub title: Option<String>,
+    pub tasks: bool,
     pub next_task: Option<String>,
     pub focus_active: bool,
     pub paused: bool,
@@ -12,6 +14,7 @@ pub struct TrayView {
 
 pub struct TrayInputs {
     pub focus_minutes_left: Option<i64>,
+    pub tasks: bool,
     pub tasks_left: u32,
     pub next_task: Option<String>,
     pub paused: bool,
@@ -37,6 +40,7 @@ pub fn view(inputs: &TrayInputs) -> TrayView {
     };
     TrayView {
         title,
+        tasks: inputs.tasks,
         next_task: inputs.next_task.as_deref().map(shorten),
         focus_active: inputs.focus_minutes_left.is_some(),
         paused: inputs.paused,
@@ -52,6 +56,7 @@ mod tests {
     fn inputs() -> TrayInputs {
         TrayInputs {
             focus_minutes_left: None,
+            tasks: true,
             tasks_left: 0,
             next_task: None,
             paused: false,
