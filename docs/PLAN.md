@@ -429,17 +429,17 @@ Not used: date-fns (Day.js chosen instead), GSAP, Magic UI, Aceternity, Three.js
 ### Quality tooling
 | Need | Choice |
 |---|---|
-| Lint | ESLint flat config with typescript-eslint, react-hooks, jsx-a11y |
+| Lint | oxlint (`.oxlintrc.json`) with the typescript, react (incl. hooks), jsx-a11y and vitest plugins; replaced ESLint on 2026-10-10 at the owner's request |
 | Format | Prettier + prettier-plugin-tailwindcss |
 | Rust | rustfmt, clippy with warnings as errors |
 | Git hooks | lefthook |
 | Commits | Conventional Commits, checked with commitlint |
 | Unit tests | Vitest + Testing Library; `cargo test` |
 | E2E (later) | WebdriverIO + tauri-driver (works on Windows and Linux; macOS WebDriver is not supported) |
-| CI | GitHub Actions (GitLab CI kept in sync): install, lint, typecheck, test, fmt, clippy, build check |
+| CI | GitHub Actions: install, lint, typecheck, test, fmt, clippy, build check |
 | Licences and advisories | `cargo-deny` (CI tool, Phase 2) |
 | Coverage | `cargo-llvm-cov` (CI tool, Phase 2), 80% lines on core and module domain code |
-| Frontend import boundaries | `eslint-plugin-boundaries` or dependency-cruiser (Phase 2) |
+| Frontend import boundaries | dependency-cruiser (Phase 2; ESLint plugins no longer apply) |
 | Node | Pinned in `.nvmrc` and `packageManager` field |
 | Rust | Pinned in `rust-toolchain.toml` |
 
@@ -599,7 +599,7 @@ See docs/PLAN.md sections 11 (code rules) and 6 (architecture).
 ### CodeGraph
 After the app skeleton exists (step 0.5), run `codegraph init -i` so later sessions can explore the code efficiently.
 
-### PR template (`.github/pull_request_template.md`, mirrored in `.gitlab/merge_request_templates/Default.md`)
+### PR template (`.github/pull_request_template.md`)
 - What and why (link to the plan step)
 - How to test it locally
 - Screenshots or a short recording for UI changes
@@ -611,11 +611,11 @@ After the app skeleton exists (step 0.5), run `codegraph init -i` so later sessi
 
 - [x] **0.1 Project docs.** Add `docs/PLAN.md` (this file), `CLAUDE.md`, `README.md` (short vision and status), `.gitignore`, `.editorconfig`, `LICENSE` (after the owner chooses, see section 14).
 - [x] **0.2 Scaffold.** Tauri 2 + React + TS + Vite with pnpm (`pnpm create tauri-app`). If the CLI refuses a non-empty folder, scaffold in a temp folder and move the files in. App name Itqan, identifier agreed with the owner. App runs with `pnpm tauri dev`.
-- [x] **0.3 Tooling.** TS strict settings, ESLint, Prettier, rustfmt, clippy config, lefthook, commitlint, `.nvmrc`, `packageManager`, `rust-toolchain.toml`, package scripts.
+- [x] **0.3 Tooling.** TS strict settings, ESLint (replaced by oxlint on 2026-10-10), Prettier, rustfmt, clippy config, lefthook, commitlint, `.nvmrc`, `packageManager`, `rust-toolchain.toml`, package scripts.
 - [x] **0.4 Design system.** Tailwind v4, then shadcn with `pnpm dlx shadcn@latest apply --preset b1FSRLMOG` exactly as given (if the CLI reports an unknown command, stop and ask). Add brand tokens from section 5, bundle the three fonts, light and dark themes, a small token preview page in the main window.
 - [x] **0.5 Window structure.** Separate Vite entries for overlay and main; Tauri window config for both; capabilities with least privilege; tray icon with Quit; single-instance plugin. Then run `codegraph init -i`.
 - [x] **0.6 Rust core skeleton.** Module layout from section 10, error type, tracing, SQLite connection with first migration (settings table), tauri-specta bindings generated, one example command used by the main window through TanStack Query. Record the rusqlite vs sqlx choice.
-- [x] **0.7 Tests and CI.** Vitest + Testing Library with one example test, `cargo test` example, `.gitlab-ci.yml` running every check.
+- [x] **0.7 Tests and CI.** Vitest + Testing Library with one example test, `cargo test` example, CI running every check (first `.gitlab-ci.yml`, now GitHub Actions only).
 - [x] **0.8 Contributor docs and skills.** `CONTRIBUTING.md`, `PRIVACY.md`, MR template, skills shortlist approved and installed.
 
 ### Phase 1 order (after Phase 0)
@@ -798,7 +798,7 @@ src/
 ```
 
 - The shell renders whatever the enabled modules contribute. No module is hard-coded into the shell.
-- Modules import only from `src/core` and `src/shared`. Enforce with `eslint-plugin-boundaries` or dependency-cruiser in CI.
+- Modules import only from `src/core` and `src/shared`. To be enforced with dependency-cruiser in CI from step 2.0.3.
 - Settings are validated with Zod in the UI and again in Rust.
 
 ### C.5 Module levels (roadmap)
