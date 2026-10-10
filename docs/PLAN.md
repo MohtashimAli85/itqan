@@ -280,7 +280,7 @@ Rules:
 | profile | motivator weights, situation, optional age, coach style, boundaries |
 | settings | theme, sound, orb placement, size, hotkeys, nudge budget, AI provider config (no keys) |
 | schedules | work hours per day, modes |
-| prayer_settings | city, coordinates, method, Asr school, pause windows, Jumu'ah break |
+| salah_settings (salah module; `prayer_settings` before 2.0.4) | city, coordinates, method, Asr school, pause windows, Jumu'ah break |
 | categories | name, colour, icon, built-in or custom |
 | goals | title, target date, motivator link, status |
 | skills | name, level, XP |
@@ -298,7 +298,7 @@ Rules:
 | memory_chunks (Phase 3) | app, window, channel, text, author flag, captured at, expires at |
 | memory_vectors (Phase 3) | chunk, embedding (sqlite-vec) |
 
-Migrations are versioned and run at startup.
+Migrations are versioned and run at startup: core's numbered series (tracked with `PRAGMA user_version`), then each module's own series, recorded in `schema_migrations` (ADR 0003 section 7).
 
 ### Data model changes in Phase 2
 New core tables:

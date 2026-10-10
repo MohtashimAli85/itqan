@@ -88,8 +88,13 @@ pub fn active_window(
     now: DateTime<Utc>,
     timezone: Tz,
 ) -> Option<PrayerWindow> {
-    windows_around(settings, now, timezone)
-        .into_iter()
+    active_in(&windows_around(settings, now, timezone), now)
+}
+
+pub fn active_in(windows: &[PrayerWindow], now: DateTime<Utc>) -> Option<PrayerWindow> {
+    windows
+        .iter()
+        .copied()
         .find(|window| window.pause_from <= now && now < window.pause_until)
 }
 
@@ -98,9 +103,11 @@ pub fn next_prayer(
     now: DateTime<Utc>,
     timezone: Tz,
 ) -> Option<PrayerWindow> {
-    windows_around(settings, now, timezone)
-        .into_iter()
-        .find(|window| window.at > now)
+    next_in(&windows_around(settings, now, timezone), now)
+}
+
+pub fn next_in(windows: &[PrayerWindow], now: DateTime<Utc>) -> Option<PrayerWindow> {
+    windows.iter().copied().find(|window| window.at > now)
 }
 
 #[cfg(test)]

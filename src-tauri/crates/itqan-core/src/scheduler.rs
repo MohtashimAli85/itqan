@@ -15,6 +15,8 @@ impl Refresher {
 }
 
 pub fn refresh(app: &AppHandle) -> Result<(), AppError> {
-    app.try_state::<Refresher>()
-        .map_or(Ok(()), |refresher| (refresher.0)(app))
+    let refresher = app
+        .try_state::<Refresher>()
+        .ok_or_else(|| AppError::NotFound("scheduler refresher".into()))?;
+    (refresher.0)(app)
 }

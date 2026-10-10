@@ -1,4 +1,4 @@
-use std::sync::OnceLock;
+use std::sync::{Arc, RwLock};
 
 use chrono::{DateTime, Utc};
 use chrono_tz::Tz;
@@ -7,71 +7,57 @@ use rusqlite::Connection;
 
 use crate::error::AppError;
 
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct PrayerSnapshot {
+    pub windows: Vec<PrayerWindow>,
+    pub next: Option<PrayerWindow>,
+    pub active: Option<PrayerWindow>,
+}
+
 pub trait PrayerSchedule: Send + Sync {
-    fn windows_around(
+    fn snapshot(
         &self,
         connection: &Connection,
         now: DateTime<Utc>,
         timezone: Tz,
-    ) -> Result<Vec<PrayerWindow>, AppError>;
-
-    fn next_prayer(
-        &self,
-        connection: &Connection,
-        now: DateTime<Utc>,
-        timezone: Tz,
-    ) -> Result<Option<PrayerWindow>, AppError>;
-
-    fn active_window(
-        &self,
-        connection: &Connection,
-        now: DateTime<Utc>,
-        timezone: Tz,
-    ) -> Result<Option<PrayerWindow>, AppError>;
+    ) -> Result<PrayerSnapshot, AppError>;
 }
 
 #[derive(Default)]
 pub struct Ports {
-    prayer: OnceLock<Box<dyn PrayerSchedule>>,
+    prayer: RwLock<Option<Arc<dyn PrayerSchedule>>>,
 }
 
 impl Ports {
     pub fn set_prayer(&self, schedule: impl PrayerSchedule + 'static) -> Result<(), AppError> {
-        self.prayer
-            .set(Box::new(schedule))
-            .map_err(|_| AppError::InvalidInput("a prayer schedule is already registered".into()))
+        let mut slot = self.prayer.write().map_err(|_| AppError::LockPoisoned)?;
+        if slot.is_some() {
+            return Err(AppError::InvalidInput(
+                "a prayer schedule is already registered".into(),
+            ));
+        }
+        *slot = Some(Arc::new(schedule));
+        Ok(())
     }
 
-    pub fn prayer_windows(
+    pub fn clear_prayer(&self) -> Result<(), AppError> {
+        *self.prayer.write().map_err(|_| AppError::LockPoisoned)? = None;
+        Ok(())
+    }
+
+    pub fn prayer(
         &self,
         connection: &Connection,
         now: DateTime<Utc>,
         timezone: Tz,
-    ) -> Result<Vec<PrayerWindow>, AppError> {
-        self.prayer.get().map_or(Ok(Vec::new()), |schedule| {
-            schedule.windows_around(connection, now, timezone)
-        })
-    }
-
-    pub fn next_prayer(
-        &self,
-        connection: &Connection,
-        now: DateTime<Utc>,
-        timezone: Tz,
-    ) -> Result<Option<PrayerWindow>, AppError> {
-        self.prayer.get().map_or(Ok(None), |schedule| {
-            schedule.next_prayer(connection, now, timezone)
-        })
-    }
-
-    pub fn active_prayer(
-        &self,
-        connection: &Connection,
-        now: DateTime<Utc>,
-        timezone: Tz,
-    ) -> Result<Option<PrayerWindow>, AppError> {
-        self.prayer.get().map_or(Ok(None), |schedule| {
-            schedule.active_window(connection, now, timezone)
+    ) -> Result<PrayerSnapshot, AppError> {
+        let schedule = self
+            .prayer
+            .read()
+            .map_err(|_| AppError::LockPoisoned)?
+            .clone();
+        schedule.map_or(Ok(PrayerSnapshot::default()), |schedule| {
+            schedule.snapshot(connection, now, timezone)
         })
     }
 }
@@ -84,10 +70,10 @@ mod tests {
     use super::*;
     use crate::db::test_connection;
 
-    fn window() -> PrayerWindow {
+    fn window(prayer: Prayer) -> PrayerWindow {
         let at = Utc.with_ymd_and_hms(2026, 10, 10, 11, 0, 0).unwrap();
         PrayerWindow {
-            prayer: Prayer::Asr,
+            prayer,
             at,
             pause_from: at,
             pause_until: at,
@@ -97,58 +83,42 @@ mod tests {
     struct Fixed;
 
     impl PrayerSchedule for Fixed {
-        fn windows_around(
+        fn snapshot(
             &self,
             _: &Connection,
             _: DateTime<Utc>,
             _: Tz,
-        ) -> Result<Vec<PrayerWindow>, AppError> {
-            Ok(vec![window()])
-        }
-
-        fn next_prayer(
-            &self,
-            _: &Connection,
-            _: DateTime<Utc>,
-            _: Tz,
-        ) -> Result<Option<PrayerWindow>, AppError> {
-            Ok(Some(window()))
-        }
-
-        fn active_window(
-            &self,
-            _: &Connection,
-            _: DateTime<Utc>,
-            _: Tz,
-        ) -> Result<Option<PrayerWindow>, AppError> {
-            Ok(None)
+        ) -> Result<PrayerSnapshot, AppError> {
+            Ok(PrayerSnapshot {
+                windows: vec![window(Prayer::Asr), window(Prayer::Maghrib)],
+                next: Some(window(Prayer::Maghrib)),
+                active: Some(window(Prayer::Asr)),
+            })
         }
     }
 
     #[test]
-    fn prayer_answers_are_neutral_until_a_schedule_registers() {
+    fn prayer_answers_are_neutral_without_a_schedule() {
         let connection = test_connection();
         let ports = Ports::default();
-        let now = window().at;
+        let now = window(Prayer::Asr).at;
 
-        assert!(ports
-            .prayer_windows(&connection, now, Tz::UTC)
-            .unwrap()
-            .is_empty());
-        assert!(ports
-            .next_prayer(&connection, now, Tz::UTC)
-            .unwrap()
-            .is_none());
+        assert_eq!(
+            ports.prayer(&connection, now, Tz::UTC).unwrap(),
+            PrayerSnapshot::default()
+        );
 
         ports.set_prayer(Fixed).unwrap();
-        assert_eq!(
-            ports.prayer_windows(&connection, now, Tz::UTC).unwrap(),
-            vec![window()]
-        );
-        assert_eq!(
-            ports.next_prayer(&connection, now, Tz::UTC).unwrap(),
-            Some(window())
-        );
+        let snapshot = ports.prayer(&connection, now, Tz::UTC).unwrap();
+        assert_eq!(snapshot.windows.len(), 2);
+        assert_eq!(snapshot.next, Some(window(Prayer::Maghrib)));
+        assert_eq!(snapshot.active, Some(window(Prayer::Asr)));
         assert!(ports.set_prayer(Fixed).is_err());
+
+        ports.clear_prayer().unwrap();
+        assert_eq!(
+            ports.prayer(&connection, now, Tz::UTC).unwrap(),
+            PrayerSnapshot::default()
+        );
     }
 }

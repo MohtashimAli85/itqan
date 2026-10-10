@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use rusqlite::{params, Connection};
 
 use crate::error::AppError;
@@ -32,22 +34,15 @@ pub fn run(connection: &mut Connection) -> Result<(), AppError> {
 }
 
 pub fn run_modules(connection: &mut Connection, modules: &[&dyn Module]) -> Result<(), AppError> {
+    validate(modules)?;
     for module in modules {
-        let applied: u32 = connection.query_row(
-            "SELECT COALESCE(MAX(version), 0) FROM schema_migrations WHERE module = ?1",
-            [module.id()],
-            |row| row.get(0),
-        )?;
-        let mut previous = 0;
         for migration in module.migrations() {
-            if migration.version <= previous {
-                return Err(AppError::InvalidInput(format!(
-                    "{} migrations must be numbered in increasing order",
-                    module.id()
-                )));
-            }
-            previous = migration.version;
-            if migration.version <= applied {
+            let applied: bool = connection.query_row(
+                "SELECT EXISTS (SELECT 1 FROM schema_migrations WHERE module = ?1 AND version = ?2)",
+                params![module.id(), migration.version],
+                |row| row.get(0),
+            )?;
+            if applied {
                 continue;
             }
             let transaction = connection.transaction()?;
@@ -57,6 +52,32 @@ pub fn run_modules(connection: &mut Connection, modules: &[&dyn Module]) -> Resu
                 params![module.id(), migration.version, migration.name],
             )?;
             transaction.commit()?;
+        }
+    }
+    Ok(())
+}
+
+fn validate(modules: &[&dyn Module]) -> Result<(), AppError> {
+    let mut ids = HashSet::new();
+    for module in modules {
+        if !ids.insert(module.id()) {
+            return Err(AppError::InvalidInput(format!(
+                "module {} is registered twice",
+                module.id()
+            )));
+        }
+        let increasing = module
+            .migrations()
+            .iter()
+            .try_fold(0, |previous, migration| {
+                (migration.version > previous).then_some(migration.version)
+            })
+            .is_some();
+        if !increasing {
+            return Err(AppError::InvalidInput(format!(
+                "{} migrations must be numbered 1, 2, 3, … in increasing order",
+                module.id()
+            )));
         }
     }
     Ok(())
@@ -161,12 +182,61 @@ mod tests {
         );
     }
 
+    fn tables(connection: &Connection) -> i64 {
+        connection
+            .query_row(
+                "SELECT COUNT(*) FROM sqlite_master WHERE name = 'notes_items'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap()
+    }
+
     #[test]
-    fn module_migrations_must_increase() {
-        const OUT_OF_ORDER: &[Migration] = &[NOTES[1], NOTES[0]];
+    fn badly_numbered_migrations_are_rejected_before_anything_runs() {
+        const OUT_OF_ORDER: &[Migration] = &[NOTES[0], NOTES[1], NOTES[0]];
         let mut connection = Connection::open_in_memory().unwrap();
         run(&mut connection).unwrap();
 
-        assert!(run_modules(&mut connection, &[&Notes(OUT_OF_ORDER)]).is_err());
+        let error = run_modules(&mut connection, &[&Notes(OUT_OF_ORDER)]).unwrap_err();
+
+        assert!(error.to_string().contains("increasing order"));
+        assert_eq!(tables(&connection), 0);
+        assert!(recorded(&connection).is_empty());
+    }
+
+    #[test]
+    fn duplicate_module_ids_are_rejected() {
+        let mut connection = Connection::open_in_memory().unwrap();
+        run(&mut connection).unwrap();
+
+        let error = run_modules(&mut connection, &[&Notes(NOTES), &Notes(NOTES)]).unwrap_err();
+
+        assert!(error.to_string().contains("registered twice"));
+        assert_eq!(tables(&connection), 0);
+    }
+
+    #[test]
+    fn a_missing_earlier_version_still_runs() {
+        const LATER_FIRST: &[Migration] = &[Migration {
+            version: 2,
+            name: "notes",
+            sql: "CREATE TABLE notes_items (id INTEGER PRIMARY KEY) STRICT;",
+        }];
+        const EARLIER: &[Migration] = &[
+            Migration {
+                version: 1,
+                name: "notes_tags",
+                sql: "CREATE TABLE notes_tags (id INTEGER PRIMARY KEY) STRICT;",
+            },
+            LATER_FIRST[0],
+        ];
+        let mut connection = Connection::open_in_memory().unwrap();
+        run(&mut connection).unwrap();
+
+        run_modules(&mut connection, &[&Notes(LATER_FIRST)]).unwrap();
+        run_modules(&mut connection, &[&Notes(EARLIER)]).unwrap();
+
+        assert_eq!(recorded(&connection).len(), 2);
     }
 }

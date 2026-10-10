@@ -9,10 +9,9 @@ pub mod times;
 
 use chrono::{DateTime, Utc};
 use chrono_tz::Tz;
-use itqan_contracts::PrayerWindow;
 use itqan_core::error::AppError;
 use itqan_core::module::{Migration, Module};
-use itqan_core::ports::{Ports, PrayerSchedule};
+use itqan_core::ports::{Ports, PrayerSchedule, PrayerSnapshot};
 use rusqlite::Connection;
 use tauri::{AppHandle, Manager};
 
@@ -41,43 +40,18 @@ impl Module for SalahModule {
 struct Schedule;
 
 impl PrayerSchedule for Schedule {
-    fn windows_around(
+    fn snapshot(
         &self,
         connection: &Connection,
         now: DateTime<Utc>,
         timezone: Tz,
-    ) -> Result<Vec<PrayerWindow>, AppError> {
-        Ok(schedule::windows_around(
-            &repo::get(connection)?,
-            now,
-            timezone,
-        ))
-    }
-
-    fn next_prayer(
-        &self,
-        connection: &Connection,
-        now: DateTime<Utc>,
-        timezone: Tz,
-    ) -> Result<Option<PrayerWindow>, AppError> {
-        Ok(schedule::next_prayer(
-            &repo::get(connection)?,
-            now,
-            timezone,
-        ))
-    }
-
-    fn active_window(
-        &self,
-        connection: &Connection,
-        now: DateTime<Utc>,
-        timezone: Tz,
-    ) -> Result<Option<PrayerWindow>, AppError> {
-        Ok(schedule::active_window(
-            &repo::get(connection)?,
-            now,
-            timezone,
-        ))
+    ) -> Result<PrayerSnapshot, AppError> {
+        let windows = schedule::windows_around(&repo::get(connection)?, now, timezone);
+        Ok(PrayerSnapshot {
+            next: schedule::next_in(&windows, now),
+            active: schedule::active_in(&windows, now),
+            windows,
+        })
     }
 }
 

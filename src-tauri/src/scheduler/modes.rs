@@ -93,18 +93,13 @@ pub fn evaluate(app: &AppHandle) -> Result<(ModeStatus, StdDuration), AppError> 
                 modes::work_hours(connection)?,
                 modes::evening_end_minute(connection)?,
                 modes::rest_until(connection)?.filter(|until| *until > now),
-                (
-                    ports.prayer_windows(connection, now, timezone)?,
-                    ports.next_prayer(connection, now, timezone)?,
-                    ports.active_prayer(connection, now, timezone)?,
-                ),
+                ports.prayer(connection, now, timezone)?,
                 timezone,
                 focus::active(connection)?,
                 today_progress,
             ))
         })?;
-    let (windows, next_prayer, active_prayer) = prayer;
-    let mut focus_status = active_focus.map(|session| focus::status(session, now, &windows));
+    let mut focus_status = active_focus.map(|session| focus::status(session, now, &prayer.windows));
     if let Some(status) = focus_status.as_ref().filter(|status| status.is_finished()) {
         let id = status.session.id;
         let minutes = status.session.planned_minutes;
@@ -172,8 +167,8 @@ pub fn evaluate(app: &AppHandle) -> Result<(ModeStatus, StdDuration), AppError> 
         scheduled_mode,
         rest_until,
         focus: focus_status,
-        next_prayer,
-        active_prayer,
+        next_prayer: prayer.next,
+        active_prayer: prayer.active,
     };
 
     let previous = state.last.replace(status.clone());
