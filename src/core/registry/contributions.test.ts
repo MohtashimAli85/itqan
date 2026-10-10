@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { contributions } from "./contributions";
-import type { ModuleManifest, SettingsSection } from "./types";
+import type { Contribution, ModuleManifest } from "./types";
 
-const section = (id: string, order: number): SettingsSection => ({
+const section = (id: string, order: number): Contribution => ({
   id,
   order,
   Component: () => null,
@@ -29,5 +29,15 @@ describe("contributions", () => {
       "health",
       "ai",
     ]);
+  });
+
+  it("rejects duplicate ids", () => {
+    expect(() =>
+      contributions(
+        (manifest) => manifest.settingsSections,
+        [section("health", 30)],
+        [{ id: "health", settingsSections: [section("health", 30)] }],
+      ),
+    ).toThrow(/Duplicate/);
   });
 });

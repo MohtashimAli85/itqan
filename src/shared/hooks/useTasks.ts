@@ -7,6 +7,7 @@ import {
   type TaskStatus,
 } from "@/shared/bindings/bindings";
 import { unwrap } from "@/shared/lib/result";
+import { todayTasks } from "@/shared/lib/today";
 import { useTauriEvent } from "./useTauriEvent";
 
 const tasksKey = ["tasks"] as const;
@@ -29,6 +30,11 @@ export function useTasks(filter: TaskFilter) {
     queryKey: [...tasksKey, filter],
     queryFn: async () => unwrap(await commands.listTasks(filter)),
   });
+}
+
+export function useTodayTasks() {
+  const { data: tasks = [] } = useTasks(openTasks);
+  return todayTasks(tasks);
 }
 
 export function useSetTaskStatus() {

@@ -1,14 +1,12 @@
 import type { Task } from "@/shared/bindings/bindings";
-import { openTasks, useSetTaskStatus, useTasks } from "@/shared/hooks/useTasks";
-import { todayTasks } from "@/shared/lib/today";
+import { useSetTaskStatus, useTodayTasks } from "@/shared/hooks/useTasks";
 import { FocusRow } from "./FocusRow";
 import { QuickAdd } from "./QuickAdd";
 import { TaskRow } from "./TaskRow";
 
 export function TodayTab() {
-  const { data: tasks = [] } = useTasks(openTasks);
   const setStatus = useSetTaskStatus();
-  const { topThree, due } = todayTasks(tasks);
+  const { topThree, due } = useTodayTasks();
 
   const complete = (task: Task) =>
     setStatus.mutate({ id: task.id, status: "done" });

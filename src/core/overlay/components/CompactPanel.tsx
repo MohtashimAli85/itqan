@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
-import { contributions } from "@/core/registry/contributions";
+import { useContributions } from "@/core/registry/contributions";
 import type { PanelTab } from "@/core/registry/types";
-import { openTasks, useTasks } from "@/shared/hooks/useTasks";
-import { greeting, todayTasks } from "@/shared/lib/today";
+import { useTodayTasks } from "@/shared/hooks/useTasks";
+import { greeting } from "@/shared/lib/today";
 import {
   Tabs,
   TabsContent,
@@ -13,10 +13,10 @@ import { HealthTab } from "./HealthTab";
 import { ProgressRow } from "./ProgressRow";
 import { TodayTab } from "./TodayTab";
 
-const tabs = contributions((manifest) => manifest.panelTabs, [
+const coreTabs: PanelTab[] = [
   { id: "today", label: "Today", order: 10, Component: TodayTab },
   { id: "health", label: "Health", order: 20, Component: HealthTab },
-] satisfies PanelTab[]);
+];
 
 type CompactPanelProps = {
   onClose: () => void;
@@ -25,8 +25,8 @@ type CompactPanelProps = {
 
 export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
   const panel = useRef<HTMLDivElement>(null);
-  const { data: tasks = [] } = useTasks(openTasks);
-  const { topThree, due } = todayTasks(tasks);
+  const { topThree, due } = useTodayTasks();
+  const tabs = useContributions((manifest) => manifest.panelTabs, coreTabs);
 
   useEffect(() => {
     const element = panel.current;
@@ -63,7 +63,7 @@ export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
 
       <ProgressRow />
 
-      <Tabs defaultValue="today">
+      <Tabs defaultValue={tabs[0]?.id}>
         <TabsList className="w-full">
           {tabs.map(({ id, label }) => (
             <TabsTrigger key={id} value={id}>

@@ -1,27 +1,19 @@
 import type { ComponentType } from "react";
 
-export type PanelTab = {
-  id: string;
-  label: string;
-  order: number;
-  Component: ComponentType;
-};
+export type ModuleId =
+  "tasks" | "salah" | "health" | "progress" | "focus" | "learning" | "memory";
 
-export type SettingsSection = {
+export type Contribution = {
   id: string;
   order: number;
   Component: ComponentType;
 };
 
-export type SidebarWidget = {
-  id: string;
-  order: number;
-  Component: ComponentType;
-};
+export type PanelTab = Contribution & { label: string };
 
 export type ModuleManifest = {
-  id: string;
+  id: ModuleId;
   panelTabs?: PanelTab[];
-  settingsSections?: SettingsSection[];
-  sidebarWidgets?: SidebarWidget[];
+  settingsSections?: Contribution[];
+  sidebarWidgets?: Contribution[];
 };

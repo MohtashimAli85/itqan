@@ -1,15 +1,27 @@
 import { modules } from "@/modules";
-import type { ModuleManifest } from "./types";
+import type { Contribution, ModuleManifest } from "./types";
 
-type Ordered = { order: number };
-
-export function contributions<T extends Ordered>(
+export function contributions<T extends Contribution>(
   pick: (manifest: ModuleManifest) => T[] | undefined,
-  core: T[] = [],
-  manifests: ModuleManifest[] = modules,
+  core: T[],
+  manifests: ModuleManifest[],
 ): T[] {
-  return [...core, ...manifests.flatMap((manifest) => pick(manifest) ?? [])]
-    .map((item, index) => ({ item, index }))
-    .sort((a, b) => a.item.order - b.item.order || a.index - b.index)
-    .map(({ item }) => item);
+  const merged = [
+    ...core,
+    ...manifests.flatMap((manifest) => pick(manifest) ?? []),
+  ].sort((a, b) => a.order - b.order);
+  const ids = new Set(merged.map((item) => item.id));
+  if (ids.size !== merged.length) {
+    throw new Error(
+      `Duplicate contribution ids: ${merged.map((item) => item.id).join(", ")}`,
+    );
+  }
+  return merged;
+}
+
+export function useContributions<T extends Contribution>(
+  pick: (manifest: ModuleManifest) => T[] | undefined,
+  core: T[],
+): T[] {
+  return contributions(pick, core, modules);
 }

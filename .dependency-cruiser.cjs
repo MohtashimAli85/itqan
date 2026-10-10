@@ -10,6 +10,21 @@ module.exports = {
       to: { path: "^src/modules/", pathNot: "^src/modules/$1/" },
     },
     {
+      name: "modules-use-the-core-surface",
+      comment:
+        "Modules use core only through src/core/registry and src/core/ui, never shell internals.",
+      severity: "error",
+      from: { path: "^src/modules/" },
+      to: { path: "^src/core/", pathNot: "^src/core/(registry|ui)/" },
+    },
+    {
+      name: "no-circular",
+      comment: "Import cycles break module initialisation order.",
+      severity: "error",
+      from: {},
+      to: { circular: true },
+    },
+    {
       name: "core-imports-only-the-registry",
       comment: "Core reaches modules only through src/modules/index.ts.",
       severity: "error",

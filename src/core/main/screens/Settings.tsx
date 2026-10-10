@@ -1,5 +1,5 @@
-import { contributions } from "@/core/registry/contributions";
-import type { SettingsSection } from "@/core/registry/types";
+import { useContributions } from "@/core/registry/contributions";
+import type { Contribution } from "@/core/registry/types";
 import { AiSettingsForm } from "../settings/AiSettingsForm";
 import { HealthSettings } from "../settings/HealthSettings";
 import { NudgeSettings } from "../settings/NudgeSettings";
@@ -19,7 +19,7 @@ function AiSection() {
   );
 }
 
-const coreSections: SettingsSection[] = [
+const coreSections: Contribution[] = [
   { id: "orb", order: 10, Component: OrbSettings },
   { id: "nudges", order: 20, Component: NudgeSettings },
   { id: "health", order: 30, Component: HealthSettings },
@@ -27,12 +27,12 @@ const coreSections: SettingsSection[] = [
   { id: "system", order: 50, Component: SystemSettings },
 ];
 
-const sections = contributions(
-  (manifest) => manifest.settingsSections,
-  coreSections,
-);
-
 export function Settings() {
+  const sections = useContributions(
+    (manifest) => manifest.settingsSections,
+    coreSections,
+  );
+
   return (
     <main className="flex min-w-0 flex-1 flex-col gap-6 overflow-y-auto p-8">
       <h1 className="font-heading text-3xl font-bold">Settings</h1>
