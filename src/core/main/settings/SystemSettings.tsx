@@ -1,25 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { commands } from "@/shared/bindings/bindings";
 import { Label } from "@/shared/components/ui/label";
 import { Switch } from "@/shared/components/ui/switch";
+import { useToggle } from "@/shared/hooks/useToggle";
 import { unwrap } from "@/shared/lib/result";
 import { useAppInfo } from "../hooks/useAppInfo";
 import { Section } from "@/core/ui/Section";
-
-function useToggle(
-  key: string,
-  read: () => Promise<boolean>,
-  write: (value: boolean) => Promise<unknown>,
-) {
-  const queryClient = useQueryClient();
-  const query = useQuery({ queryKey: [key], queryFn: read });
-  const mutation = useMutation({
-    mutationFn: write,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [key] }),
-  });
-  return { value: query.data, set: (value: boolean) => mutation.mutate(value) };
-}
 
 export function SystemSettings() {
   const { data: info } = useAppInfo();

@@ -1,23 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { commands } from "@/shared/bindings/bindings";
 import { Label } from "@/shared/components/ui/label";
 import { Switch } from "@/shared/components/ui/switch";
+import { useToggle } from "@/shared/hooks/useToggle";
 import { unwrap } from "@/shared/lib/result";
 import { Section } from "@/core/ui/Section";
 
-const soundKey = ["reward-sound"] as const;
-
 export function RewardSettings() {
-  const queryClient = useQueryClient();
-  const { data: sound } = useQuery({
-    queryKey: soundKey,
-    queryFn: async () => unwrap(await commands.getRewardSound()),
-  });
-  const setSound = useMutation({
-    mutationFn: async (value: boolean) =>
-      unwrap(await commands.setRewardSound(value)),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: soundKey }),
-  });
+  const sound = useToggle(
+    "reward-sound",
+    async () => unwrap(await commands.getRewardSound()),
+    async (value) => unwrap(await commands.setRewardSound(value)),
+  );
 
   return (
     <Section id="rewards" title="Rewards">
@@ -25,8 +18,8 @@ export function RewardSettings() {
         <Label htmlFor="sound">Reward sounds</Label>
         <Switch
           id="sound"
-          checked={sound ?? true}
-          onCheckedChange={(value) => setSound.mutate(value)}
+          checked={sound.value ?? true}
+          onCheckedChange={sound.set}
         />
       </div>
     </Section>

@@ -163,6 +163,39 @@ mod tests {
     }
 
     #[test]
+    fn done_count_counts_done_tasks_of_one_kind() {
+        let connection = test_connection();
+        let at = Utc.with_ymd_and_hms(2026, 10, 10, 9, 0, 0).unwrap();
+        for (title, kind, done) in [
+            ("Ship it", TaskKind::Output, true),
+            ("Ship more", TaskKind::Output, true),
+            ("Draft", TaskKind::Output, false),
+            ("Read", TaskKind::Learning, true),
+        ] {
+            let task = tasks::create(
+                &connection,
+                tasks::TaskInput {
+                    title: title.into(),
+                    kind,
+                    ..tasks::TaskInput::default()
+                },
+                at,
+            )
+            .unwrap();
+            if done {
+                tasks::set_status(&connection, task.id, tasks::TaskStatus::Done, at).unwrap();
+            }
+        }
+
+        assert_eq!(Stats.done_count(&connection, TaskKind::Output).unwrap(), 2);
+        assert_eq!(
+            Stats.done_count(&connection, TaskKind::Learning).unwrap(),
+            1
+        );
+        assert_eq!(Stats.done_count(&connection, TaskKind::Habit).unwrap(), 0);
+    }
+
+    #[test]
     fn setup_registers_the_task_target_and_stats() {
         let ports = Ports::default();
 

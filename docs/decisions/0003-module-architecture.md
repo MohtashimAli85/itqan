@@ -49,7 +49,7 @@ Rows may reference another owner's rows by id. Existing foreign keys stay, for e
 - `AppEvent`, the in-process bus event enum (today in `agents/mod.rs`);
 - the value types its payloads and the ports (section 5) need: `TaskId`, `TaskKind`, `HabitId`, `HabitKind`, `GoalId`, `MilestoneId`, `FocusSessionId`, `Mode`, `Prayer`, `PrayerWindow`.
 
-`TaskCompleted` gains the task's `kind` so progress can weigh XP without reading the tasks table.
+`TaskCompleted` gains the task's `kind` and `skill_id` (added in 2.0.7: a task's XP also goes to its skill), so progress can award XP without reading the tasks table.
 
 Moving a type between crates keeps its name, so the generated `bindings.ts` stays **byte-identical** through every 2.0 move. CI's bindings diff check proves each move changed no IPC shape.
 
