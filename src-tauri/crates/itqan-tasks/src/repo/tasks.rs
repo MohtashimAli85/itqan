@@ -202,3 +202,11 @@ pub fn delete(connection: &Connection, id: TaskId) -> Result<(), AppError> {
     connection.execute("DELETE FROM tasks WHERE id = ?1", [id])?;
     Ok(())
 }
+
+pub fn count_done(connection: &Connection, kind: TaskKind) -> Result<u32, AppError> {
+    Ok(connection.query_row(
+        "SELECT count(*) FROM tasks WHERE status = 'done' AND kind = ?1",
+        [kind.as_str()],
+        |row| row.get(0),
+    )?)
+}

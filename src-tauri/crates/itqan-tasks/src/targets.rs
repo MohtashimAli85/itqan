@@ -38,10 +38,18 @@ impl ReminderTarget for TaskReminders {
     }
 
     fn complete(&self, app: &AppHandle, id: i32) -> Result<(), AppError> {
-        app.state::<Database>()
+        let task = app
+            .state::<Database>()
             .with(|connection| tasks::set_status(connection, id, TaskStatus::Done, Utc::now()))?;
         TasksChanged.emit(app)?;
-        bus::publish(app, AppEvent::TaskCompleted { task_id: id })
+        bus::publish(
+            app,
+            AppEvent::TaskCompleted {
+                task_id: id,
+                kind: task.kind,
+                skill_id: task.skill_id,
+            },
+        )
     }
 }
 

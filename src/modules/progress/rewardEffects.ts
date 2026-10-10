@@ -1,7 +1,5 @@
 import type { RewardEarned } from "@/shared/bindings/bindings";
 
-const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-
 async function play(name: "xp" | "celebrate") {
   const { Howl } = await import("howler");
   new Howl({ src: [`/sounds/${name}.wav`], volume: 0.5 }).play();
@@ -22,7 +20,10 @@ export function celebrateReward(reward: RewardEarned) {
   if (reward.sound) {
     void play(reward.celebration ? "celebrate" : "xp");
   }
-  if (reward.celebration && !reducedMotion.matches) {
+  if (
+    reward.celebration &&
+    !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
     void confetti();
   }
 }

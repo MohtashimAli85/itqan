@@ -1,0 +1,23 @@
+[package]
+name = "itqan-progress"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+itqan-contracts = { path = "../itqan-contracts" }
+itqan-core = { path = "../itqan-core" }
+tauri.workspace = true
+tauri-specta.workspace = true
+serde.workspace = true
+specta.workspace = true
+chrono.workspace = true
+chrono-tz.workspace = true
+rusqlite.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+itqan-core = { path = "../itqan-core", features = ["test-support"] }
+
+[lints]
+workspace = true

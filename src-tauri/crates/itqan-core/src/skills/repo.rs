@@ -48,3 +48,11 @@ pub fn delete(connection: &Connection, id: SkillId) -> Result<(), AppError> {
     connection.execute("DELETE FROM skills WHERE id = ?1", [id])?;
     Ok(())
 }
+
+pub fn add_xp(connection: &Connection, id: SkillId, amount: u32) -> Result<(), AppError> {
+    connection.execute(
+        "UPDATE skills SET xp = xp + ?2 WHERE id = ?1",
+        params![id, amount],
+    )?;
+    Ok(())
+}

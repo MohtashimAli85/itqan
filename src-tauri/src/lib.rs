@@ -1,8 +1,3 @@
-mod agents;
-mod commands;
-mod db;
-mod domain;
-
 use tauri::Manager;
 use tauri_specta::{collect_commands, collect_events, Builder};
 
@@ -16,6 +11,7 @@ const MODULES: &[&dyn Module] = &[
     &itqan_salah::SalahModule,
     &itqan_health::HealthModule,
     &itqan_tasks::TasksModule,
+    &itqan_progress::ProgressModule,
 ];
 
 #[cfg(any(debug_assertions, test))]
@@ -82,9 +78,9 @@ fn specta_builder() -> Builder<tauri::Wry> {
             itqan_health::commands::set_water_target,
             itqan_health::commands::add_medicine,
             itqan_health::commands::delete_medicine,
-            commands::rewards::get_progress,
-            commands::rewards::get_reward_sound,
-            commands::rewards::set_reward_sound,
+            itqan_progress::commands::get_progress,
+            itqan_progress::commands::get_reward_sound,
+            itqan_progress::commands::set_reward_sound,
             itqan_core::ai::commands::get_ai_status,
             itqan_core::ai::commands::get_ai_preset_defaults,
             itqan_core::ai::commands::save_ai_settings,
@@ -104,7 +100,7 @@ fn specta_builder() -> Builder<tauri::Wry> {
             scheduler::ModeChanged,
             itqan_core::goals::commands::GoalsChanged,
             itqan_health::HealthChanged,
-            agents::rewards::RewardEarned,
+            itqan_progress::RewardEarned,
             tray::Navigate,
         ])
 }
@@ -160,7 +156,7 @@ pub fn run() {
             tray::setup(app)?;
             overlay::setup(app)?;
             overlay::restore_follow_mode(app.handle())?;
-            agents::setup(app, MODULES);
+            itqan_core::coach::setup(app, MODULES);
             scheduler::start(app.handle());
             shortcuts::register(app);
             Ok(())

@@ -1,5 +1,5 @@
 import { Flame } from "lucide-react";
-import { useProgress } from "@/shared/hooks/useProgress";
+import { useProgress } from "../hooks/useProgress";
 
 export function ProgressRow() {
   const { data: progress } = useProgress();

@@ -4,13 +4,16 @@ use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
-use crate::db::rewards as repo;
+use crate::repo;
 use itqan_contracts::TaskId;
+use itqan_contracts::TaskKind;
 use itqan_core::error::AppError;
+use itqan_core::focus;
 use itqan_core::levels::{self, LevelProgress};
+use itqan_core::ports::Ports;
 use itqan_core::profile::{Motivator, Profile};
+use itqan_core::skills;
 use itqan_core::skills::SkillId;
-use itqan_tasks::tasks::TaskKind;
 
 const MAX_FREEZES: u8 = 2;
 const FREEZE_EVERY: u32 = 7;
@@ -182,7 +185,7 @@ pub fn award(
         return Ok(None);
     }
     if let Some(skill_id) = award.skill_id {
-        repo::add_skill_xp(connection, skill_id, award.amount)?;
+        skills::add_xp(connection, skill_id, award.amount)?;
     }
     let mut streak = repo::streak(connection)?;
     if award.source != XpSource::Habit {
@@ -209,10 +212,14 @@ fn badge(id: BadgeId, title: &str, description: &str, earned: bool) -> Badge {
     }
 }
 
-pub fn badges(connection: &Connection, streak: &Streak) -> Result<Vec<Badge>, AppError> {
-    let ships = repo::count_done_tasks(connection, TaskKind::Output)?;
-    let learning = repo::count_done_tasks(connection, TaskKind::Learning)?;
-    let focus = repo::count_completed_focus(connection)?;
+pub fn badges(
+    connection: &Connection,
+    ports: &Ports,
+    streak: &Streak,
+) -> Result<Vec<Badge>, AppError> {
+    let ships = ports.tasks_done_count(connection, TaskKind::Output)?;
+    let learning = ports.tasks_done_count(connection, TaskKind::Learning)?;
+    let focus = focus::completed_count(connection)?;
     Ok(vec![
         badge(
             BadgeId::FirstShip,
@@ -261,6 +268,7 @@ pub fn badges(connection: &Connection, streak: &Streak) -> Result<Vec<Badge>, Ap
 
 pub fn summary(
     connection: &Connection,
+    ports: &Ports,
     now: DateTime<Utc>,
     timezone: Tz,
     days: u32,
@@ -288,7 +296,7 @@ pub fn summary(
             day.active |= source != XpSource::Habit;
         });
     }
-    for (at, minutes) in repo::focus_since(connection, since)? {
+    for (at, minutes) in focus::completed_since(connection, since)? {
         add(at, &|day| day.focus_minutes += u32::from(minutes));
     }
     let total_xp = repo::total_xp(connection)?;
@@ -297,7 +305,7 @@ pub fn summary(
         total_xp,
         level: levels::progress(total_xp),
         today_xp: summaries.last().map_or(0, |day| day.xp),
-        badges: badges(connection, &streak)?,
+        badges: badges(connection, ports, &streak)?,
         streak,
         days: summaries,
     })
@@ -308,7 +316,7 @@ mod tests {
     use chrono::{Datelike, TimeZone, Weekday};
 
     use super::*;
-    use itqan_core::db::test_connection;
+    use crate::test_connection;
     use itqan_core::profile::MotivatorWeight;
 
     fn date(day: u32) -> NaiveDate {
@@ -409,11 +417,79 @@ mod tests {
         assert_eq!(streak.freezes, MAX_FREEZES);
     }
 
+    struct DoneCounts;
+
+    impl itqan_core::ports::TaskStats for DoneCounts {
+        fn today_counts(
+            &self,
+            _: &Connection,
+            _: DateTime<Utc>,
+            _: DateTime<Utc>,
+        ) -> Result<itqan_core::ports::TodayCounts, AppError> {
+            Ok(itqan_core::ports::TodayCounts::default())
+        }
+
+        fn next_for_today(
+            &self,
+            _: &Connection,
+            _: DateTime<Utc>,
+        ) -> Result<Option<String>, AppError> {
+            Ok(None)
+        }
+
+        fn completed_between(
+            &self,
+            _: &Connection,
+            _: DateTime<Utc>,
+            _: DateTime<Utc>,
+        ) -> Result<u32, AppError> {
+            Ok(0)
+        }
+
+        fn done_count(&self, _: &Connection, kind: TaskKind) -> Result<u32, AppError> {
+            Ok(match kind {
+                TaskKind::Output => 10,
+                TaskKind::Learning => 4,
+                _ => 0,
+            })
+        }
+    }
+
+    #[test]
+    fn badges_count_done_tasks_through_the_port_and_completed_focus() {
+        let connection = test_connection();
+        let now = Utc.with_ymd_and_hms(2026, 10, 10, 9, 0, 0).unwrap();
+        let session = focus::start(&connection, 25, None, now).unwrap();
+        focus::finish(&connection, session.id, now + Duration::minutes(25), true).unwrap();
+        let abandoned = focus::start(&connection, 50, None, now + Duration::hours(1)).unwrap();
+        focus::finish(&connection, abandoned.id, now + Duration::hours(2), false).unwrap();
+        let earned = |ports: &Ports| -> Vec<BadgeId> {
+            badges(&connection, ports, &Streak::default())
+                .unwrap()
+                .into_iter()
+                .filter(|badge| badge.earned)
+                .map(|badge| badge.id)
+                .collect()
+        };
+
+        assert_eq!(earned(&Ports::default()), vec![BadgeId::FirstFocus]);
+
+        let ports = Ports::default();
+        ports.set_task_stats(DoneCounts).unwrap();
+        assert_eq!(
+            earned(&ports),
+            vec![BadgeId::FirstShip, BadgeId::TenShips, BadgeId::FirstFocus]
+        );
+
+        let progress = summary(&connection, &ports, now + Duration::hours(3), Tz::UTC, 7).unwrap();
+        assert_eq!(progress.days.last().unwrap().focus_minutes, 25);
+    }
+
     #[test]
     fn awards_count_once_feed_skills_and_level_up() {
         let connection = test_connection();
         let now = Utc.with_ymd_and_hms(2026, 10, 10, 9, 0, 0).unwrap();
-        let skill = itqan_core::skills::create(&connection, "Rust", now).unwrap();
+        let skill = skills::create(&connection, "Rust", now).unwrap();
         let first = Award {
             source: XpSource::Goal,
             amount: GOAL_XP,
@@ -432,7 +508,7 @@ mod tests {
             .unwrap()
             .is_none());
 
-        let skills = itqan_core::skills::list(&connection).unwrap();
+        let skills = skills::list(&connection).unwrap();
         assert_eq!(skills[0].xp, 100);
 
         let water = Award {
@@ -449,7 +525,7 @@ mod tests {
             .unwrap()
             .is_some());
 
-        let progress = summary(&connection, now, Tz::UTC, 7).unwrap();
+        let progress = summary(&connection, &Ports::default(), now, Tz::UTC, 7).unwrap();
         assert_eq!(progress.total_xp, 106);
         assert_eq!(progress.today_xp, 106);
         assert!(progress.days.last().unwrap().active);

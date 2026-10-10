@@ -43,6 +43,10 @@ pub fn delete(connection: &Connection, id: SkillId) -> Result<(), AppError> {
     repo::delete(connection, id)
 }
 
+pub fn add_xp(connection: &Connection, id: SkillId, amount: u32) -> Result<(), AppError> {
+    repo::add_xp(connection, id, amount)
+}
+
 pub fn with_level(id: SkillId, name: String, xp: u32) -> Skill {
     Skill {
         id,

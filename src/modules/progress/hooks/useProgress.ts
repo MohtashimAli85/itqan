@@ -5,7 +5,7 @@ import {
   type RewardEarned,
 } from "@/shared/bindings/bindings";
 import { unwrap } from "@/shared/lib/result";
-import { useTauriEvent } from "./useTauriEvent";
+import { useTauriEvent } from "@/shared/hooks/useTauriEvent";
 
 const progressKey = ["progress"] as const;
 

@@ -49,6 +49,7 @@ itqan-core = { path = "crates/itqan-core" }
 itqan-salah = { path = "crates/itqan-salah" }
 itqan-health = { path = "crates/itqan-health" }
 itqan-tasks = { path = "crates/itqan-tasks" }
+itqan-progress = { path = "crates/itqan-progress" }
 tauri = { workspace = true, features = ["tray-icon", "macos-private-api"] }
 serde.workspace = true
 serde_json.workspace = true

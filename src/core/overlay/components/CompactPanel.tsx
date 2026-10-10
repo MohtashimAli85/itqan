@@ -7,7 +7,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/shared/components/ui/tabs";
-import { ProgressRow } from "./ProgressRow";
 
 type CompactPanelProps = {
   onClose: () => void;
@@ -21,6 +20,7 @@ export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
     (manifest) => manifest.panelHeaderLines,
     [],
   );
+  const rows = useContributions((manifest) => manifest.panelRows, []);
 
   useEffect(() => {
     const element = panel.current;
@@ -53,7 +53,9 @@ export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
         ))}
       </header>
 
-      <ProgressRow />
+      {rows.map(({ id, Component }) => (
+        <Component key={id} />
+      ))}
 
       <Tabs defaultValue={tabs[0]?.id}>
         <TabsList className="w-full">

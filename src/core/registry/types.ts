@@ -12,6 +12,10 @@ export type Contribution = {
 
 export type PanelTab = Contribution & { label: string };
 
+export type Surface = "main" | "overlay";
+
+export type Listener = Contribution & { surface?: Surface };
+
 export type ModuleRoute = {
   path: string;
   Component: RouteComponent;
@@ -21,9 +25,11 @@ export type ModuleManifest = {
   id: ModuleId;
   routes?: ModuleRoute[];
   sidebarSections?: Contribution[];
+  navItems?: Contribution[];
   sidebarWidgets?: Contribution[];
   panelHeaderLines?: Contribution[];
+  panelRows?: Contribution[];
   panelTabs?: PanelTab[];
   settingsSections?: Contribution[];
-  listeners?: Contribution[];
+  listeners?: Listener[];
 };

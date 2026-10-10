@@ -18,6 +18,37 @@ pub enum Mode {
     Focus,
 }
 
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub enum TaskKind {
+    #[default]
+    Output,
+    Learning,
+    DeepWork,
+    Habit,
+}
+
+impl TaskKind {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Output => "output",
+            Self::Learning => "learning",
+            Self::DeepWork => "deepWork",
+            Self::Habit => "habit",
+        }
+    }
+
+    pub fn parse(value: &str) -> Option<Self> {
+        match value {
+            "output" => Some(Self::Output),
+            "learning" => Some(Self::Learning),
+            "deepWork" => Some(Self::DeepWork),
+            "habit" => Some(Self::Habit),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub enum HabitKind {
@@ -52,6 +83,8 @@ pub enum AppEvent {
     Tick,
     TaskCompleted {
         task_id: TaskId,
+        kind: TaskKind,
+        skill_id: Option<SkillId>,
     },
     FocusCompleted {
         session_id: FocusSessionId,
@@ -79,7 +112,11 @@ mod tests {
     fn samples() -> Vec<AppEvent> {
         vec![
             AppEvent::Tick,
-            AppEvent::TaskCompleted { task_id: 7 },
+            AppEvent::TaskCompleted {
+                task_id: 7,
+                kind: TaskKind::Learning,
+                skill_id: Some(2),
+            },
             AppEvent::FocusCompleted {
                 session_id: 3,
                 minutes: 25,

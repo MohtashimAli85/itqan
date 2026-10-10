@@ -6,6 +6,7 @@ pub mod targets;
 pub mod tasks;
 
 use chrono::{DateTime, Utc};
+use itqan_contracts::TaskKind;
 use itqan_core::error::AppError;
 use itqan_core::module::{Migration, Module};
 use itqan_core::ports::{Ports, TaskStats, TodayCounts};
@@ -72,6 +73,10 @@ impl TaskStats for Stats {
         to: DateTime<Utc>,
     ) -> Result<u32, AppError> {
         tasks::completed_between(connection, from, to)
+    }
+
+    fn done_count(&self, connection: &Connection, kind: TaskKind) -> Result<u32, AppError> {
+        tasks::done_count(connection, kind)
     }
 }
 
@@ -155,6 +160,39 @@ mod tests {
             )
             .unwrap();
         assert_eq!(old, 0);
+    }
+
+    #[test]
+    fn done_count_counts_done_tasks_of_one_kind() {
+        let connection = test_connection();
+        let at = Utc.with_ymd_and_hms(2026, 10, 10, 9, 0, 0).unwrap();
+        for (title, kind, done) in [
+            ("Ship it", TaskKind::Output, true),
+            ("Ship more", TaskKind::Output, true),
+            ("Draft", TaskKind::Output, false),
+            ("Read", TaskKind::Learning, true),
+        ] {
+            let task = tasks::create(
+                &connection,
+                tasks::TaskInput {
+                    title: title.into(),
+                    kind,
+                    ..tasks::TaskInput::default()
+                },
+                at,
+            )
+            .unwrap();
+            if done {
+                tasks::set_status(&connection, task.id, tasks::TaskStatus::Done, at).unwrap();
+            }
+        }
+
+        assert_eq!(Stats.done_count(&connection, TaskKind::Output).unwrap(), 2);
+        assert_eq!(
+            Stats.done_count(&connection, TaskKind::Learning).unwrap(),
+            1
+        );
+        assert_eq!(Stats.done_count(&connection, TaskKind::Habit).unwrap(), 0);
     }
 
     #[test]
