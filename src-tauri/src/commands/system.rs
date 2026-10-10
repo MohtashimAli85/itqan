@@ -5,9 +5,9 @@ use tauri::{AppHandle, State};
 use tauri_plugin_autostart::ManagerExt;
 
 use crate::agents::coach;
-use crate::db::Database;
-use crate::error::{AppError, CommandError};
 use crate::tray;
+use itqan_core::db::Database;
+use itqan_core::error::{AppError, CommandError};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]

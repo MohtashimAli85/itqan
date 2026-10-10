@@ -2,10 +2,10 @@ use chrono::Utc;
 use tauri::State;
 
 use crate::agents::rewards;
-use crate::db::Database;
 use crate::domain::rewards::{self as progress, ProgressSummary};
-use crate::domain::settings;
-use crate::error::CommandError;
+use itqan_core::db::Database;
+use itqan_core::error::CommandError;
+use itqan_core::settings;
 
 const PROGRESS_DAYS: u32 = 35;
 

@@ -8,7 +8,7 @@ use crate::db::reminders as repo;
 use crate::domain::health::HabitId;
 use crate::domain::recurrence;
 use crate::domain::tasks::TaskId;
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 pub type ReminderId = i32;
 
@@ -182,7 +182,7 @@ mod tests {
     use chrono::TimeZone;
 
     use super::*;
-    use crate::db::test_connection;
+    use itqan_core::db::test_connection;
 
     fn at(hour: u32, minute: u32) -> DateTime<Utc> {
         Utc.with_ymd_and_hms(2026, 10, 10, hour, minute, 0).unwrap()

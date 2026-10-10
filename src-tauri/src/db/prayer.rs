@@ -1,10 +1,10 @@
 use rusqlite::{params, Connection};
 
-use super::enums::{column, to_text};
+use itqan_core::db::enums::{column, to_text};
 
-use crate::error::AppError;
 use crate::prayer::method::{HighLatitudeRule, Madhab, Method};
 use crate::prayer::settings::PrayerSettings;
+use itqan_core::error::AppError;
 
 pub fn get(connection: &Connection) -> Result<PrayerSettings, AppError> {
     Ok(connection.query_row(

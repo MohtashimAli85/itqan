@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use rusqlite::{params, Connection, OptionalExtension, Row};
 
 use crate::domain::skills::{with_level, Skill, SkillId};
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 fn skill(row: &Row) -> rusqlite::Result<Skill> {
     Ok(with_level(row.get(0)?, row.get(1)?, row.get(2)?))

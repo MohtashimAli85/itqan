@@ -4,23 +4,18 @@ use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
-use crate::db::{health as repo, settings as settings_repo};
+use crate::db::health as repo;
+
 use crate::domain::reminders::{self, Reminder, ReminderInput};
-use crate::error::AppError;
+use itqan_core::db::settings as settings_repo;
+use itqan_core::error::AppError;
+
+pub use itqan_contracts::HabitKind;
 
 pub type HabitId = i32;
 
 const ENABLED: &str = "health_enabled";
 const MAX_WATER_TARGET: u16 = 20;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
-#[serde(rename_all = "camelCase")]
-pub enum HabitKind {
-    Stretch,
-    EyeRest,
-    Water,
-    Medicine,
-}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
@@ -239,7 +234,7 @@ mod tests {
     use chrono::TimeZone;
 
     use super::*;
-    use crate::db::test_connection;
+    use itqan_core::db::test_connection;
 
     fn now() -> DateTime<Utc> {
         Utc.with_ymd_and_hms(2026, 10, 10, 6, 0, 0).unwrap()

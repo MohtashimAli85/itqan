@@ -1,10 +1,10 @@
 use chrono::{DateTime, NaiveDate, Utc};
 use rusqlite::{params, Connection, OptionalExtension, Row};
 
-use super::enums::{column, optional_column, to_text};
 use crate::domain::goals::{Goal, GoalId, GoalStatus, Milestone, MilestoneId, MilestoneStatus};
 use crate::domain::profile::Motivator;
-use crate::error::AppError;
+use itqan_core::db::enums::{column, optional_column, to_text};
+use itqan_core::error::AppError;
 
 const GOAL_COLUMNS: &str = "id, title, motivator, target_date, status, created_at, completed_at";
 const MILESTONE_COLUMNS: &str = "id, goal_id, title, week_start, status, completed_at";

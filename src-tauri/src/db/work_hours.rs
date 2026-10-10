@@ -1,7 +1,7 @@
 use rusqlite::{params, Connection};
 
 use crate::domain::modes::WorkDay;
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 pub fn list(connection: &Connection) -> Result<Vec<WorkDay>, AppError> {
     let mut statement = connection.prepare(

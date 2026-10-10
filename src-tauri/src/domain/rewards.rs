@@ -9,7 +9,7 @@ use crate::domain::levels::{self, LevelProgress};
 use crate::domain::profile::{Motivator, Profile};
 use crate::domain::skills::SkillId;
 use crate::domain::tasks::{TaskId, TaskKind};
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 const MAX_FREEZES: u8 = 2;
 const FREEZE_EVERY: u32 = 7;
@@ -307,8 +307,8 @@ mod tests {
     use chrono::{Datelike, TimeZone, Weekday};
 
     use super::*;
-    use crate::db::test_connection;
     use crate::domain::profile::MotivatorWeight;
+    use itqan_core::db::test_connection;
 
     fn date(day: u32) -> NaiveDate {
         NaiveDate::from_ymd_opt(2026, 10, day).unwrap()

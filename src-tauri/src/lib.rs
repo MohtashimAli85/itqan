@@ -1,9 +1,7 @@
 mod agents;
-mod ai;
 mod commands;
 mod db;
 mod domain;
-mod error;
 mod overlay;
 mod platform;
 mod prayer;
@@ -14,7 +12,7 @@ mod tray;
 use tauri::Manager;
 use tauri_specta::{collect_commands, collect_events, Builder};
 
-use crate::db::Database;
+use itqan_core::db::Database;
 
 #[cfg(any(debug_assertions, test))]
 const BINDINGS_PATH: &str = "../src/shared/bindings/bindings.ts";

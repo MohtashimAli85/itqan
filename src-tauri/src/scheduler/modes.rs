@@ -9,13 +9,15 @@ use tauri_specta::Event;
 
 use crate::agents::rewards as rewards_agent;
 use crate::agents::{self, AppEvent};
-use crate::db::{prayer as prayer_repo, Database};
+use crate::db::prayer as prayer_repo;
 use crate::domain::focus::{self, FocusStatus, DEFAULT_MINUTES};
 use crate::domain::modes::{self, Mode};
-use crate::domain::{settings, tasks};
-use crate::error::AppError;
+use crate::domain::tasks;
 use crate::overlay::{self, Activity, BubbleAction, BubbleOrigin, OrbState, OverlayStore};
 use crate::prayer::schedule::{self, PrayerWindow};
+use itqan_core::db::Database;
+use itqan_core::error::AppError;
+use itqan_core::settings;
 
 const FOCUS_TICK: StdDuration = StdDuration::from_secs(15);
 const IDLE_TICK: StdDuration = StdDuration::from_secs(60);

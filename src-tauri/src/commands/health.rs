@@ -4,11 +4,11 @@ use tauri_specta::Event;
 
 use super::events::HealthChanged;
 use crate::agents::{self, AppEvent};
-use crate::db::Database;
 use crate::domain::health::{self, HabitId, HabitKind, HealthOverview, Medicine};
-use crate::domain::settings;
-use crate::error::{AppError, CommandError};
 use crate::scheduler::Scheduler;
+use itqan_core::db::Database;
+use itqan_core::error::{AppError, CommandError};
+use itqan_core::settings;
 
 fn changed<T>(app: &AppHandle, value: T) -> Result<T, CommandError> {
     HealthChanged.emit(app).map_err(AppError::from)?;

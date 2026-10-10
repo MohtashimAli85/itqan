@@ -9,10 +9,10 @@ use tauri::{AppHandle, Manager};
 use tokio::sync::Notify;
 
 use crate::agents::{self, coach, AppEvent};
-use crate::db::Database;
 use crate::domain::reminders;
-use crate::error::AppError;
 use crate::tray;
+use itqan_core::db::Database;
+use itqan_core::error::AppError;
 
 pub use delivery::resolve_reminder;
 pub use modes::{ModeChanged, ModeEngine, ModeStatus};

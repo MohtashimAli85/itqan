@@ -1,7 +1,7 @@
 use rusqlite::{params, Connection};
 
 use crate::domain::profile::{CoachStyle, Profile};
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 fn coach_style(value: &str) -> CoachStyle {
     match value {

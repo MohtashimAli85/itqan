@@ -4,31 +4,11 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 
 use crate::db::nudges as repo;
-use crate::error::AppError;
+use itqan_core::error::AppError;
+
+pub use itqan_core::bus::{AgentKind, Priority};
 
 pub type NudgeId = i32;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Type)]
-#[serde(rename_all = "camelCase")]
-pub enum Priority {
-    LearningTip,
-    Rhythm,
-    Health,
-    Drift,
-    Critical,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
-#[serde(rename_all = "camelCase")]
-pub enum AgentKind {
-    Coach,
-    Planner,
-    Health,
-    FocusGuardian,
-    Learning,
-    Reviewer,
-    Memory,
-}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
@@ -107,7 +87,7 @@ mod tests {
     use chrono::TimeZone;
 
     use super::*;
-    use crate::db::test_connection;
+    use itqan_core::db::test_connection;
 
     fn at(minute: u32) -> DateTime<Utc> {
         Utc.with_ymd_and_hms(2026, 10, 10, 9, minute, 0).unwrap()

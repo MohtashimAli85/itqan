@@ -2,7 +2,7 @@ use chrono::{DateTime, Duration, Utc};
 use chrono_tz::Tz;
 use rrule::{RRule, Unvalidated};
 
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 pub fn validate(rule: &str, anchor: DateTime<Utc>, timezone: Tz) -> Result<(), AppError> {
     next_after(rule, anchor, timezone, anchor).map(|_| ())

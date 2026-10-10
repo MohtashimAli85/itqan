@@ -7,9 +7,9 @@ use crate::db::tasks as repo;
 use crate::domain::categories::CategoryId;
 use crate::domain::goals::GoalId;
 use crate::domain::skills::SkillId;
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
-pub type TaskId = i32;
+pub use itqan_contracts::TaskId;
 
 pub const MAX_TOP_THREE: u32 = 3;
 const MAX_TITLE_LENGTH: usize = 500;
@@ -260,7 +260,7 @@ mod tests {
     use chrono::TimeZone;
 
     use super::*;
-    use crate::db::test_connection;
+    use itqan_core::db::test_connection;
 
     fn now() -> DateTime<Utc> {
         Utc.with_ymd_and_hms(2026, 10, 10, 9, 0, 0).unwrap()

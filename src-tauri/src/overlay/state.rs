@@ -4,7 +4,9 @@ use std::sync::Mutex;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
-use crate::error::AppError;
+pub use itqan_core::overlay::BubbleAction;
+
+use itqan_core::error::AppError;
 
 pub const MAX_BUBBLE_ACTIONS: usize = 3;
 
@@ -29,12 +31,6 @@ pub enum FollowMode {
     Follow,
     Corner,
     Hidden,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Type)]
-pub struct BubbleAction {
-    pub id: String,
-    pub label: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Type)]

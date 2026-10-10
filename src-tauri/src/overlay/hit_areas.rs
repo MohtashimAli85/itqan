@@ -4,7 +4,7 @@ use std::sync::Mutex;
 use serde::Deserialize;
 use specta::Type;
 
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize, Type)]
 pub struct Rect {

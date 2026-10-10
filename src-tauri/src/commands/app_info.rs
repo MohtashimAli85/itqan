@@ -1,8 +1,8 @@
 use tauri::{AppHandle, State};
 
-use crate::db::Database;
 use crate::domain::app_info::{self, AppInfo};
-use crate::error::CommandError;
+use itqan_core::db::Database;
+use itqan_core::error::CommandError;
 
 #[tauri::command]
 #[specta::specta]

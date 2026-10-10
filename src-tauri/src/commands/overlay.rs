@@ -1,12 +1,12 @@
 use tauri::{AppHandle, State};
 
 use crate::agents;
-use crate::error::CommandError;
 use crate::overlay::{
     self, BubbleAction, BubbleOrigin, FollowMode, HitAreas, OrbState, OverlaySnapshot,
     OverlayStore, Rect,
 };
 use crate::scheduler;
+use itqan_core::error::CommandError;
 
 #[tauri::command]
 #[specta::specta]

@@ -2,9 +2,9 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 use tauri::{AppHandle, State};
 
-use crate::ai::{self, ask, config, keys};
-use crate::db::Database;
-use crate::error::CommandError;
+use itqan_core::ai::{self, ask, config, keys};
+use itqan_core::db::Database;
+use itqan_core::error::CommandError;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]

@@ -6,13 +6,14 @@ use specta::Type;
 use tauri::{AppHandle, Manager};
 use tauri_specta::Event;
 
-use super::{Agent, AppEvent, Suggestion};
-use crate::db::{settings as settings_repo, Database};
+use super::{AppEvent, Signal, Subscriber};
 use crate::domain::nudges::{AgentKind, Priority};
 use crate::domain::rewards::{self, Award, RewardOutcome, XpSource};
-use crate::domain::{modes, profile, settings, tasks};
-use crate::error::AppError;
+use crate::domain::{modes, profile, tasks};
 use crate::overlay::{self, OrbState, OverlayStore};
+use itqan_core::db::{settings as settings_repo, Database};
+use itqan_core::error::AppError;
+use itqan_core::settings;
 
 const SOUND: &str = "reward_sound";
 const LAST_ALL_DONE: &str = "last_all_done_date";
@@ -132,13 +133,13 @@ fn celebrate(app: &AppHandle) -> Result<(), AppError> {
     Ok(())
 }
 
-impl Agent for RewardsAgent {
+impl Subscriber for RewardsAgent {
     fn on_event(
         &self,
         app: &AppHandle,
         event: &AppEvent,
         now: DateTime<Utc>,
-    ) -> Result<Vec<Suggestion>, AppError> {
+    ) -> Result<Vec<Signal>, AppError> {
         let result = app.state::<Database>().with(|connection| {
             let Some(award) = award_for(connection, event)? else {
                 return Ok(None);
@@ -197,7 +198,7 @@ impl Agent for RewardsAgent {
             None => return Ok(Vec::new()),
         };
         celebrate(app)?;
-        Ok(vec![Suggestion {
+        Ok(vec![Signal {
             agent: AgentKind::Coach,
             kind: "celebration".into(),
             priority: Priority::Rhythm,

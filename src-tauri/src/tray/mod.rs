@@ -10,11 +10,12 @@ use tauri_specta::Event;
 
 use crate::agents::coach;
 use crate::commands::events::Navigate;
-use crate::db::Database;
-use crate::domain::{focus, modes, settings, tasks};
-use crate::error::AppError;
+use crate::domain::{focus, modes, tasks};
 use crate::overlay::{self, FollowMode, OverlayStore};
 use crate::scheduler;
+use itqan_core::db::Database;
+use itqan_core::error::AppError;
+use itqan_core::settings;
 use view::{TrayInputs, TrayView};
 
 const TRAY_ID: &str = "itqan";

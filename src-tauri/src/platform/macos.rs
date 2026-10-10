@@ -6,7 +6,7 @@ use tauri_nspanel::{
 
 use std::time::Duration;
 
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 tauri_panel! {
     panel!(OverlayPanel {

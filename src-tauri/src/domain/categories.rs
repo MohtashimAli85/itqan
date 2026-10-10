@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 
 use crate::db::categories as repo;
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 pub type CategoryId = i32;
 
@@ -56,7 +56,7 @@ pub fn create(connection: &Connection, input: CategoryInput) -> Result<Category,
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::db::test_connection;
+    use itqan_core::db::test_connection;
 
     fn input(name: &str, colour: &str) -> CategoryInput {
         CategoryInput {

@@ -3,7 +3,7 @@ use tauri::{WebviewWindow, Wry};
 
 use std::time::Duration;
 
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 pub fn plugin() -> TauriPlugin<Wry> {
     Builder::new("platform").build()

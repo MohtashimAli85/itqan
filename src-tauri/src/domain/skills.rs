@@ -5,7 +5,7 @@ use specta::Type;
 
 use crate::db::skills as repo;
 use crate::domain::levels::{self, LevelProgress};
-use crate::error::AppError;
+use itqan_core::error::AppError;
 
 pub type SkillId = i32;
 
@@ -54,7 +54,7 @@ pub fn with_level(id: SkillId, name: String, xp: u32) -> Skill {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::db::test_connection;
+    use itqan_core::db::test_connection;
 
     #[test]
     fn skills_are_unique_regardless_of_case() {

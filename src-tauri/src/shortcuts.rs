@@ -2,8 +2,8 @@ use tauri::plugin::TauriPlugin;
 use tauri::{App, AppHandle, Manager, Wry};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
-use crate::error::AppError;
 use crate::overlay::{self, OverlayStore};
+use itqan_core::error::AppError;
 
 fn panel_shortcut() -> Shortcut {
     Shortcut::new(Some(Modifiers::ALT), Code::Space)
