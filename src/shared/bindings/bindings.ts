@@ -79,6 +79,8 @@ export const commands = {
 	setNudgesPaused: (minutes: number | null) => typedError<CoachSettings, CommandError>(__TAURI_INVOKE("set_nudges_paused", { minutes })),
 	listModules: () => typedError<ModuleState[], CommandError>(__TAURI_INVOKE("list_modules")),
 	setModuleEnabled: (id: string, enabled: boolean) => typedError<ModuleState[], CommandError>(__TAURI_INVOKE("set_module_enabled", { id, enabled })),
+	draftBeliefs: (answers: Answer[]) => typedError<DraftBelief[], CommandError>(__TAURI_INVOKE("draft_beliefs", { answers })),
+	saveBeliefNotes: (drafts: DraftBelief[]) => typedError<null, CommandError>(__TAURI_INVOKE("save_belief_notes", { drafts })),
 	listProposals: () => typedError<Proposal[], CommandError>(__TAURI_INVOKE("list_proposals")),
 	acceptProposal: (id: number) => typedError<Proposal[], CommandError>(__TAURI_INVOKE("accept_proposal", { id })),
 	rejectProposal: (id: number) => typedError<Proposal[], CommandError>(__TAURI_INVOKE("reject_proposal", { id })),
@@ -117,6 +119,11 @@ export type AiStatus = {
 	needsKey: boolean,
 };
 
+export type Answer = {
+	question: string,
+	answer: string,
+};
+
 export type AppInfo = {
 	name: string,
 	version: string,
@@ -131,6 +138,8 @@ export type Badge = {
 };
 
 export type BadgeId = "firstShip" | "tenShips" | "firstFocus" | "focusFifty" | "weekStreak" | "monthStreak" | "learner";
+
+export type BeliefKind = "motivator" | "preference" | "pattern" | "constraint" | "goal";
 
 export type Bubble = {
 	id: number,
@@ -176,6 +185,15 @@ export type DaySummary = {
 	focusMinutes: number,
 	active: boolean,
 };
+
+export type DraftBelief = {
+	statement: string,
+	kind: BeliefKind,
+	subject: DraftSubject,
+	strength: Strength,
+};
+
+export type DraftSubject = { type: "motivator"; motivator: Motivator } | { type: "coachStyle"; style: CoachStyle } | { type: "note" };
 
 export type FocusSession = {
 	id: number,
@@ -467,6 +485,8 @@ export type Streak = {
 	freezes: number,
 	lastActiveDay: string | null,
 };
+
+export type Strength = "low" | "medium" | "high";
 
 export type Task = {
 	id: number,

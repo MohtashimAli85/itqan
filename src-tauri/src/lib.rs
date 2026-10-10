@@ -94,6 +94,8 @@ fn specta_builder() -> Builder<tauri::Wry> {
             itqan_core::system::set_nudges_paused,
             itqan_core::module::commands::list_modules,
             itqan_core::module::commands::set_module_enabled,
+            itqan_core::beliefs::commands::draft_beliefs,
+            itqan_core::beliefs::commands::save_belief_notes,
             itqan_core::proposals::commands::list_proposals,
             itqan_core::proposals::commands::accept_proposal,
             itqan_core::proposals::commands::reject_proposal,

@@ -25,6 +25,7 @@ pub enum Job {
     ConnectionTest,
     Planning,
     Question,
+    Profiling,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -36,7 +37,7 @@ pub enum Role {
 pub fn role(job: Job) -> Role {
     match job {
         Job::ConnectionTest => Role::Fast,
-        Job::Planning | Job::Question => Role::Smart,
+        Job::Planning | Job::Question | Job::Profiling => Role::Smart,
     }
 }
 

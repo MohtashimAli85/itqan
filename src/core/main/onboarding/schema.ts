@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type {
+  DraftBelief,
   FollowMode,
   Motivator,
   PrayerSettings,
@@ -56,6 +57,12 @@ export const onboardingSchema = z
     cityId: z.string(),
     madhab: z.enum(["hanafi", "shafi"]),
     followMode: z.enum(["follow", "corner", "hidden"]),
+    beliefNotes: z.array(z.custom<DraftBelief>()),
+    chat: z.enum(["idle", "open", "done"]),
+  })
+  .refine((values) => values.chat !== "open", {
+    path: ["motivators"],
+    message: "Finish the questions, or choose Set it myself",
   })
   .refine(
     (values) => Object.values(values.motivators).some((weight) => weight > 0),
@@ -116,6 +123,44 @@ export function defaultValues(
     cityId: "",
     madhab: prayer.madhab,
     followMode,
+    beliefNotes: [],
+    chat: "idle",
+  };
+}
+
+const strengthWeight = { high: 9, medium: 6, low: 3 } as const;
+
+export function applyDrafts(
+  values: Pick<OnboardingValues, "motivators" | "coachStyle">,
+  drafts: DraftBelief[],
+): Pick<OnboardingValues, "motivators" | "coachStyle" | "beliefNotes"> {
+  const picked = drafts.flatMap((draft) =>
+    draft.subject.type === "motivator"
+      ? [
+          {
+            id: draft.subject.motivator,
+            weight: strengthWeight[draft.strength],
+          },
+        ]
+      : [],
+  );
+  const motivators =
+    picked.length === 0
+      ? values.motivators
+      : (Object.fromEntries(
+          motivatorIds.map((id) => [
+            id,
+            picked.find((pick) => pick.id === id)?.weight ?? 0,
+          ]),
+        ) as Record<Motivator, number>);
+  const style = drafts.find((draft) => draft.subject.type === "coachStyle");
+  return {
+    motivators,
+    coachStyle:
+      style?.subject.type === "coachStyle"
+        ? style.subject.style
+        : values.coachStyle,
+    beliefNotes: drafts.filter((draft) => draft.subject.type === "note"),
   };
 }
 

@@ -1,9 +1,17 @@
+import { useEffect } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
+import { useAiStatus } from "@/shared/hooks/useAi";
+import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 import { Slider } from "@/shared/components/ui/slider";
-import { motivatorOptions, type OnboardingValues } from "../schema";
+import {
+  applyDrafts,
+  motivatorOptions,
+  type OnboardingValues,
+} from "../schema";
+import { ProfileChat } from "./ProfileChat";
 
 const coachStyles = [
   { id: "mentor", label: "Mentor", hint: "Supportive and patient" },
@@ -12,7 +20,19 @@ const coachStyles = [
 ] as const;
 
 export function MotivationStep() {
-  const { control, register, formState } = useFormContext<OnboardingValues>();
+  const { control, register, formState, getValues, setValue } =
+    useFormContext<OnboardingValues>();
+  const { data: ai } = useAiStatus();
+  const aiReady = Boolean(ai?.settings.enabled && (ai.hasKey || !ai.needsKey));
+  const chat = useWatch({ control, name: "chat" });
+  const chatting = aiReady && chat === "open";
+  const setChat = (next: OnboardingValues["chat"]) =>
+    setValue("chat", next, { shouldValidate: next !== "open" });
+
+  useEffect(() => {
+    if (aiReady && getValues("chat") === "idle") setValue("chat", "open");
+  }, [aiReady, getValues, setValue]);
+  const notes = useWatch({ control, name: "beliefNotes" });
   const motivators = useWatch({ control, name: "motivators" });
   const total = Object.values(motivators).reduce(
     (sum, value) => sum + value,
@@ -28,70 +48,106 @@ export function MotivationStep() {
           it any time.
         </p>
       </div>
-      <ul className="grid grid-cols-2 gap-x-6 gap-y-4">
-        {motivatorOptions.map((option) => {
-          const value = motivators[option.id];
-          const share = total > 0 ? Math.round((value / total) * 100) : 0;
-          return (
-            <li key={option.id} className="flex flex-col gap-2">
-              <div className="flex justify-between text-sm">
-                <Label id={`motivator-${option.id}`}>{option.label}</Label>
-                <span className="font-mono text-caption">{share}%</span>
-              </div>
-              <Controller
-                control={control}
-                name={`motivators.${option.id}`}
-                render={({ field }) => (
-                  <Slider
-                    aria-labelledby={`motivator-${option.id}`}
-                    min={0}
-                    max={10}
-                    step={1}
-                    value={[field.value]}
-                    onValueChange={(next) => field.onChange(next[0] ?? 0)}
-                  />
-                )}
-              />
-            </li>
-          );
-        })}
-      </ul>
+      {chatting ? (
+        <ProfileChat
+          onSkip={() => setChat("done")}
+          onApply={(drafts) => {
+            const next = applyDrafts(getValues(), drafts);
+            setValue("motivators", next.motivators, { shouldDirty: true });
+            setValue("coachStyle", next.coachStyle, { shouldDirty: true });
+            setValue("beliefNotes", next.beliefNotes, { shouldDirty: true });
+            setChat("done");
+          }}
+        />
+      ) : (
+        aiReady && (
+          <Button
+            type="button"
+            variant="ghost"
+            className="self-start"
+            onClick={() => setChat("open")}
+          >
+            Talk it through with me instead
+          </Button>
+        )
+      )}
+      {notes.length > 0 && (
+        <p className="text-xs text-caption">
+          I'll also remember {notes.length}{" "}
+          {notes.length === 1 ? "thing" : "things"} you told me.
+        </p>
+      )}
       {formState.errors.motivators && (
         <p role="alert" className="text-sm text-critical">
           {formState.errors.motivators.message}
         </p>
       )}
+      {!chatting && (
+        <>
+          <ul className="grid grid-cols-2 gap-x-6 gap-y-4">
+            {motivatorOptions.map((option) => {
+              const value = motivators[option.id];
+              const share = total > 0 ? Math.round((value / total) * 100) : 0;
+              return (
+                <li key={option.id} className="flex flex-col gap-2">
+                  <div className="flex justify-between text-sm">
+                    <Label id={`motivator-${option.id}`}>{option.label}</Label>
+                    <span className="font-mono text-caption">{share}%</span>
+                  </div>
+                  <Controller
+                    control={control}
+                    name={`motivators.${option.id}`}
+                    render={({ field }) => (
+                      <Slider
+                        aria-labelledby={`motivator-${option.id}`}
+                        min={0}
+                        max={10}
+                        step={1}
+                        value={[field.value]}
+                        onValueChange={(next) => field.onChange(next[0] ?? 0)}
+                      />
+                    )}
+                  />
+                </li>
+              );
+            })}
+          </ul>
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 text-sm font-medium">Coach style</legend>
-        <Controller
-          control={control}
-          name="coachStyle"
-          render={({ field }) => (
-            <RadioGroup
-              value={field.value}
-              onValueChange={field.onChange}
-              className="grid grid-cols-3 gap-2"
-            >
-              {coachStyles.map((style) => (
-                <Label
-                  key={style.id}
-                  htmlFor={`coach-${style.id}`}
-                  className="flex cursor-pointer flex-col items-start gap-1 rounded-lg border p-3 has-data-[state=checked]:border-ink"
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-2 text-sm font-medium">Coach style</legend>
+            <Controller
+              control={control}
+              name="coachStyle"
+              render={({ field }) => (
+                <RadioGroup
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  className="grid grid-cols-3 gap-2"
                 >
-                  <span className="flex items-center gap-2">
-                    <RadioGroupItem id={`coach-${style.id}`} value={style.id} />
-                    {style.label}
-                  </span>
-                  <span className="text-xs font-normal text-caption">
-                    {style.hint}
-                  </span>
-                </Label>
-              ))}
-            </RadioGroup>
-          )}
-        />
-      </fieldset>
+                  {coachStyles.map((style) => (
+                    <Label
+                      key={style.id}
+                      htmlFor={`coach-${style.id}`}
+                      className="flex cursor-pointer flex-col items-start gap-1 rounded-lg border p-3 has-data-[state=checked]:border-ink"
+                    >
+                      <span className="flex items-center gap-2">
+                        <RadioGroupItem
+                          id={`coach-${style.id}`}
+                          value={style.id}
+                        />
+                        {style.label}
+                      </span>
+                      <span className="text-xs font-normal text-caption">
+                        {style.hint}
+                      </span>
+                    </Label>
+                  ))}
+                </RadioGroup>
+              )}
+            />
+          </fieldset>
+        </>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-2">
