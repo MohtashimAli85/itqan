@@ -40,10 +40,10 @@ impl ActionRouter {
         Ok(())
     }
 
-    pub fn route(&self, app: &AppHandle, action: &str) -> Result<bool, AppError> {
+    pub fn route(&self, app: &AppHandle, action: &str) -> Result<(), AppError> {
         match self.handler_for(action)? {
-            Some(handler) => handler.handle(app, action).map(|()| true),
-            None => Ok(false),
+            Some(handler) => handler.handle(app, action),
+            None => Ok(()),
         }
     }
 

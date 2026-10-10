@@ -1,6 +1,8 @@
 pub mod commands;
 mod repo;
 
+use std::collections::HashMap;
+
 use chrono::{DateTime, Duration, Utc};
 use chrono_tz::Tz;
 use itqan_contracts::{HabitId, TaskId};
@@ -50,32 +52,50 @@ fn target(reminder: &ReminderRow) -> Option<(ReminderTargetKind, i32)> {
     }
 }
 
-fn describe(
+fn resolve_all(
     connection: &Connection,
     ports: &Ports,
-    row: &ReminderRow,
-) -> Result<Option<TargetInfo>, AppError> {
-    let standalone = TargetInfo {
-        title: None,
-        active: true,
-    };
-    let Some((kind, id)) = target(row) else {
-        return Ok(Some(standalone));
-    };
-    let Some(owner) = ports.reminder_target(kind)? else {
-        return Ok(None);
-    };
-    Ok(Some(owner.describe(connection, id)?.unwrap_or(standalone)))
+    rows: Vec<ReminderRow>,
+) -> Result<Vec<(Reminder, bool)>, AppError> {
+    let mut wanted: HashMap<ReminderTargetKind, Vec<i32>> = HashMap::new();
+    for (kind, id) in rows.iter().filter_map(target) {
+        wanted.entry(kind).or_default().push(id);
+    }
+    let mut known = HashMap::new();
+    for (kind, mut ids) in wanted {
+        ids.sort_unstable();
+        ids.dedup();
+        let infos = match ports.reminder_target(kind)? {
+            Some(owner) => Some(owner.describe(connection, &ids)?),
+            None => {
+                tracing::debug!(?kind, "reminders held: no target registered");
+                None
+            }
+        };
+        known.insert(kind, infos);
+    }
+    Ok(rows
+        .into_iter()
+        .map(|row| {
+            let info = match target(&row) {
+                None => Some(TargetInfo {
+                    title: None,
+                    active: true,
+                }),
+                Some((kind, id)) => known
+                    .get(&kind)
+                    .and_then(Option::as_ref)
+                    .and_then(|infos: &HashMap<i32, TargetInfo>| infos.get(&id))
+                    .cloned(),
+            };
+            let active = info.as_ref().is_some_and(|info| info.active);
+            (own(row, info.and_then(|info| info.title)), active)
+        })
+        .collect())
 }
 
-fn resolve(
-    connection: &Connection,
-    ports: &Ports,
-    row: ReminderRow,
-) -> Result<(Reminder, bool), AppError> {
-    let info = describe(connection, ports, &row)?;
-    let active = info.as_ref().is_some_and(|info| info.active);
-    Ok((own(row, info.and_then(|info| info.title)), active))
+fn reminders_only(resolved: Vec<(Reminder, bool)>) -> Vec<Reminder> {
+    resolved.into_iter().map(|(reminder, _)| reminder).collect()
 }
 
 fn own(row: ReminderRow, target_title: Option<String>) -> Reminder {
@@ -91,16 +111,6 @@ fn own(row: ReminderRow, target_title: Option<String>) -> Reminder {
         snoozed_until: row.snoozed_until,
         last_fired_at: row.last_fired_at,
     }
-}
-
-fn resolve_all(
-    connection: &Connection,
-    ports: &Ports,
-    rows: Vec<ReminderRow>,
-) -> Result<Vec<Reminder>, AppError> {
-    rows.into_iter()
-        .map(|row| resolve(connection, ports, row).map(|(reminder, _)| reminder))
-        .collect()
 }
 
 fn find_row(connection: &Connection, id: ReminderId) -> Result<ReminderRow, AppError> {
@@ -164,7 +174,13 @@ pub fn insert(
 }
 
 pub fn get(connection: &Connection, ports: &Ports, id: ReminderId) -> Result<Reminder, AppError> {
-    Ok(resolve(connection, ports, find_row(connection, id)?)?.0)
+    reminders_only(resolve_all(
+        connection,
+        ports,
+        vec![find_row(connection, id)?],
+    )?)
+    .pop()
+    .ok_or_else(|| AppError::NotFound(format!("reminder {id}")))
 }
 
 pub fn target_of(
@@ -179,7 +195,11 @@ pub fn list_for_task(
     ports: &Ports,
     task_id: TaskId,
 ) -> Result<Vec<Reminder>, AppError> {
-    resolve_all(connection, ports, repo::list_for_task(connection, task_id)?)
+    Ok(reminders_only(resolve_all(
+        connection,
+        ports,
+        repo::list_for_task(connection, task_id)?,
+    )?))
 }
 
 pub fn list_for_habit(
@@ -205,26 +225,21 @@ pub fn due(
     ports: &Ports,
     now: DateTime<Utc>,
 ) -> Result<Vec<Reminder>, AppError> {
-    let mut due = Vec::new();
-    for row in repo::due(connection, now)? {
-        let (reminder, active) = resolve(connection, ports, row)?;
-        if active {
-            due.push(reminder);
-        }
-    }
-    Ok(due)
+    Ok(resolve_all(connection, ports, repo::due(connection, now)?)?
+        .into_iter()
+        .filter_map(|(reminder, active)| active.then_some(reminder))
+        .collect())
 }
 
 pub fn next_due_at(
     connection: &Connection,
     ports: &Ports,
 ) -> Result<Option<DateTime<Utc>>, AppError> {
-    for (row, due_at) in repo::pending(connection)? {
-        if describe(connection, ports, &row)?.is_some_and(|info| info.active) {
-            return Ok(Some(due_at));
-        }
-    }
-    Ok(None)
+    let (rows, due_times): (Vec<_>, Vec<_>) = repo::pending(connection)?.into_iter().unzip();
+    Ok(resolve_all(connection, ports, rows)?
+        .into_iter()
+        .zip(due_times)
+        .find_map(|((_, active), due_at)| active.then_some(due_at)))
 }
 
 pub fn mark_fired(
@@ -316,10 +331,11 @@ mod tests {
         fn describe(
             &self,
             connection: &Connection,
-            id: i32,
-        ) -> Result<Option<TargetInfo>, AppError> {
-            Ok(connection
-                .query_row(
+            ids: &[i32],
+        ) -> Result<HashMap<i32, TargetInfo>, AppError> {
+            let mut infos = HashMap::new();
+            for id in ids {
+                if let Ok(info) = connection.query_row(
                     "SELECT title, status = 'open' FROM tasks WHERE id = ?1",
                     [id],
                     |row| {
@@ -328,8 +344,11 @@ mod tests {
                             active: row.get(1)?,
                         })
                     },
-                )
-                .ok())
+                ) {
+                    infos.insert(*id, info);
+                }
+            }
+            Ok(infos)
         }
 
         fn complete(&self, _: &AppHandle, _: i32) -> Result<(), AppError> {

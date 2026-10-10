@@ -5,6 +5,7 @@ use tauri_plugin_notification::NotificationExt;
 use crate::overlay::{self, BubbleAction, BubbleOrigin, FollowMode, OrbState, OverlayStore};
 use itqan_core::db::Database;
 use itqan_core::error::AppError;
+use itqan_core::overlay::action;
 use itqan_core::ports::Ports;
 use itqan_core::reminders::{self, Reminder, ReminderId, SNOOZE_MINUTES};
 use itqan_core::scheduler::Scheduler;
@@ -14,14 +15,8 @@ pub const SNOOZE: &str = "snooze";
 
 fn actions() -> Vec<BubbleAction> {
     vec![
-        BubbleAction {
-            id: DONE.into(),
-            label: "Done".into(),
-        },
-        BubbleAction {
-            id: SNOOZE.into(),
-            label: format!("In {SNOOZE_MINUTES} min"),
-        },
+        action(DONE, "Done"),
+        action(SNOOZE, &format!("In {SNOOZE_MINUTES} min")),
     ]
 }
 

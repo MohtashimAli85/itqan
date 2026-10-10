@@ -10,9 +10,7 @@ use itqan_core::db::settings as settings_repo;
 use itqan_core::error::AppError;
 use itqan_core::reminders::{self, Reminder, ReminderInput};
 
-pub use itqan_contracts::HabitKind;
-
-pub type HabitId = i32;
+pub use itqan_contracts::{HabitId, HabitKind};
 
 const ENABLED: &str = "health_enabled";
 const MAX_WATER_TARGET: u16 = 20;

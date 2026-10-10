@@ -385,6 +385,7 @@ mod tests {
 
         let timed = create(&connection, "buy dahi at 7pm", now(), zone).unwrap();
         let ports = itqan_core::ports::Ports::default();
+        crate::scheduler::targets::register(&ports).unwrap();
         let reminders = reminders::list_for_task(&connection, &ports, timed.task.id).unwrap();
         assert_eq!(reminders.len(), 1);
         assert_eq!(reminders[0].next_at, Some(local(10, 19, 0)));

@@ -1,24 +1,39 @@
+use std::collections::HashMap;
+
 use chrono::Utc;
 use itqan_core::db::Database;
 use itqan_core::error::AppError;
 use itqan_core::ports::{Ports, ReminderTarget, ReminderTargetKind, TargetInfo};
-use rusqlite::Connection;
+use rusqlite::{params_from_iter, Connection};
 use tauri::{AppHandle, Manager};
 use tauri_specta::Event;
 
 use crate::agents::{self, AppEvent};
 use crate::commands::events::TasksChanged;
-use crate::db::tasks as task_repo;
 use crate::domain::tasks::{self, TaskStatus};
 
 pub struct TaskReminders;
 
 impl ReminderTarget for TaskReminders {
-    fn describe(&self, connection: &Connection, id: i32) -> Result<Option<TargetInfo>, AppError> {
-        Ok(task_repo::find(connection, id)?.map(|task| TargetInfo {
-            title: Some(task.title),
-            active: task.status == TaskStatus::Open,
-        }))
+    fn describe(
+        &self,
+        connection: &Connection,
+        ids: &[i32],
+    ) -> Result<HashMap<i32, TargetInfo>, AppError> {
+        let placeholders = vec!["?"; ids.len()].join(", ");
+        let mut statement = connection.prepare(&format!(
+            "SELECT id, title, status = 'open' FROM tasks WHERE id IN ({placeholders})"
+        ))?;
+        let rows = statement.query_map(params_from_iter(ids), |row| {
+            Ok((
+                row.get(0)?,
+                TargetInfo {
+                    title: Some(row.get(1)?),
+                    active: row.get(2)?,
+                },
+            ))
+        })?;
+        Ok(rows.collect::<rusqlite::Result<_>>()?)
     }
 
     fn complete(&self, app: &AppHandle, id: i32) -> Result<(), AppError> {
@@ -32,11 +47,19 @@ impl ReminderTarget for TaskReminders {
 pub struct HabitReminders;
 
 impl ReminderTarget for HabitReminders {
-    fn describe(&self, _: &Connection, _: i32) -> Result<Option<TargetInfo>, AppError> {
-        Ok(Some(TargetInfo {
-            title: None,
-            active: true,
-        }))
+    fn describe(&self, _: &Connection, ids: &[i32]) -> Result<HashMap<i32, TargetInfo>, AppError> {
+        Ok(ids
+            .iter()
+            .map(|id| {
+                (
+                    *id,
+                    TargetInfo {
+                        title: None,
+                        active: true,
+                    },
+                )
+            })
+            .collect())
     }
 
     fn complete(&self, _: &AppHandle, _: i32) -> Result<(), AppError> {
@@ -47,4 +70,51 @@ impl ReminderTarget for HabitReminders {
 pub fn register(ports: &Ports) -> Result<(), AppError> {
     ports.set_reminder_target(ReminderTargetKind::Task, TaskReminders)?;
     ports.set_reminder_target(ReminderTargetKind::Habit, HabitReminders)
+}
+
+#[cfg(test)]
+mod tests {
+    use chrono::TimeZone;
+    use chrono_tz::Tz;
+    use itqan_core::db::test_connection;
+    use itqan_core::reminders::{self, ReminderInput};
+
+    use super::*;
+    use crate::domain::tasks::TaskInput;
+
+    #[test]
+    fn task_reminders_follow_their_task_and_every_kind_has_a_target() {
+        let connection = test_connection();
+        let ports = Ports::default();
+        register(&ports).unwrap();
+        let now = Utc.with_ymd_and_hms(2026, 10, 10, 8, 0, 0).unwrap();
+        let at = now + chrono::Duration::hours(1);
+        let task = tasks::create(
+            &connection,
+            TaskInput {
+                title: "Buy dahi".into(),
+                ..Default::default()
+            },
+            now,
+        )
+        .unwrap();
+        let input = |task_id| ReminderInput {
+            task_id,
+            title: None,
+            at,
+            rrule: None,
+            critical: false,
+        };
+        reminders::create(&connection, &ports, input(Some(task.id)), Tz::UTC, now).unwrap();
+
+        let due = reminders::due(&connection, &ports, at).unwrap();
+        assert_eq!(due.len(), 1);
+        assert_eq!(due[0].title, "Buy dahi");
+
+        tasks::set_status(&connection, task.id, TaskStatus::Done, now).unwrap();
+        assert!(reminders::due(&connection, &ports, at).unwrap().is_empty());
+        for kind in [ReminderTargetKind::Task, ReminderTargetKind::Habit] {
+            assert!(ports.reminder_target(kind).unwrap().is_some());
+        }
+    }
 }

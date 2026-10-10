@@ -38,7 +38,11 @@ pub struct TargetInfo {
 }
 
 pub trait ReminderTarget: Send + Sync {
-    fn describe(&self, connection: &Connection, id: i32) -> Result<Option<TargetInfo>, AppError>;
+    fn describe(
+        &self,
+        connection: &Connection,
+        ids: &[i32],
+    ) -> Result<HashMap<i32, TargetInfo>, AppError>;
 
     fn complete(&self, app: &AppHandle, id: i32) -> Result<(), AppError>;
 }

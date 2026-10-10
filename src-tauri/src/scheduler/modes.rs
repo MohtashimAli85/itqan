@@ -11,10 +11,11 @@ use crate::agents::{self, AppEvent};
 use crate::domain::focus::{self, FocusStatus, DEFAULT_MINUTES};
 use crate::domain::modes::{self, Mode};
 use crate::domain::tasks;
-use crate::overlay::{self, Activity, BubbleAction, BubbleOrigin, OrbState, OverlayStore};
+use crate::overlay::{self, Activity, BubbleOrigin, OrbState, OverlayStore};
 use itqan_contracts::PrayerWindow;
 use itqan_core::db::Database;
 use itqan_core::error::AppError;
+use itqan_core::overlay::action;
 use itqan_core::ports::Ports;
 use itqan_core::settings;
 
@@ -61,13 +62,6 @@ fn appearance(mode: Mode) -> OrbState {
         Mode::Evening => OrbState::Evening,
         Mode::Rest => OrbState::Resting,
         Mode::Focus => OrbState::Focus,
-    }
-}
-
-fn action(id: &str, label: &str) -> BubbleAction {
-    BubbleAction {
-        id: id.into(),
-        label: label.into(),
     }
 }
 
