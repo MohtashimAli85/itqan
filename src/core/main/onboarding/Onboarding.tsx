@@ -22,6 +22,7 @@ import { useOnboardingData } from "./useOnboardingData";
 
 const steps = [
   { Component: WelcomeStep, fields: ["name"] },
+  { Component: AiStep, fields: [] },
   {
     Component: MotivationStep,
     fields: ["motivators", "coachStyle", "freeHours", "age"],
@@ -38,7 +39,6 @@ const steps = [
     ],
   },
   { Component: OrbStep, fields: ["followMode"] },
-  { Component: AiStep, fields: [] },
   { Component: NotificationsStep, fields: [] },
 ] as const satisfies {
   Component: () => React.ReactNode;
