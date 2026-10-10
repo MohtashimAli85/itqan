@@ -429,17 +429,17 @@ Not used: date-fns (Day.js chosen instead), GSAP, Magic UI, Aceternity, Three.js
 ### Quality tooling
 | Need | Choice |
 |---|---|
-| Lint | ESLint flat config with typescript-eslint, react-hooks, jsx-a11y |
+| Lint | oxlint (`.oxlintrc.json`) with the typescript, react (incl. hooks), jsx-a11y and vitest plugins; replaced ESLint on 2026-10-10 at the owner's request |
 | Format | Prettier + prettier-plugin-tailwindcss |
 | Rust | rustfmt, clippy with warnings as errors |
 | Git hooks | lefthook |
 | Commits | Conventional Commits, checked with commitlint |
 | Unit tests | Vitest + Testing Library; `cargo test` |
 | E2E (later) | WebdriverIO + tauri-driver (works on Windows and Linux; macOS WebDriver is not supported) |
-| CI | GitHub Actions (GitLab CI kept in sync): install, lint, typecheck, test, fmt, clippy, build check |
+| CI | GitHub Actions: install, lint, typecheck, test, fmt, clippy, build check |
 | Licences and advisories | `cargo-deny` (CI tool, Phase 2) |
 | Coverage | `cargo-llvm-cov` (CI tool, Phase 2), 80% lines on core and module domain code |
-| Frontend import boundaries | `eslint-plugin-boundaries` or dependency-cruiser (Phase 2) |
+| Frontend import boundaries | dependency-cruiser (Phase 2; ESLint plugins no longer apply) |
 | Node | Pinned in `.nvmrc` and `packageManager` field |
 | Rust | Pinned in `rust-toolchain.toml` |
 
@@ -599,7 +599,7 @@ See docs/PLAN.md sections 11 (code rules) and 6 (architecture).
 ### CodeGraph
 After the app skeleton exists (step 0.5), run `codegraph init -i` so later sessions can explore the code efficiently.
 
-### PR template (`.github/pull_request_template.md`, mirrored in `.gitlab/merge_request_templates/Default.md`)
+### PR template (`.github/pull_request_template.md`)
 - What and why (link to the plan step)
 - How to test it locally
 - Screenshots or a short recording for UI changes
@@ -798,7 +798,7 @@ src/
 ```
 
 - The shell renders whatever the enabled modules contribute. No module is hard-coded into the shell.
-- Modules import only from `src/core` and `src/shared`. Enforce with `eslint-plugin-boundaries` or dependency-cruiser in CI.
+- Modules import only from `src/core` and `src/shared`. Enforced with dependency-cruiser in CI.
 - Settings are validated with Zod in the UI and again in Rust.
 
 ### C.5 Module levels (roadmap)

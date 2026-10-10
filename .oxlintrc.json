@@ -1,0 +1,49 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "react", "jsx-a11y", "vitest", "unicorn", "oxc"],
+  "env": {
+    "browser": true,
+    "es2024": true
+  },
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error"
+  },
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "error",
+    "react/react-in-jsx-scope": "off",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-non-null-assertion": "error",
+    "typescript/no-unused-vars": "error",
+    "typescript/consistent-type-imports": "error",
+    "eqeqeq": "error",
+    "no-console": [
+      "error",
+      {
+        "allow": ["warn", "error"]
+      }
+    ],
+    "jsx-a11y/prefer-tag-over-role": "off",
+    "unicorn/no-array-sort": "off"
+  },
+  "ignorePatterns": [
+    "dist",
+    "src-tauri",
+    "src/shared/bindings",
+    ".claude",
+    "node_modules"
+  ],
+  "overrides": [
+    {
+      "files": ["src/shared/components/ui/**"],
+      "rules": {
+        "no-underscore-dangle": "off",
+        "no-shadow": "off",
+        "react/jsx-no-constructed-context-values": "off",
+        "react/no-array-index-key": "off",
+        "eqeqeq": "off"
+      }
+    }
+  ]
+}
