@@ -11,6 +11,7 @@ describe("app router", () => {
         "/upcoming",
         "/category/$categoryId",
         "/goals",
+        "/proposals",
         "/progress",
         "/settings",
         "/onboarding",

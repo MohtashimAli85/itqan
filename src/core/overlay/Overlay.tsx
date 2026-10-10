@@ -7,6 +7,7 @@ import {
   type CSSProperties,
 } from "react";
 import { commands, events } from "@/shared/bindings/bindings";
+import { useProposalsSync } from "@/shared/hooks/useProposals";
 import { useTauriEvent } from "@/shared/hooks/useTauriEvent";
 import { Bubble } from "./components/Bubble";
 import { CompactPanel } from "./components/CompactPanel";
@@ -27,6 +28,7 @@ const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 export function Overlay() {
   const { data: snapshot } = useOverlaySnapshot();
+  useProposalsSync();
   const anchor = useRef<HTMLDivElement>(null);
   const body = useRef<HTMLDivElement>(null);
   const pupils = useRef<(HTMLSpanElement | null)[]>([]);

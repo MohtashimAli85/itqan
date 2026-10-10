@@ -98,3 +98,23 @@ pub fn set_status(
     )?;
     Ok(())
 }
+
+pub fn find(connection: &Connection, id: BeliefId) -> Result<Option<Belief>, AppError> {
+    let sql = format!("SELECT {COLUMNS} FROM beliefs WHERE id = ?1");
+    Ok(connection.query_row(&sql, [id], from_row).optional()?)
+}
+
+pub fn confirm(
+    connection: &Connection,
+    id: BeliefId,
+    confidence: f64,
+    now: DateTime<Utc>,
+) -> Result<(), AppError> {
+    connection.execute(
+        "UPDATE beliefs SET status = 'active', source = 'confirmed', confidence = ?2,
+                            confirmed_at = ?3, updated_at = ?3
+         WHERE id = ?1",
+        params![id, confidence, now],
+    )?;
+    Ok(())
+}

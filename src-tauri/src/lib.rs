@@ -94,6 +94,10 @@ fn specta_builder() -> Builder<tauri::Wry> {
             itqan_core::system::set_nudges_paused,
             itqan_core::module::commands::list_modules,
             itqan_core::module::commands::set_module_enabled,
+            itqan_core::proposals::commands::list_proposals,
+            itqan_core::proposals::commands::accept_proposal,
+            itqan_core::proposals::commands::reject_proposal,
+            itqan_core::system::open_main_window,
         ])
         .events(collect_events![
             overlay::OverlayCursor,
@@ -105,6 +109,7 @@ fn specta_builder() -> Builder<tauri::Wry> {
             itqan_progress::RewardEarned,
             tray::Navigate,
             itqan_core::module::commands::ModulesChanged,
+            itqan_core::proposals::commands::ProposalsChanged,
         ])
 }
 
@@ -153,6 +158,7 @@ pub fn run() {
             tracing::info!("database ready");
             app.manage(Ports::default());
             app.manage(ActionRouter::default());
+            app.manage(itqan_core::proposals::ProposalRegistry::default());
             itqan_core::module::start(app.handle(), MODULES)?;
             tray::setup(app)?;
             overlay::setup(app)?;

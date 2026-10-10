@@ -18,6 +18,7 @@ pub mod planner;
 pub mod platform;
 pub mod ports;
 pub mod profile;
+pub mod proposals;
 pub mod recurrence;
 pub mod reminders;
 pub mod rhythm;
