@@ -69,6 +69,12 @@ pub fn setup(app: &App) -> tauri::Result<()> {
     Ok(())
 }
 
+pub fn open_main_at(app: &AppHandle, to: String) -> Result<(), AppError> {
+    show_main_window(app);
+    Navigate { to }.emit(app)?;
+    Ok(())
+}
+
 pub fn show_main_window(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.show();
@@ -220,13 +226,7 @@ fn handle(app: &AppHandle, id: &str) -> Result<(), AppError> {
     match id {
         QUIT => app.exit(0),
         OPEN => show_main_window(app),
-        SETTINGS => {
-            show_main_window(app);
-            Navigate {
-                to: "/settings".into(),
-            }
-            .emit(app)?;
-        }
+        SETTINGS => open_main_at(app, "/settings".into())?,
         QUICK_ADD => overlay::open_panel(app)?,
         FOCUS => {
             database.with(|connection| match focus::active(connection)? {

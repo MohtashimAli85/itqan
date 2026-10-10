@@ -1,4 +1,5 @@
-import { Settings, Target } from "lucide-react";
+import { Lightbulb, Settings, Target } from "lucide-react";
+import { useProposals } from "@/shared/hooks/useProposals";
 import { useContributions } from "@/core/registry/contributions";
 import type { Contribution } from "@/core/registry/types";
 import { NavLink } from "@/core/ui/NavLink";
@@ -8,8 +9,21 @@ const SettingsLink = () => (
   <NavLink to="/settings" icon={Settings} label="Settings" />
 );
 
+function ProposalsLink() {
+  const { data: proposals = [] } = useProposals();
+  return (
+    <NavLink
+      to="/proposals"
+      icon={Lightbulb}
+      label="Suggestions"
+      count={proposals.length}
+    />
+  );
+}
+
 const coreItems: Contribution[] = [
   { id: "goals", order: 10, Component: GoalsLink },
+  { id: "proposals", order: 15, Component: ProposalsLink },
   { id: "settings", order: 90, Component: SettingsLink },
 ];
 

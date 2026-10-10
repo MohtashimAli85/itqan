@@ -79,6 +79,10 @@ export const commands = {
 	setNudgesPaused: (minutes: number | null) => typedError<CoachSettings, CommandError>(__TAURI_INVOKE("set_nudges_paused", { minutes })),
 	listModules: () => typedError<ModuleState[], CommandError>(__TAURI_INVOKE("list_modules")),
 	setModuleEnabled: (id: string, enabled: boolean) => typedError<ModuleState[], CommandError>(__TAURI_INVOKE("set_module_enabled", { id, enabled })),
+	listProposals: () => typedError<Proposal[], CommandError>(__TAURI_INVOKE("list_proposals")),
+	acceptProposal: (id: number) => typedError<Proposal[], CommandError>(__TAURI_INVOKE("accept_proposal", { id })),
+	rejectProposal: (id: number) => typedError<Proposal[], CommandError>(__TAURI_INVOKE("reject_proposal", { id })),
+	openMainWindow: (to: string) => typedError<null, CommandError>(__TAURI_INVOKE("open_main_window", { to })),
 };
 
 /** Events */
@@ -90,6 +94,7 @@ export const events = {
 	navigate: makeEvent<Navigate>("navigate"),
 	overlayChanged: makeEvent<OverlayChanged>("overlay-changed"),
 	overlayCursor: makeEvent<OverlayCursor>("overlay-cursor"),
+	proposalsChanged: makeEvent<ProposalsChanged>("proposals-changed"),
 	rewardEarned: makeEvent<RewardEarned>("reward-earned"),
 	tasksChanged: makeEvent<TasksChanged>("tasks-changed"),
 };
@@ -386,6 +391,21 @@ export type ProgressSummary = {
 	days: DaySummary[],
 	badges: Badge[],
 };
+
+export type Proposal = {
+	id: number,
+	kind: string,
+	title: string,
+	reason: string,
+	effect: string,
+	status: ProposalStatus,
+	createdAt: string,
+	expiresAt: string,
+};
+
+export type ProposalStatus = "pending" | "accepted" | "rejected" | "expired";
+
+export type ProposalsChanged = null;
 
 export type QuickAddOutcome = {
 	task: Task,

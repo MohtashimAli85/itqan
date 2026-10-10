@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useContributions } from "@/core/registry/contributions";
 import { greeting } from "@/shared/lib/today";
+import { ProposalsRow } from "./ProposalsRow";
 import {
   Tabs,
   TabsContent,
@@ -58,6 +59,8 @@ export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
       {rows.map(({ id, Component }) => (
         <Component key={id} />
       ))}
+
+      <ProposalsRow onOpen={onClose} />
 
       <Tabs value={selected} onValueChange={setChosen}>
         <TabsList className="w-full">

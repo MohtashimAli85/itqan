@@ -14,6 +14,7 @@ import { modules } from "@/modules";
 import { gate } from "./ModuleGate";
 import { modulesQuery } from "@/core/registry/useModules";
 import { Goals } from "./screens/Goals";
+import { Proposals } from "./screens/Proposals";
 import { Settings } from "./screens/Settings";
 
 type RouterContext = { queryClient: QueryClient };
@@ -45,6 +46,7 @@ const routeTree = rootRoute.addChildren([
       ),
     ),
     page("/goals", Goals),
+    page("/proposals", Proposals),
     page("/settings", Settings),
   ]),
   createRoute({

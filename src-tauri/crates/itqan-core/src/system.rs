@@ -62,3 +62,10 @@ pub fn set_nudges_paused(
     tray::refresh(&app)?;
     get_coach_settings(database)
 }
+
+#[tauri::command]
+#[specta::specta]
+pub fn open_main_window(app: AppHandle, to: String) -> Result<(), CommandError> {
+    crate::tray::open_main_at(&app, to)?;
+    Ok(())
+}

@@ -1,6 +1,7 @@
 import { Outlet, useNavigate } from "@tanstack/react-router";
 import { events } from "@/shared/bindings/bindings";
 import { useGoalsSync } from "@/shared/hooks/useGoals";
+import { useProposalsSync } from "@/shared/hooks/useProposals";
 import { useTauriEvent } from "@/shared/hooks/useTauriEvent";
 import { Listeners } from "@/core/registry/Listeners";
 import { Sidebar } from "./Sidebar";
@@ -8,6 +9,7 @@ import { Sidebar } from "./Sidebar";
 export function AppShell() {
   const navigate = useNavigate();
   useGoalsSync();
+  useProposalsSync();
 
   useTauriEvent(events.navigate, ({ to }) => {
     void navigate({ to });

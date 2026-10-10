@@ -13,6 +13,8 @@ pub type BeliefId = i32;
 const MOTIVATOR_PREFIX: &str = "motivator.";
 const COACH_STYLE: &str = "coach.style";
 const SAID_CONFIDENCE: f64 = 0.8;
+const CONFIRMED_CONFIDENCE: f64 = 0.9;
+const NOTE: &str = "note";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
@@ -99,6 +101,47 @@ fn capitalised(word: &str) -> String {
     chars.next().map_or_else(String::new, |first| {
         first.to_uppercase().chain(chars).collect()
     })
+}
+
+pub fn insert(
+    connection: &Connection,
+    belief: &NewBelief,
+    now: DateTime<Utc>,
+) -> Result<BeliefId, AppError> {
+    repo::insert(connection, belief, now)
+}
+
+pub fn find(connection: &Connection, id: BeliefId) -> Result<Belief, AppError> {
+    repo::find(connection, id)?.ok_or_else(|| AppError::NotFound(format!("belief {id}")))
+}
+
+pub fn confirm(connection: &Connection, id: BeliefId, now: DateTime<Utc>) -> Result<(), AppError> {
+    let belief = find(connection, id)?;
+    if matches!(
+        belief.status,
+        BeliefStatus::Rejected | BeliefStatus::Archived
+    ) {
+        return Err(AppError::InvalidInput(format!(
+            "belief {id} is no longer open"
+        )));
+    }
+    if belief.subject != NOTE {
+        if let Some(current) = repo::active_for(connection, &belief.subject)? {
+            if current.id != id {
+                repo::set_status(connection, current.id, BeliefStatus::Archived, now)?;
+            }
+        }
+    }
+    repo::confirm(
+        connection,
+        id,
+        CONFIRMED_CONFIDENCE.max(belief.confidence),
+        now,
+    )
+}
+
+pub fn reject(connection: &Connection, id: BeliefId, now: DateTime<Utc>) -> Result<(), AppError> {
+    repo::set_status(connection, id, BeliefStatus::Rejected, now)
 }
 
 pub fn active(connection: &Connection) -> Result<Vec<Belief>, AppError> {
