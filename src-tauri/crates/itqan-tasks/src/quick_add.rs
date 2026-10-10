@@ -3,8 +3,8 @@ use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
-use crate::domain::categories;
-use crate::domain::tasks::{self, Task, TaskInput};
+use crate::categories;
+use crate::tasks::{self, Task, TaskInput};
 use itqan_core::error::AppError;
 use itqan_core::reminders::{self, ReminderInput};
 
@@ -244,6 +244,7 @@ mod tests {
     use chrono::FixedOffset;
 
     use super::*;
+    use crate::test_connection;
 
     fn karachi() -> FixedOffset {
         FixedOffset::east_opt(5 * 3600).unwrap()
@@ -331,7 +332,7 @@ mod tests {
 
     #[test]
     fn create_resolves_known_categories_and_keeps_unknown_tags() {
-        let connection = itqan_core::db::test_connection();
+        let connection = test_connection();
 
         let known = create(
             &connection,
@@ -356,7 +357,7 @@ mod tests {
 
     #[test]
     fn create_reports_a_full_top_three_without_failing() {
-        let connection = itqan_core::db::test_connection();
+        let connection = test_connection();
         for index in 0..3 {
             create(
                 &connection,
@@ -380,12 +381,12 @@ mod tests {
 
     #[test]
     fn create_adds_a_reminder_only_for_explicit_times() {
-        let connection = itqan_core::db::test_connection();
+        let connection = test_connection();
         let zone = chrono_tz::Tz::Asia__Karachi;
 
         let timed = create(&connection, "buy dahi at 7pm", now(), zone).unwrap();
         let ports = itqan_core::ports::Ports::default();
-        crate::scheduler::targets::register(&ports).unwrap();
+        crate::targets::register(&ports).unwrap();
         let reminders = reminders::list_for_task(&connection, &ports, timed.task.id).unwrap();
         assert_eq!(reminders.len(), 1);
         assert_eq!(reminders[0].next_at, Some(local(10, 19, 0)));

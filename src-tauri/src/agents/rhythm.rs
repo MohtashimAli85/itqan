@@ -4,10 +4,10 @@ use tauri::{AppHandle, Manager};
 use super::coach::{LATER, OPEN_MAIN, OPEN_PANEL};
 use super::{action, AppEvent, Signal, Subscriber};
 use crate::domain::modes;
-use crate::domain::tasks;
 use itqan_core::db::{settings as settings_repo, Database};
 use itqan_core::error::AppError;
 use itqan_core::nudges::{AgentKind, Priority};
+use itqan_core::ports::Ports;
 use itqan_core::profile;
 use itqan_core::profile::{CoachStyle, Motivator, Profile};
 use itqan_core::settings;
@@ -127,7 +127,11 @@ impl Subscriber for RhythmAgent {
                 && read_date(connection, LAST_CHECKIN)? != Some(today)
             {
                 settings_repo::set(connection, LAST_CHECKIN, &today.to_string())?;
-                let completed = tasks::completed_between(connection, local_midnight, now)?;
+                let completed = app.state::<Ports>().tasks_completed_between(
+                    connection,
+                    local_midnight,
+                    now,
+                )?;
                 suggestions.push(Signal {
                     agent: AgentKind::Coach,
                     kind: "checkin".into(),

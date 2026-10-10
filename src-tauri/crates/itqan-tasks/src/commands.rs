@@ -2,16 +2,16 @@ use chrono::{Local, Utc};
 use tauri::{AppHandle, Manager, State};
 use tauri_specta::Event;
 
-use super::events::TasksChanged;
-use crate::agents::{self, AppEvent};
-use crate::domain::categories::{self, Category, CategoryInput};
-use crate::domain::quick_add::{self, QuickAddOutcome};
-use crate::domain::tasks::{self, Task, TaskFilter, TaskId, TaskInput, TaskStatus};
-use crate::scheduler;
+use crate::categories::{self, Category, CategoryInput};
+use crate::quick_add::{self, QuickAddOutcome};
+use crate::tasks::{self, Task, TaskFilter, TaskId, TaskInput, TaskStatus};
+use crate::TasksChanged;
+use itqan_contracts::AppEvent;
 use itqan_core::db::Database;
 use itqan_core::error::{AppError, CommandError};
 use itqan_core::scheduler::Scheduler;
 use itqan_core::settings;
+use itqan_core::{bus, scheduler};
 
 fn changed(app: &AppHandle, task: Task) -> Result<Task, CommandError> {
     TasksChanged.emit(app).map_err(AppError::from)?;
@@ -61,7 +61,7 @@ pub fn set_task_status(
 ) -> Result<Task, CommandError> {
     let task = database.with(|connection| tasks::set_status(connection, id, status, Utc::now()))?;
     if status == TaskStatus::Done {
-        agents::publish(&app, AppEvent::TaskCompleted { task_id: id })?;
+        bus::publish(&app, AppEvent::TaskCompleted { task_id: id })?;
     }
     changed(&app, task)
 }

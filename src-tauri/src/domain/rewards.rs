@@ -7,9 +7,10 @@ use specta::Type;
 use crate::db::rewards as repo;
 use crate::domain::levels::{self, LevelProgress};
 use crate::domain::skills::SkillId;
-use crate::domain::tasks::{TaskId, TaskKind};
+use itqan_contracts::TaskId;
 use itqan_core::error::AppError;
 use itqan_core::profile::{Motivator, Profile};
+use itqan_tasks::tasks::TaskKind;
 
 const MAX_FREEZES: u8 = 2;
 const FREEZE_EVERY: u32 = 7;

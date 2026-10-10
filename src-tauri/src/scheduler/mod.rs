@@ -1,6 +1,5 @@
 mod delivery;
 pub mod modes;
-pub mod targets;
 
 use std::sync::Arc;
 use std::time::Duration;

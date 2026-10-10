@@ -2187,6 +2187,7 @@ dependencies = [
  "itqan-core",
  "itqan-health",
  "itqan-salah",
+ "itqan-tasks",
  "rusqlite",
  "serde",
  "serde_json",
@@ -2264,6 +2265,21 @@ dependencies = [
  "serde",
  "specta",
  "tauri",
+]
+
+[[package]]
+name = "itqan-tasks"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "chrono-tz",
+ "itqan-contracts",
+ "itqan-core",
+ "rusqlite",
+ "serde",
+ "specta",
+ "tauri",
+ "tauri-specta",
 ]
 
 [[package]]

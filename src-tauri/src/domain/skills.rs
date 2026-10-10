@@ -7,7 +7,7 @@ use crate::db::skills as repo;
 use crate::domain::levels::{self, LevelProgress};
 use itqan_core::error::AppError;
 
-pub type SkillId = i32;
+pub use itqan_contracts::SkillId;
 
 const MAX_NAME_LENGTH: usize = 60;
 

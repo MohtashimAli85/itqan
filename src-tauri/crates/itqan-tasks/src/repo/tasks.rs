@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use rusqlite::types::Type as SqlType;
 use rusqlite::{named_params, params, Connection, OptionalExtension, Row};
 
-use crate::domain::tasks::{Task, TaskFilter, TaskId, TaskInput, TaskKind, TaskStatus};
+use crate::tasks::{Task, TaskFilter, TaskId, TaskInput, TaskKind, TaskStatus};
 use itqan_core::error::AppError;
 
 const COLUMNS: &str = "id, title, notes, category_id, kind, priority, due_at, is_top_three, \

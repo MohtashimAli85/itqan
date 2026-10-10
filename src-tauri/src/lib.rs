@@ -17,7 +17,11 @@ use itqan_core::module::Module;
 use itqan_core::ports::Ports;
 use itqan_core::scheduler::Refresher;
 
-const MODULES: &[&dyn Module] = &[&itqan_salah::SalahModule, &itqan_health::HealthModule];
+const MODULES: &[&dyn Module] = &[
+    &itqan_salah::SalahModule,
+    &itqan_health::HealthModule,
+    &itqan_tasks::TasksModule,
+];
 
 #[cfg(any(debug_assertions, test))]
 const BINDINGS_PATH: &str = "../src/shared/bindings/bindings.ts";
@@ -34,15 +38,15 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::overlay::show_bubble,
             commands::overlay::resolve_bubble,
             commands::overlay::set_panel_open,
-            commands::tasks::list_tasks,
-            commands::tasks::create_task,
-            commands::tasks::update_task,
-            commands::tasks::set_task_status,
-            commands::tasks::set_task_top_three,
-            commands::tasks::delete_task,
-            commands::tasks::list_categories,
-            commands::tasks::create_category,
-            commands::tasks::quick_add_task,
+            itqan_tasks::commands::list_tasks,
+            itqan_tasks::commands::create_task,
+            itqan_tasks::commands::update_task,
+            itqan_tasks::commands::set_task_status,
+            itqan_tasks::commands::set_task_top_three,
+            itqan_tasks::commands::delete_task,
+            itqan_tasks::commands::list_categories,
+            itqan_tasks::commands::create_category,
+            itqan_tasks::commands::quick_add_task,
             itqan_core::reminders::commands::create_reminder,
             itqan_core::reminders::commands::list_task_reminders,
             itqan_core::reminders::commands::delete_reminder,
@@ -101,7 +105,7 @@ fn specta_builder() -> Builder<tauri::Wry> {
         .events(collect_events![
             overlay::OverlayCursor,
             overlay::OverlayChanged,
-            commands::events::TasksChanged,
+            itqan_tasks::TasksChanged,
             scheduler::ModeChanged,
             commands::goals::GoalsChanged,
             itqan_health::HealthChanged,
@@ -153,9 +157,7 @@ pub fn run() {
             let database = Database::open(&data_dir.join("itqan.db"), MODULES)?;
             app.manage(database);
             tracing::info!("database ready");
-            let ports = Ports::default();
-            scheduler::targets::register(&ports)?;
-            app.manage(ports);
+            app.manage(Ports::default());
             app.manage(ActionRouter::default());
             app.manage(Refresher::new(|app| scheduler::refresh(app).map(|_| ())));
             for module in MODULES {

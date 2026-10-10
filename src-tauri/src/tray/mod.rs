@@ -10,11 +10,12 @@ use tauri_specta::Event;
 
 use crate::agents::coach;
 use crate::commands::events::Navigate;
-use crate::domain::{focus, modes, tasks};
+use crate::domain::{focus, modes};
 use crate::overlay::{self, FollowMode, OverlayStore};
 use crate::scheduler;
 use itqan_core::db::Database;
 use itqan_core::error::AppError;
+use itqan_core::ports::Ports;
 use itqan_core::settings;
 use view::{TrayInputs, TrayView};
 
@@ -78,8 +79,9 @@ fn load(app: &AppHandle) -> Result<TrayView, AppError> {
         let timezone = settings::timezone(connection)?;
         let today = now.with_timezone(&timezone).date_naive();
         let (_, end) = itqan_core::settings::day_bounds(timezone, today);
-        let (_, tasks_left) = tasks::today_counts(connection, now, end)?;
-        let next_task = tasks::next_for_today(connection, end)?.map(|task| task.title);
+        let ports = app.state::<Ports>();
+        let tasks_left = ports.today_counts(connection, now, end)?.open;
+        let next_task = ports.next_task_for_today(connection, end)?;
         Ok(view::view(TrayInputs {
             focus_minutes_left: status
                 .as_ref()

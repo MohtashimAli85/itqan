@@ -3,10 +3,9 @@ use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
-use crate::db::tasks as repo;
-use crate::domain::categories::CategoryId;
-use crate::domain::goals::GoalId;
-use crate::domain::skills::SkillId;
+use crate::categories::CategoryId;
+use crate::repo::tasks as repo;
+use itqan_contracts::{GoalId, SkillId};
 use itqan_core::error::AppError;
 
 pub use itqan_contracts::TaskId;
@@ -260,7 +259,7 @@ mod tests {
     use chrono::TimeZone;
 
     use super::*;
-    use itqan_core::db::test_connection;
+    use crate::test_connection;
 
     fn now() -> DateTime<Utc> {
         Utc.with_ymd_and_hms(2026, 10, 10, 9, 0, 0).unwrap()
