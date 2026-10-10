@@ -280,7 +280,7 @@ Rules:
 | profile | motivator weights, situation, optional age, coach style, boundaries |
 | settings | theme, sound, orb placement, size, hotkeys, nudge budget, AI provider config (no keys) |
 | schedules | work hours per day, modes |
-| prayer_settings | city, coordinates, method, Asr school, pause windows, Jumu'ah break |
+| salah_settings (salah module; `prayer_settings` before 2.0.4) | city, coordinates, method, Asr school, pause windows, Jumu'ah break |
 | categories | name, colour, icon, built-in or custom |
 | goals | title, target date, motivator link, status |
 | skills | name, level, XP |
@@ -298,7 +298,7 @@ Rules:
 | memory_chunks (Phase 3) | app, window, channel, text, author flag, captured at, expires at |
 | memory_vectors (Phase 3) | chunk, embedding (sqlite-vec) |
 
-Migrations are versioned and run at startup.
+Migrations are versioned and run at startup: core's numbered series (tracked with `PRAGMA user_version`), then each module's own series, recorded in `schema_migrations` (ADR 0003 section 7).
 
 ### Data model changes in Phase 2
 New core tables:
@@ -642,7 +642,7 @@ Each step is one PR unless split further during the work. Every step that introd
 - [x] 2.0.1 ADR 0003: module contract, contracts crate, event bus, migrations per module, frontend manifest (see `docs/decisions/0003-module-architecture.md`)
 - [x] 2.0.2 Cargo workspace with `itqan-contracts` and `itqan-core`; move the event dispatch (today's `agents::publish`), db and settings framework; app still behaves the same
 - [x] 2.0.3 Frontend `core` / `shared` / `modules` layout, module registry, boundary lint in CI
-- [ ] 2.0.4 Move Salah into `itqan-salah` and `src/modules/salah`
+- [x] 2.0.4 Move Salah into `itqan-salah` and `src/modules/salah`
 - [ ] 2.0.5 Move reminders and recurrence into core (shared by tasks and health, ADR 0003), then move Health
 - [ ] 2.0.6 Move Tasks (with categories and quick add; `categories` is renamed `tasks_categories` with the same meaning, and becomes `tasks_areas` in 2.3)
 - [ ] 2.0.7 Move Progress (XP, levels, streaks, badges), then move the remaining shell (Coach, mode engine, scheduler, overlay, tray) into core

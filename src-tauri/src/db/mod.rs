@@ -3,7 +3,6 @@ pub mod focus;
 pub mod goals;
 pub mod health;
 pub mod nudges;
-pub mod prayer;
 pub mod profile;
 pub mod reminders;
 pub mod rewards;

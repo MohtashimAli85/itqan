@@ -43,6 +43,7 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 itqan-contracts = { path = "crates/itqan-contracts" }
 itqan-core = { path = "crates/itqan-core" }
+itqan-salah = { path = "crates/itqan-salah" }
 tauri = { workspace = true, features = ["tray-icon", "macos-private-api"] }
 serde.workspace = true
 serde_json.workspace = true

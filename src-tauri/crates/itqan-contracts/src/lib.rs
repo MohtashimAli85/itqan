@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
@@ -22,6 +23,26 @@ pub enum HabitKind {
     EyeRest,
     Water,
     Medicine,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub enum Prayer {
+    Fajr,
+    Dhuhr,
+    Jumuah,
+    Asr,
+    Maghrib,
+    Isha,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct PrayerWindow {
+    pub prayer: Prayer,
+    pub at: DateTime<Utc>,
+    pub pause_from: DateTime<Utc>,
+    pub pause_until: DateTime<Utc>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

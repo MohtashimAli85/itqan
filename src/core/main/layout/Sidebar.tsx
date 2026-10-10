@@ -10,8 +10,6 @@ import {
 import { openTasks, useCategories, useTasks } from "@/shared/hooks/useTasks";
 import { categoryDot, todaySections } from "@/shared/lib/taskGroups";
 import { useContributions } from "@/core/registry/contributions";
-import type { Contribution } from "@/core/registry/types";
-import { NextPrayerCard } from "./NextPrayerCard";
 
 const linkClass =
   "flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm text-text-secondary hover:bg-muted hover:text-foreground data-[status=active]:bg-muted data-[status=active]:font-medium data-[status=active]:text-foreground";
@@ -38,15 +36,8 @@ function NavLink({
   );
 }
 
-const coreWidgets: Contribution[] = [
-  { id: "next-prayer", order: 10, Component: NextPrayerCard },
-];
-
 export function Sidebar() {
-  const widgets = useContributions(
-    (manifest) => manifest.sidebarWidgets,
-    coreWidgets,
-  );
+  const widgets = useContributions((manifest) => manifest.sidebarWidgets, []);
   const { data: tasks = [] } = useTasks(openTasks);
   const { data: categories = [] } = useCategories();
   const sections = todaySections(tasks);
