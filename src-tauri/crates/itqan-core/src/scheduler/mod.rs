@@ -99,8 +99,11 @@ fn run_due(app: &AppHandle) -> Result<Duration, AppError> {
 }
 
 pub fn refresh(app: &AppHandle) -> Result<ModeStatus, AppError> {
+    let scheduler = app
+        .try_state::<Scheduler>()
+        .ok_or_else(|| AppError::NotFound("scheduler".into()))?;
     let (status, _) = modes::evaluate(app)?;
     tray::refresh(app)?;
-    app.state::<Scheduler>().wake();
+    scheduler.wake();
     Ok(status)
 }

@@ -33,13 +33,14 @@ src-tauri/                  app crate `itqan` (wiring only, at the end of 2.0)
 | salah | `prayer_settings` → `salah_settings`; prayer time calculation, pause windows, Jumu'ah |
 | health | `habits` → `health_habits`, `habit_logs` → `health_habit_logs`; the health agent |
 | tasks | `categories` → `tasks_categories` (→ `tasks_areas` in 2.3), `tasks`; quick add |
-| progress | `xp_events` → `progress_xp_events`, `streaks` → `progress_streaks`; levels, badges, the rewards agent |
+| progress | `xp_events` → `progress_xp_events`, `streaks` → `progress_streaks`; XP awards, streaks, badges, the rewards agent |
 
 Why these owners:
 - **Reminders and recurrence are core** scheduler primitives (PLAN C.1 lists "scheduler primitives" under core). Tasks *and* health create reminders. If tasks owned them, health would have to import tasks, and turning tasks off would stop medicine reminders. This deliberately changes the step list, which said "Move Tasks (with reminders)".
 - **Goals, milestones and skills are core profile data.** Section 3 lists goals in the motivation profile, and progress and planning both read them. The `learning` module (2.7) builds roadmaps and project ideas on top of them through core APIs.
 - **Focus sessions and modes stay core.** The mode engine, reminder holds and the Coach all depend on "is a focus session running". The `focus` module (2.6) adds front-app tracking and drift on top of core sessions.
 - **Nudges are core.** They are the Coach's outcome log.
+- **The level curve is core** (amended in 2.0.7). Skills are core and show a level from their XP, so `levels::progress` lives in core. Progress uses the same curve for the overall level.
 
 Rows may reference another owner's rows by id. Existing foreign keys stay, for example `tasks.goal_id` → `goals` and `reminders.habit_id` → `health_habits`. A disabled module keeps its data, so those keys stay valid. New code adds a cross-owner key only from a module to core, never from one module to another.
 
@@ -144,7 +145,7 @@ export type ModuleManifest = {
 | 2.0.4 | `itqan-salah`, `PrayerSchedule` port, module migration runner with core `0010`, `salah_settings` rename |
 | 2.0.5 | reminders, recurrence and `day_bounds` into core with the `ReminderTarget` port and action router; `itqan-health`, `health_*` renames |
 | 2.0.6 | `itqan-tasks`, `TaskStats` port, task `ReminderTarget`, `tasks_categories` rename |
-| 2.0.7 | `itqan-progress`, `progress_*` renames; the remaining shell (Coach, rhythm, planner, mode engine, scheduler, overlay, tray, platform, profile, goals, skills, nudges) into core |
+| 2.0.7 | part 1: the remaining shell (Coach, rhythm, planner, mode engine, scheduler, overlay, tray, platform, goals, skills, levels) into core; part 2: `itqan-progress`, `progress_*` renames. The shell moves first because progress depends on skills, work hours, focus sessions and the overlay. |
 
 ## Consequences
 - The app crate's `lib.rs` keeps the long `collect_commands!` list. That's accepted: it's the wiring point, and specta still collects every type.

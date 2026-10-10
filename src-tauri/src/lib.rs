@@ -105,7 +105,7 @@ fn specta_builder() -> Builder<tauri::Wry> {
             itqan_core::goals::commands::GoalsChanged,
             itqan_health::HealthChanged,
             agents::rewards::RewardEarned,
-            itqan_core::events::Navigate,
+            tray::Navigate,
         ])
 }
 

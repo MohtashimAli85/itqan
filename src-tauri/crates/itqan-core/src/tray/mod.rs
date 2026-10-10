@@ -3,6 +3,8 @@ mod view;
 use std::sync::Mutex;
 
 use chrono::{Duration, NaiveTime, TimeZone, Utc};
+use serde::{Deserialize, Serialize};
+use specta::Type;
 use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::tray::TrayIconBuilder;
 use tauri::{App, AppHandle, Manager, Wry};
@@ -11,13 +13,17 @@ use tauri_specta::Event;
 use crate::coach;
 use crate::db::Database;
 use crate::error::AppError;
-use crate::events::Navigate;
 use crate::overlay::{self, FollowMode, OverlayStore};
 use crate::ports::Ports;
 use crate::scheduler;
 use crate::settings;
 use crate::{focus, modes};
 use view::{TrayInputs, TrayView};
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type, tauri_specta::Event)]
+pub struct Navigate {
+    pub to: String,
+}
 
 const TRAY_ID: &str = "itqan";
 const QUIT: &str = "quit";

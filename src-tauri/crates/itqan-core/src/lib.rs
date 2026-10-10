@@ -6,7 +6,6 @@ pub mod bus;
 pub mod coach;
 pub mod db;
 pub mod error;
-pub mod events;
 pub mod focus;
 pub mod goals;
 pub mod levels;
