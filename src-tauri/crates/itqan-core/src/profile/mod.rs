@@ -6,6 +6,7 @@ use specta::Type;
 pub mod commands;
 mod repo;
 
+use crate::beliefs;
 use crate::db::settings as settings_repo;
 use crate::error::AppError;
 
@@ -93,7 +94,11 @@ pub fn normalize(weights: &[MotivatorWeight]) -> Result<Vec<MotivatorWeight>, Ap
 }
 
 pub fn get(connection: &Connection) -> Result<Profile, AppError> {
-    repo::get(connection)
+    Ok(Profile {
+        motivators: beliefs::motivator_weights(connection)?,
+        coach_style: beliefs::coach_style(connection)?,
+        ..repo::get(connection)?
+    })
 }
 
 pub fn save(
@@ -140,7 +145,11 @@ pub fn save(
         updated_at: Some(now),
         ..profile
     };
-    repo::save(connection, &profile)?;
+    let transaction = connection.unchecked_transaction()?;
+    beliefs::say_motivators(&transaction, &profile.motivators, now)?;
+    beliefs::say_coach_style(&transaction, profile.coach_style, now)?;
+    repo::save(&transaction, &profile)?;
+    transaction.commit()?;
     get(connection)
 }
 
