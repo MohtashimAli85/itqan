@@ -1,8 +1,9 @@
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 import { commands } from "@/shared/bindings/bindings";
+import { DatePicker } from "@/shared/components/date-picker";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -47,7 +48,19 @@ export function NewGoalForm() {
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="goal-target">Target date</Label>
-        <Input id="goal-target" type="date" {...form.register("targetDate")} />
+        <Controller
+          control={form.control}
+          name="targetDate"
+          render={({ field }) => (
+            <DatePicker
+              id="goal-target"
+              value={field.value}
+              onChange={field.onChange}
+              optional
+              aria-label="Target date"
+            />
+          )}
+        />
       </div>
       <Button type="submit" disabled={create.isPending}>
         Add goal

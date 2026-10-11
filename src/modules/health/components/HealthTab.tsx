@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { GlassWater, Trash2 } from "lucide-react";
 import { commands } from "@/shared/bindings/bindings";
+import { TimePicker } from "@/shared/components/time-picker";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -32,12 +33,11 @@ function MedicineForm() {
           value={name}
           onChange={(event) => setName(event.target.value)}
         />
-        <Input
-          aria-label="Daily time"
-          type="time"
-          className="w-28"
+        <TimePicker
           value={time}
-          onChange={(event) => setTime(event.target.value)}
+          onChange={setTime}
+          aria-label="Daily time"
+          className="w-40 shrink-0"
         />
         <Button
           type="submit"
