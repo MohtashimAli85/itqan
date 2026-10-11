@@ -1,4 +1,10 @@
-import { useMemo, useRef, useState, type KeyboardEvent } from "react";
+import {
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { cn } from "cn";
 import { dayjs, type Dayjs } from "@/shared/lib/dayjs";
@@ -24,11 +30,28 @@ export function Calendar({
   "aria-label": ariaLabel = "Calendar",
 }: CalendarProps) {
   const grid = useRef<HTMLDivElement>(null);
+  const pendingFocus = useRef<string | null>(null);
   const selected = value ? dayjs(value) : null;
+
+  function clamp(day: Dayjs) {
+    if (min !== undefined && day.isBefore(dayjs(min), "day")) return dayjs(min);
+    if (max !== undefined && day.isAfter(dayjs(max), "day")) return dayjs(max);
+    return day;
+  }
+
   const [month, setMonth] = useState<Dayjs>(() =>
-    (selected ?? dayjs()).startOf("month"),
+    clamp(selected ?? dayjs()).startOf("month"),
   );
-  const [focus, setFocus] = useState<Dayjs>(() => selected ?? dayjs());
+  const [focus, setFocus] = useState<Dayjs>(() => clamp(selected ?? dayjs()));
+
+  useLayoutEffect(() => {
+    const iso = pendingFocus.current;
+    if (iso === null) return;
+    pendingFocus.current = null;
+    grid.current
+      ?.querySelector<HTMLButtonElement>(`[data-day="${iso}"]`)
+      ?.focus();
+  });
 
   const isOut = (day: Dayjs) =>
     (min !== undefined && day.isBefore(dayjs(min), "day")) ||
@@ -46,13 +69,15 @@ export function Calendar({
   }, [month]);
 
   function move(to: Dayjs) {
-    setFocus(to);
-    setMonth(to.startOf("month"));
-    grid.current
-      ?.querySelector<HTMLButtonElement>(
-        `[data-day="${to.format("YYYY-MM-DD")}"]`,
-      )
-      ?.focus();
+    const target = clamp(to);
+    pendingFocus.current = target.format("YYYY-MM-DD");
+    setFocus(target);
+    setMonth(target.startOf("month"));
+  }
+
+  function goToMonth(delta: number) {
+    const target = month.add(delta, "month");
+    move(target.date(Math.min(focus.date(), target.daysInMonth())));
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
@@ -80,7 +105,7 @@ export function Calendar({
           variant="ghost"
           size="icon-sm"
           aria-label="Previous month"
-          onClick={() => setMonth(month.subtract(1, "month"))}
+          onClick={() => goToMonth(-1)}
         >
           <ChevronLeftIcon />
         </Button>
@@ -92,7 +117,7 @@ export function Calendar({
           variant="ghost"
           size="icon-sm"
           aria-label="Next month"
-          onClick={() => setMonth(month.add(1, "month"))}
+          onClick={() => goToMonth(1)}
         >
           <ChevronRightIcon />
         </Button>
@@ -138,7 +163,11 @@ export function Calendar({
                   disabled={isOut(day)}
                   tabIndex={focus.isSame(day, "day") ? 0 : -1}
                   onFocus={() => setFocus(day)}
-                  onClick={() => onChange(iso)}
+                  onClick={() => {
+                    setFocus(day);
+                    if (outside) setMonth(day.startOf("month"));
+                    onChange(iso);
+                  }}
                   className={cn(
                     "flex size-8 items-center justify-center rounded-md text-sm transition-colors outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-40",
                     outside && "text-muted-foreground",

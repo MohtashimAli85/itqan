@@ -20,4 +20,12 @@ describe("DatePicker", () => {
 
     expect(onChange).toHaveBeenCalledWith("");
   });
+
+  it("shows a placeholder when empty", () => {
+    render(<DatePicker onChange={() => {}} />);
+
+    expect(
+      screen.getByRole("button", { name: "Pick a date" }),
+    ).toBeInTheDocument();
+  });
 });

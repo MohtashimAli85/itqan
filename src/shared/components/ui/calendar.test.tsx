@@ -31,4 +31,24 @@ describe("Calendar", () => {
     expect(screen.getByLabelText("5 October 2026")).toBeDisabled();
     expect(screen.getByLabelText("12 October 2026")).toBeEnabled();
   });
+
+  it("keeps a focusable day when the month changes", () => {
+    render(<Calendar value="2026-10-15" onChange={() => {}} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Next month" }));
+
+    const day = screen.getByLabelText("15 November 2026");
+    expect(day).toHaveAttribute("tabindex", "0");
+    expect(day).toHaveFocus();
+  });
+
+  it("moves focus with the arrow keys", () => {
+    render(<Calendar value="2026-10-15" onChange={() => {}} />);
+
+    fireEvent.keyDown(screen.getByLabelText("15 October 2026"), {
+      key: "ArrowRight",
+    });
+
+    expect(screen.getByLabelText("16 October 2026")).toHaveFocus();
+  });
 });

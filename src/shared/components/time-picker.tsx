@@ -35,7 +35,7 @@ export function TimePicker({
   const minutes = useMemo(() => {
     const base = Array.from({ length: 12 }, (_, index) => pad(index * 5));
     if (minute !== "" && !base.includes(minute)) base.push(minute);
-    return base.sort();
+    return base.sort((a, b) => Number(a) - Number(b));
   }, [minute]);
 
   return (

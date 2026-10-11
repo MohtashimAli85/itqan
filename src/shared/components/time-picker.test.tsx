@@ -12,4 +12,22 @@ describe("TimePicker", () => {
 
     expect(onChange).toHaveBeenCalledWith("10:00");
   });
+
+  it("emits an HH:mm value when the minute changes", () => {
+    const onChange = vi.fn<(value: string) => void>();
+    render(<TimePicker value="09:00" onChange={onChange} />);
+
+    fireEvent.click(screen.getByLabelText("Time minute"));
+    fireEvent.click(screen.getByRole("option", { name: "30" }));
+
+    expect(onChange).toHaveBeenCalledWith("09:30");
+  });
+
+  it("keeps an off-step minute in the list", () => {
+    render(<TimePicker value="09:07" onChange={() => {}} />);
+
+    fireEvent.click(screen.getByLabelText("Time minute"));
+
+    expect(screen.getByRole("option", { name: "07" })).toBeInTheDocument();
+  });
 });
