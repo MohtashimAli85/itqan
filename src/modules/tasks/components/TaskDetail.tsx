@@ -5,6 +5,7 @@ import type { Task } from "@/shared/bindings/bindings";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
+import { Textarea } from "@/shared/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -102,12 +103,7 @@ function DetailPanel({ task, subtasks }: { task: Task; subtasks: Task[] }) {
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="detail-notes">Notes</Label>
-          <textarea
-            id="detail-notes"
-            rows={4}
-            className="rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-            {...form.register("notes")}
-          />
+          <Textarea id="detail-notes" rows={4} {...form.register("notes")} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-2">

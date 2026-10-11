@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
 import type { Bubble as BubbleData } from "@/shared/bindings/bindings";
 import { Button } from "@/shared/components/ui/button";
+import { Card } from "@/shared/components/ui/card";
 
 type BubbleProps = {
   bubble: BubbleData;
@@ -9,10 +10,10 @@ type BubbleProps = {
 
 export function Bubble({ bubble, onResolve }: BubbleProps) {
   return (
-    <div
+    <Card
       data-hit-area
       role="status"
-      className="bubble absolute w-64 rounded-2xl bg-card p-3 pr-8 text-sm text-card-foreground shadow-xl ring-1 ring-border"
+      className="bubble absolute w-64 gap-0 rounded-2xl p-3 pr-8 shadow-xl ring-border"
     >
       <p className="leading-snug">{bubble.text}</p>
       {bubble.actions.length > 0 && (
@@ -37,6 +38,6 @@ export function Bubble({ bubble, onResolve }: BubbleProps) {
       >
         <X className="size-3.5" />
       </button>
-    </div>
+    </Card>
   );
 }

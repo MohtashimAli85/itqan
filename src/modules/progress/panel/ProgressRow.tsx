@@ -1,4 +1,5 @@
 import { Flame } from "lucide-react";
+import { Progress } from "@/shared/components/ui/progress";
 import { useProgress } from "../hooks/useProgress";
 
 export function ProgressRow() {
@@ -9,21 +10,12 @@ export function ProgressRow() {
   return (
     <div className="flex items-center gap-3">
       <span className="font-mono text-xs text-caption">L{level.level}</span>
-      <div
-        role="progressbar"
+      <Progress
+        value={level.xpIntoLevel}
+        max={level.xpForNext}
         aria-label="Experience to the next level"
-        aria-valuemin={0}
-        aria-valuemax={level.xpForNext}
-        aria-valuenow={level.xpIntoLevel}
-        className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted"
-      >
-        <div
-          className="h-full origin-left rounded-full bg-brand transition-transform duration-500 motion-reduce:transition-none"
-          style={{
-            transform: `scaleX(${level.xpIntoLevel / level.xpForNext})`,
-          }}
-        />
-      </div>
+        className="h-1.5 flex-1 [&_[data-slot=progress-indicator]]:bg-brand [&_[data-slot=progress-indicator]]:motion-reduce:transition-none"
+      />
       <span
         className="flex items-center gap-1 font-mono text-xs text-caption"
         aria-label={`${streak.current} day streak`}

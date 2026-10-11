@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { commands } from "@/shared/bindings/bindings";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+import { Progress } from "@/shared/components/ui/progress";
 import { useSkills } from "@/shared/hooks/useGoals";
 import { unwrap } from "@/shared/lib/result";
 
@@ -34,21 +35,12 @@ export function SkillsPanel() {
                 Level {skill.level.level}
               </span>
             </div>
-            <div
-              role="progressbar"
+            <Progress
+              value={skill.level.xpIntoLevel}
+              max={skill.level.xpForNext}
               aria-label={`${skill.name} progress to the next level`}
-              aria-valuemin={0}
-              aria-valuemax={skill.level.xpForNext}
-              aria-valuenow={skill.level.xpIntoLevel}
-              className="h-1.5 overflow-hidden rounded-full bg-muted"
-            >
-              <div
-                className="h-full origin-left rounded-full bg-brand"
-                style={{
-                  transform: `scaleX(${skill.level.xpIntoLevel / skill.level.xpForNext})`,
-                }}
-              />
-            </div>
+              className="h-1.5 [&_[data-slot=progress-indicator]]:bg-brand"
+            />
           </li>
         ))}
       </ul>

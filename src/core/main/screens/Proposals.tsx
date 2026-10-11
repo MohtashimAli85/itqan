@@ -1,5 +1,6 @@
 import { Check, X } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
+import { Card, CardContent } from "@/shared/components/ui/card";
 import { useDecideProposal, useProposals } from "@/shared/hooks/useProposals";
 
 export function Proposals() {
@@ -23,38 +24,41 @@ export function Proposals() {
       ) : (
         <ul className="flex max-w-2xl flex-col gap-4">
           {proposals.map((proposal) => (
-            <li
-              key={proposal.id}
-              className="flex flex-col gap-3 rounded-2xl bg-card p-5 ring-1 ring-border"
-            >
-              <h2 className="font-heading text-lg font-semibold">
-                {proposal.title}
-              </h2>
-              <p className="text-sm text-text-secondary">{proposal.reason}</p>
-              <p className="text-xs text-caption">{proposal.effect}</p>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  disabled={decide.isPending}
-                  onClick={() =>
-                    decide.mutate({ id: proposal.id, accept: true })
-                  }
-                >
-                  <Check data-icon="inline-start" />
-                  Yes, change it
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  disabled={decide.isPending}
-                  onClick={() =>
-                    decide.mutate({ id: proposal.id, accept: false })
-                  }
-                >
-                  <X data-icon="inline-start" />
-                  No
-                </Button>
-              </div>
+            <li key={proposal.id}>
+              <Card className="rounded-2xl ring-border [--card-spacing:--spacing(5)]">
+                <CardContent className="flex flex-col gap-3">
+                  <h2 className="font-heading text-lg font-semibold">
+                    {proposal.title}
+                  </h2>
+                  <p className="text-sm text-text-secondary">
+                    {proposal.reason}
+                  </p>
+                  <p className="text-xs text-caption">{proposal.effect}</p>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      disabled={decide.isPending}
+                      onClick={() =>
+                        decide.mutate({ id: proposal.id, accept: true })
+                      }
+                    >
+                      <Check data-icon="inline-start" />
+                      Yes, change it
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={decide.isPending}
+                      onClick={() =>
+                        decide.mutate({ id: proposal.id, accept: false })
+                      }
+                    >
+                      <X data-icon="inline-start" />
+                      No
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </li>
           ))}
         </ul>

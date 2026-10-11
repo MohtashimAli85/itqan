@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useContributions } from "@/core/registry/contributions";
 import { greeting } from "@/shared/lib/today";
+import { Card } from "@/shared/components/ui/card";
 import { ProposalsRow } from "./ProposalsRow";
 import {
   Tabs,
@@ -42,12 +43,12 @@ export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
   }, [onClose]);
 
   return (
-    <div
+    <Card
       ref={panel}
       data-hit-area
       role="dialog"
       aria-label="Itqan"
-      className="orb-popover absolute flex w-80 flex-col gap-3 rounded-2xl bg-card p-4 text-card-foreground shadow-xl ring-1 ring-border"
+      className="orb-popover absolute w-80 gap-3 rounded-2xl p-4 shadow-xl ring-border"
     >
       <header>
         <p className="font-heading text-lg font-semibold">{greeting()}</p>
@@ -76,6 +77,6 @@ export function CompactPanel({ onClose, onResize }: CompactPanelProps) {
           </TabsContent>
         ))}
       </Tabs>
-    </div>
+    </Card>
   );
 }

@@ -6,7 +6,8 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
+import { Toaster } from "@/shared/components/ui/sonner";
 import "@/shared/styles/globals.css";
 import { createAppRouter } from "./router";
 
