@@ -1,5 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ChevronDownIcon } from "lucide-react";
 import { commands, type FollowMode } from "@/shared/bindings/bindings";
+import { Button } from "@/shared/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/shared/components/ui/collapsible";
 import { Label } from "@/shared/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 import { unwrap } from "@/shared/lib/result";
@@ -49,14 +56,24 @@ export function OrbSettings() {
           ))}
         </RadioGroup>
       )}
-      <details>
-        <summary className="cursor-pointer text-sm text-text-secondary">
-          Try orb states
-        </summary>
-        <div className="pt-4">
+      <Collapsible>
+        <CollapsibleTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="group w-full justify-between"
+          >
+            Try orb states
+            <ChevronDownIcon
+              data-icon="inline-end"
+              className="transition-transform group-data-[state=open]:rotate-180"
+            />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-4">
           <OrbPreview />
-        </div>
-      </details>
+        </CollapsibleContent>
+      </Collapsible>
     </Section>
   );
 }
