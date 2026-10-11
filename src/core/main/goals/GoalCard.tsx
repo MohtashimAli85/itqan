@@ -2,13 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { commands, type Goal } from "@/shared/bindings/bindings";
 import { Button } from "@/shared/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { useMilestones } from "@/shared/hooks/useGoals";
 import { dayjs } from "@/shared/lib/dayjs";
@@ -30,19 +24,20 @@ export function GoalCard({ goal }: { goal: Goal }) {
   const finished = milestones.filter((m) => m.status === "done").length;
 
   return (
-    <Card className="gap-4 rounded-2xl ring-border [--card-spacing:--spacing(5)]">
+    <Card
+      role="article"
+      className="gap-4 rounded-2xl ring-border [--card-spacing:--spacing(5)]"
+    >
       <CardHeader className="flex flex-row items-start justify-between gap-4">
         <div>
-          <CardTitle className="font-heading text-lg font-semibold">
-            {goal.title}
-          </CardTitle>
-          <CardDescription className="text-xs text-caption">
+          <h3 className="font-heading text-lg font-semibold">{goal.title}</h3>
+          <p className="text-xs text-caption">
             {goal.targetDate
               ? `By ${dayjs(goal.targetDate).format("D MMMM YYYY")}`
               : "No target date"}
             {milestones.length > 0 &&
               ` · ${finished} of ${milestones.length} milestones`}
-          </CardDescription>
+          </p>
         </div>
         <Button
           variant="ghost"

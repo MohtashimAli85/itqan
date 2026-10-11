@@ -1,11 +1,5 @@
 import type { ReactNode } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 
 type SectionProps = {
   id: string;
@@ -17,18 +11,15 @@ type SectionProps = {
 export function Section({ id, title, description, children }: SectionProps) {
   return (
     <Card
+      role="region"
       aria-labelledby={id}
       className="gap-4 rounded-2xl ring-border [--card-spacing:--spacing(6)]"
     >
       <CardHeader>
-        <CardTitle id={id} className="font-heading text-lg font-semibold">
+        <h2 id={id} className="font-heading text-lg font-semibold">
           {title}
-        </CardTitle>
-        {description && (
-          <CardDescription className="text-caption">
-            {description}
-          </CardDescription>
-        )}
+        </h2>
+        {description && <p className="text-sm text-caption">{description}</p>}
       </CardHeader>
       <CardContent>{children}</CardContent>
     </Card>

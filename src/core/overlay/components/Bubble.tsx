@@ -13,7 +13,7 @@ export function Bubble({ bubble, onResolve }: BubbleProps) {
     <Card
       data-hit-area
       role="status"
-      className="bubble absolute w-64 rounded-2xl p-3 pr-8 shadow-xl ring-border"
+      className="bubble absolute w-64 gap-0 rounded-2xl p-3 pr-8 shadow-xl ring-border"
     >
       <p className="leading-snug">{bubble.text}</p>
       {bubble.actions.length > 0 && (

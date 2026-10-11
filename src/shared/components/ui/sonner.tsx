@@ -10,8 +10,7 @@ import { Toaster as Sonner, type ToasterProps } from "sonner";
 
 const Toaster = ({ ...props }: ToasterProps) => (
   <Sonner
-    theme="system"
-    className="toaster group"
+    theme="light"
     icons={{
       success: <CircleCheckIcon className="size-4" />,
       info: <InfoIcon className="size-4" />,
@@ -27,9 +26,6 @@ const Toaster = ({ ...props }: ToasterProps) => (
         "--border-radius": "var(--radius)",
       } as CSSProperties
     }
-    toastOptions={{
-      classNames: { toast: "cn-toast" },
-    }}
     {...props}
   />
 );
