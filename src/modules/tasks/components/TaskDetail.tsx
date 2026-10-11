@@ -2,6 +2,8 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Star, Trash2, X } from "lucide-react";
 import type { Task } from "@/shared/bindings/bindings";
+import { DatePicker } from "@/shared/components/date-picker";
+import { TimePicker } from "@/shared/components/time-picker";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -178,11 +180,34 @@ function DetailPanel({ task, subtasks }: { task: Task; subtasks: Task[] }) {
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-2">
             <Label htmlFor="detail-date">Due date</Label>
-            <Input id="detail-date" type="date" {...form.register("dueDate")} />
+            <Controller
+              control={form.control}
+              name="dueDate"
+              render={({ field }) => (
+                <DatePicker
+                  id="detail-date"
+                  value={field.value}
+                  onChange={field.onChange}
+                  optional
+                  aria-label="Due date"
+                />
+              )}
+            />
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="detail-time">Time</Label>
-            <Input id="detail-time" type="time" {...form.register("dueTime")} />
+            <Controller
+              control={form.control}
+              name="dueTime"
+              render={({ field }) => (
+                <TimePicker
+                  id="detail-time"
+                  value={field.value}
+                  onChange={field.onChange}
+                  aria-label="Time"
+                />
+              )}
+            />
           </div>
         </div>
         <Button

@@ -2,8 +2,8 @@ import { useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BellRing, Trash2 } from "lucide-react";
 import { commands } from "@/shared/bindings/bindings";
+import { DateTimePicker } from "@/shared/components/date-time-picker";
 import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import {
   Select,
@@ -89,13 +89,8 @@ export function RemindersEditor({ taskId }: { taskId: number }) {
         ))}
       </ul>
       <form onSubmit={submit} className="flex flex-col gap-2">
-        <div className="flex gap-2">
-          <Input
-            type="datetime-local"
-            aria-label="Remind at"
-            value={at}
-            onChange={(event) => setAt(event.target.value)}
-          />
+        <div className="flex flex-col gap-2">
+          <DateTimePicker value={at} onChange={setAt} aria-label="Remind at" />
           <Select
             value={repeat}
             onValueChange={(value) => setRepeat(value as typeof repeat)}

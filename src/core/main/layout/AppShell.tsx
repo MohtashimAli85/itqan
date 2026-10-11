@@ -16,7 +16,7 @@ export function AppShell() {
   });
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background text-foreground">
+    <div className="flex h-full overflow-hidden bg-background text-foreground">
       <Listeners surface="main" />
       <Sidebar />
       <Outlet />

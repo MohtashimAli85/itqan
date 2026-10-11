@@ -1,5 +1,5 @@
 import { Controller, useFormContext, useWatch } from "react-hook-form";
-import { Input } from "@/shared/components/ui/input";
+import { TimePicker } from "@/shared/components/time-picker";
 import { Label } from "@/shared/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 import {
@@ -16,7 +16,7 @@ import type { OnboardingValues } from "../schema";
 const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export function ScheduleStep() {
-  const { control, register, formState } = useFormContext<OnboardingValues>();
+  const { control, formState } = useFormContext<OnboardingValues>();
   const workDays = useWatch({ control, name: "workDays" });
   const familyEnabled = useWatch({ control, name: "familyEnabled" });
 
@@ -47,20 +47,32 @@ export function ScheduleStep() {
             <Label htmlFor={`day-${day.weekday}`} className="w-10">
               {weekdays[day.weekday]}
             </Label>
-            <Input
-              type="time"
-              aria-label={`${weekdays[day.weekday]} start`}
-              disabled={!day.enabled}
-              className="w-32"
-              {...register(`workDays.${index}.start`)}
+            <Controller
+              control={control}
+              name={`workDays.${index}.start`}
+              render={({ field }) => (
+                <TimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  disabled={!day.enabled}
+                  aria-label={`${weekdays[day.weekday]} start`}
+                  className="w-40"
+                />
+              )}
             />
             <span className="text-caption">to</span>
-            <Input
-              type="time"
-              aria-label={`${weekdays[day.weekday]} end`}
-              disabled={!day.enabled}
-              className="w-32"
-              {...register(`workDays.${index}.end`)}
+            <Controller
+              control={control}
+              name={`workDays.${index}.end`}
+              render={({ field }) => (
+                <TimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  disabled={!day.enabled}
+                  aria-label={`${weekdays[day.weekday]} end`}
+                  className="w-40"
+                />
+              )}
             />
           </div>
         ))}
@@ -88,18 +100,30 @@ export function ScheduleStep() {
         </div>
         {familyEnabled && (
           <div className="flex items-center gap-3 pl-12">
-            <Input
-              type="time"
-              aria-label="Family time start"
-              className="w-32"
-              {...register("familyStart")}
+            <Controller
+              control={control}
+              name="familyStart"
+              render={({ field }) => (
+                <TimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  aria-label="Family time start"
+                  className="w-40"
+                />
+              )}
             />
             <span className="text-caption">to</span>
-            <Input
-              type="time"
-              aria-label="Family time end"
-              className="w-32"
-              {...register("familyEnd")}
+            <Controller
+              control={control}
+              name="familyEnd"
+              render={({ field }) => (
+                <TimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  aria-label="Family time end"
+                  className="w-40"
+                />
+              )}
             />
           </div>
         )}
